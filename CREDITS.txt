@@ -1,0 +1,19 @@
+Shoddy Sweet Home / 裝潢蟑螂
+
+Living Room 2 / The White Room Cycles — Jay-Artist
+https://blendswap.com/blend/5014
+Country Kitchen — Jay-Artist
+https://blendswap.com/blend/5156
+Both licensed under Creative Commons Attribution 3.0:
+https://creativecommons.org/licenses/by/3.0/
+Adaptations: converted glTF, removed room shells, relocated furniture,
+modified materials and added inspection clues and collision geometry.
+
+Contemporary Bathroom — Mareck (CC0 1.0)
+https://creativecommons.org/publicdomain/zero/1.0/
+Collection: https://benedikt-bitterli.me/resources/
+Adaptations: removed room shell, rearranged fixtures and batched meshes.
+
+Godot Engine — MIT License
+https://godotengine.org/license/
+https://godotengine.org/license/#thirdparty
