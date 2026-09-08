@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="裝潢蟑螂 | Renovation Roach"
+config/name="裝潢蟑螂 | Shoddy Sweet Home"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.7")
 
@@ -24,6 +24,7 @@ window/stretch/mode="canvas_items"
 
 [gui]
 
+theme/custom_font="res://assets/fonts/NotoSansCJKtc-Regular.otf"
 theme/default_font_multichannel_signed_distance_field=true
 
 [rendering]

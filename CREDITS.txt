@@ -1,5 +1,9 @@
 Shoddy Sweet Home / 裝潢蟑螂
 
+Noto Sans CJK TC — The Noto Project Authors
+SIL Open Font License 1.1; full license: assets/fonts/OFL.txt
+https://github.com/notofonts/noto-cjk/tree/main/Sans
+
 Living Room 2 / The White Room Cycles — Jay-Artist
 https://blendswap.com/blend/5014
 Country Kitchen — Jay-Artist

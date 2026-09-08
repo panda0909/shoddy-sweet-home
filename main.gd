@@ -933,6 +933,7 @@ func _show_toast(message: String, duration: float) -> void:
 
 func _add_found_label(parent: Node3D, text_value: String) -> void:
 	var label := Label3D.new()
+	label.font = preload("res://assets/fonts/NotoSansCJKtc-Regular.otf")
 	label.text = text_value
 	label.position = Vector3(0, 0.55, 0)
 	label.font_size = 32
@@ -946,6 +947,7 @@ func _add_found_label(parent: Node3D, text_value: String) -> void:
 
 func _add_room_sign(text_value: String, pos: Vector3, color: Color) -> void:
 	var label := Label3D.new()
+	label.font = preload("res://assets/fonts/NotoSansCJKtc-Regular.otf")
 	label.text = text_value
 	label.position = pos
 	label.font_size = 30
