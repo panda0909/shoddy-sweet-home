@@ -36,10 +36,11 @@ jobs:
           "$godot" --headless --path . --script tests/door_passage.gd
           "$godot" --headless --path . --script tests/issue_access.gd --quit-after 1800
           mkdir -p build/web
-          "$godot" --headless --path . --export-release Web build/web/index.html
+          "$godot" --headless --path . --export-release Web "build/web/game-${GITHUB_SHA}.html"
+          mv "build/web/game-${GITHUB_SHA}.html" build/web/index.html
           cp CREDITS.txt build/web/CREDITS.txt
-          test -s build/web/index.pck
-          test -s build/web/index.wasm
+          test -s "build/web/game-${GITHUB_SHA}.pck"
+          test -s "build/web/game-${GITHUB_SHA}.wasm"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
