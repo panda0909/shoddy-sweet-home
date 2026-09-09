@@ -7,6 +7,9 @@ const ROUND_SECONDS := 180.0
 const TARGET_ISSUES := 10
 const PLAYER_SPEED := 4.2
 const MOUSE_SENSITIVITY := 0.0022
+const FURNITURE_COLLISION_MIN_HEIGHT := 0.18
+const FURNITURE_COLLISION_MIN_FOOTPRINT := 0.075
+const FURNITURE_COLLISION_MIN_SPAN := 0.42
 
 var player: CharacterBody3D
 var camera: Camera3D
@@ -504,8 +507,9 @@ func _prepare_furniture(asset: Node3D) -> void:
 			mesh.global_position.x += target_x - bounds.get_center().x
 			if target_x > -1:
 				mesh.global_position.z += 2.5
-		# Match the actual triangles, including spaces between table/chair legs.
-		# Tiny tableware does not need a movement collider.
+		# The render mesh is deliberately not used as the movement collider.
+		# Imported furniture has many tiny bevels, legs and decorative triangles;
+		# a trimesh collider makes the player's capsule snag on those edges.
 		bounds = mesh.global_transform * mesh.get_aabb()
 		var blocks_door := false
 		for data in doors.values():
@@ -518,8 +522,58 @@ func _prepare_furniture(asset: Node3D) -> void:
 		if blocks_door:
 			mesh.hide()
 			continue
-		if bounds.size.length() > 0.25:
-			mesh.create_trimesh_collision()
+		if _should_have_furniture_collision(mesh, bounds):
+			_add_furniture_box_collision(asset, mesh, bounds)
+
+
+func _should_have_furniture_collision(mesh: MeshInstance3D, bounds: AABB) -> bool:
+	# Decorative meshes should remain visible but never become invisible obstacles.
+	# This list intentionally covers the repeated source-model naming conventions.
+	var mesh_name := str(mesh.name).to_lower()
+	for token in [
+		"wall", "floor", "ceiling", "skirting", "picture", "painting", "mirror",
+		"blind", "light", "lamp", "socket", "cable", "wire", "handle", "leaves",
+		"stem", "book", "apple", "candle", "dish", "magazine", "letter", "radio",
+		"pot", "mushroom", "carrot", "tomato", "pepper", "knife", "plate", "glass",
+		"towel", "rug", "carpet", "vase", "foam", "paper", "frame"
+	]:
+		if token in mesh_name:
+			return false
+
+	var horizontal_area := absf(bounds.size.x * bounds.size.z)
+	var horizontal_span := maxf(bounds.size.x, bounds.size.z)
+	if bounds.size.y < FURNITURE_COLLISION_MIN_HEIGHT:
+		return false
+	if horizontal_span < FURNITURE_COLLISION_MIN_SPAN:
+		return false
+	if horizontal_area < FURNITURE_COLLISION_MIN_FOOTPRINT:
+		return false
+	# Ceiling fixtures and tall wall details are not part of the walkable furniture.
+	if bounds.position.y > 2.55:
+		return false
+	return true
+
+
+func _add_furniture_box_collision(asset: Node3D, source_mesh: MeshInstance3D, bounds: AABB) -> void:
+	var body := StaticBody3D.new()
+	body.name = "FurnitureCollision_" + str(source_mesh.name)
+	body.set_meta("furniture_collision", true)
+	body.set_meta("source_mesh", str(source_mesh.name))
+	body.collision_layer = 1
+	body.collision_mask = 0
+	# Use a world-space AABB so rotation and nested imported transforms cannot
+	# accidentally inherit a decorative mesh's local transform.
+	body.global_position = bounds.get_center()
+	# The room asset is a direct child of the gameplay scene. Keeping the
+	# collider there avoids inheriting the imported asset's scale/rotation.
+	asset.get_parent().add_child(body)
+
+	var shape_node := CollisionShape3D.new()
+	shape_node.name = "FurnitureBoxShape"
+	var shape := BoxShape3D.new()
+	shape.size = bounds.size
+	shape_node.shape = shape
+	body.add_child(shape_node)
 
 
 func _align_wall_fixtures(asset: Node3D) -> void:
@@ -605,6 +659,10 @@ func _build_player() -> void:
 	collider.shape = capsule
 	collider.position.y = 0.9
 	player.add_child(collider)
+	# A smaller margin prevents the capsule from being kept artificially far
+	# away from coarse furniture boxes, while floor snap keeps contact stable.
+	player.safe_margin = 0.025
+	player.floor_snap_length = 0.18
 
 	camera = Camera3D.new()
 	camera.name = "Camera3D"
