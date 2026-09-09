@@ -11,6 +11,8 @@ Web：https://panda0909.github.io/shoddy-sweet-home/
 透過 HTTP 伺服器開啟匯出檔，不可直接雙擊 HTML。使用單執行緒 Compatibility Web 匯出，不依賴跨來源隔離標頭。
 首次下載約 135 MB（目前 PCK 約 97 MB，另含約 38 MB WebAssembly 執行檔）。Web 建置會在 Godot 匯入階段將 3D 材質轉為 Basis Universal，並使用 Zstandard supercompression；原始 PNG 不會被覆蓋。建議使用桌面瀏覽器與鍵盤滑鼠。素材授權見 [CREDITS.txt](CREDITS.txt)。
 
+遊戲啟動時先建立入口與客廳，客廳可遊玩後再以 `ResourceLoader.load_threaded_request()` 依序載入廚房、臥室與浴室。由於 Godot Web 目前仍輸出單一 PCK，這會降低啟動時的場景建立與記憶體尖峰，但不會把首次 HTTP 下載拆成多個檔案；若要進一步降低網路下載量，需改做房間分包／外部資源部署。
+
 Godot 4 第一人稱搞笑驗屋遊戲原型。
 
 ## 目前已完成

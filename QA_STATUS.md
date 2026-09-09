@@ -61,3 +61,9 @@
 - Web 匯入流程新增 Basis Universal（含 Zstandard supercompression）材質設定；只修改 Godot 產生的 `.import`／`.godot` 匯入快取，不改動原始 PNG。
 - Basis Universal Web 匯出 PCK 約97 MB（原約109 MB）；本機 HTTP 實測可進入 3D 場景、中文 HUD 與家具材質正常，未見缺圖。門通行、14題可達／10題結算、滑鼠鎖定／拖曳備援回歸均通過。
 - Web 首次下載總量約135 MB，主要限制仍是 Godot Compatibility 匯入場景與高細節家具；後續若要再降，應改成房間分包或低／高細節資產分級，而不是繼續壓縮 UI。
+
+### 追加：房間非同步載入（2026-09-09）
+
+- 入口外殼與客廳先建立；客廳完成後才開始計時與遊玩。
+- 廚房、臥室、浴室使用 `ResourceLoader.load_threaded_request()` 依序背景載入；各房間完成後才啟用該房間的缺陷碰撞與定位更新。
+- 本機 Web 實測可正常進入客廳，背景佇列完成後材質與家具仍正常；原有門通行、缺陷可達性測試維持通過。

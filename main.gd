@@ -20,6 +20,7 @@ var toast_label: Label
 var report_panel: ColorRect
 var report_label: Label
 var progress_bar: ProgressBar
+var loading_label: Label
 
 var current_tool := 0
 var time_left := ROUND_SECONDS
@@ -35,6 +36,13 @@ var pause_panel: ColorRect
 var held_tools: Array[Node3D] = []
 var inspection_audio: AudioStreamPlayer
 var tool_motion: Tween
+var loaded_rooms: Dictionary = {}
+var room_load_queue: Array[Dictionary] = []
+var room_request_id := ""
+var room_request_path := ""
+var room_request_progress: Array = []
+var initial_room_ready := false
+var progressive_loading := false
 
 var tool_names := ["手電筒", "水平儀", "空鼓槌", "驗電筆"]
 var tool_descriptions := [
@@ -69,13 +77,18 @@ func _ready() -> void:
 	_build_world()
 	_build_player()
 	_build_ui()
-	_start_round()
+	if _use_progressive_room_loading():
+		_begin_progressive_room_loading()
+	else:
+		initial_room_ready = true
+		_start_round()
 
 
 func _process(delta: float) -> void:
+	_poll_room_loading()
 	if paused:
 		return
-	if not round_finished:
+	if not round_finished and initial_room_ready:
 		for body in issue_bodies.values():
 			for part in body.get_node("DefectVisual").get_children():
 				if part.has_meta("water_drop"):
@@ -93,7 +106,7 @@ func _process(delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if player == null or round_finished or paused:
+	if player == null or round_finished or paused or not initial_room_ready:
 		return
 	_animate_doors(delta)
 
@@ -134,6 +147,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not initial_room_ready:
+		return
 	if event.is_action_pressed("toggle_mouse") and not round_finished:
 		_set_paused(not paused)
 		return
@@ -231,15 +246,132 @@ func _build_world() -> void:
 	_add_room_sign("臥室 BEDROOM", Vector3(-7.5, 2.55, -5.78), Color(0.78, 0.52, 0.95))
 	_add_room_sign("浴室 BATHROOM", Vector3(7.0, 2.55, -5.78), Color(0.35, 0.94, 0.76))
 
+	if _use_progressive_room_loading():
+		# The entrance shell is deliberately complete before any heavy glTF is
+		# requested. The living room is the first playable room; the remaining
+		# rooms are requested one at a time after the round has started.
+		return
+
 	_build_living_room()
 	_build_kitchen()
 	_build_bedroom()
 	_build_bathroom()
+	loaded_rooms = {"客廳": true, "廚房": true, "臥室": true, "浴室": true}
 	preload("res://room_finishes.gd").build(self)
 
 
-func _build_living_room() -> void:
-	var living_scene := load("res://assets/models/living_room/living_room_2_core.gltf") as PackedScene
+func _use_progressive_room_loading() -> bool:
+	# Headless QA needs a deterministic, fully-built world. Release and Web
+	# builds use the streaming path so the entrance and first room appear first.
+	return DisplayServer.get_name() != "headless"
+
+
+func _begin_progressive_room_loading() -> void:
+	progressive_loading = true
+	initial_room_ready = false
+	room_load_queue = [
+		{"id": "kitchen", "room": "廚房", "path": "res://assets/models/kitchen/kitchen_core.gltf"},
+		{"id": "bedroom", "room": "臥室", "path": ""},
+		{"id": "bathroom", "room": "浴室", "path": "res://assets/models/bathroom/bathroom_core.gltf"}
+	]
+	_set_loading_text("正在準備入口與客廳…")
+	_request_room("living", "客廳", "res://assets/models/living_room/living_room_2_core.gltf", true)
+
+
+func _request_room(room_id: String, room_name: String, path: String, is_initial: bool = false) -> void:
+	room_request_id = room_id
+	room_request_path = path
+	room_request_progress = []
+	_set_loading_text(("正在載入" if is_initial else "背景載入") + "：「%s」…" % room_name)
+	var error := ResourceLoader.load_threaded_request(path, "PackedScene", true)
+	if error != OK:
+		push_error("Unable to stream room %s: %s" % [room_id, error])
+		var fallback := load(path) as PackedScene
+		_finish_room_request(fallback)
+
+
+func _poll_room_loading() -> void:
+	if room_request_path.is_empty():
+		return
+	var status := ResourceLoader.load_threaded_get_status(room_request_path, room_request_progress)
+	if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		return
+	if status == ResourceLoader.THREAD_LOAD_LOADED:
+		_finish_room_request(ResourceLoader.load_threaded_get(room_request_path) as PackedScene)
+		return
+	push_error("Room stream failed: %s (%s)" % [room_request_id, status])
+	_finish_room_request(load(room_request_path) as PackedScene)
+
+
+func _finish_room_request(scene: PackedScene) -> void:
+	var completed_id := room_request_id
+	var completed_path := room_request_path
+	room_request_id = ""
+	room_request_path = ""
+	room_request_progress = []
+	if scene == null:
+		push_error("Room scene is unavailable: " + completed_path)
+	else:
+		match completed_id:
+			"living":
+				_build_living_room(scene)
+				loaded_rooms["客廳"] = true
+				preload("res://room_finishes.gd").build(self)
+				initial_room_ready = true
+				_start_round()
+				_set_loading_text("背景載入佇列啟動中…")
+			"kitchen":
+				_build_kitchen(scene)
+				loaded_rooms["廚房"] = true
+				_refresh_room_issue_targets("廚房")
+			"bedroom":
+				_build_bedroom()
+				loaded_rooms["臥室"] = true
+				_refresh_room_issue_targets("臥室")
+			"bathroom":
+				_build_bathroom(scene)
+				loaded_rooms["浴室"] = true
+				_refresh_room_issue_targets("浴室")
+
+	if progressive_loading and initial_room_ready:
+		_request_next_background_room()
+
+
+func _request_next_background_room() -> void:
+	if room_load_queue.is_empty():
+		progressive_loading = false
+		_set_loading_text("")
+		return
+	var next: Dictionary = room_load_queue.pop_front()
+	if str(next["path"]).is_empty():
+		# Bedroom is procedural and cheap, but still yield one frame so it does
+		# not compete with the first interaction after the living room appears.
+		_set_loading_text("背景載入：「%s」…" % next["room"])
+		call_deferred("_finish_procedural_room", next)
+		return
+	_request_room(str(next["id"]), str(next["room"]), str(next["path"]))
+
+
+func _finish_procedural_room(room_data: Dictionary) -> void:
+	_build_bedroom()
+	loaded_rooms[str(room_data["room"])] = true
+	_refresh_room_issue_targets(str(room_data["room"]))
+	_request_next_background_room()
+
+
+func _set_loading_text(text_value: String) -> void:
+	if loading_label != null:
+		loading_label.text = text_value
+		if not initial_room_ready:
+			objective_label.text = "驗屋準備中…"
+			timer_label.text = "載入中"
+
+
+
+func _build_living_room(scene_override: PackedScene = null) -> void:
+	var living_scene: PackedScene = scene_override
+	if living_scene == null:
+		living_scene = load("res://assets/models/living_room/living_room_2_core.gltf") as PackedScene
 	if living_scene == null:
 		_build_living_room_procedural()
 		return
@@ -263,8 +395,10 @@ func _build_living_room_procedural() -> void:
 	_add_cylinder("Plant", 0.45, 1.5, Vector3(-2.3, 1.15, 5.0), _mat(palette["green"]), true)
 
 
-func _build_kitchen() -> void:
-	var kitchen_scene := load("res://assets/models/kitchen/kitchen_core.gltf") as PackedScene
+func _build_kitchen(scene_override: PackedScene = null) -> void:
+	var kitchen_scene: PackedScene = scene_override
+	if kitchen_scene == null:
+		kitchen_scene = load("res://assets/models/kitchen/kitchen_core.gltf") as PackedScene
 	if kitchen_scene == null:
 		_build_kitchen_procedural()
 		return
@@ -337,8 +471,10 @@ func _build_bedroom() -> void:
 	preload("res://bedroom_details.gd").apply(self)
 
 
-func _build_bathroom() -> void:
-	var bathroom_scene := load("res://assets/models/bathroom/bathroom_core.gltf") as PackedScene
+func _build_bathroom(scene_override: PackedScene = null) -> void:
+	var bathroom_scene: PackedScene = scene_override
+	if bathroom_scene == null:
+		bathroom_scene = load("res://assets/models/bathroom/bathroom_core.gltf") as PackedScene
 	if bathroom_scene == null:
 		_build_bathroom_procedural()
 		return
@@ -533,6 +669,9 @@ func _build_ui() -> void:
 	progress_bar.max_value = TARGET_ISSUES
 	progress_bar.show_percentage = false
 	hud.add_child(progress_bar)
+	loading_label = _make_label(hud, "", Vector2(530, 50), 14, Color(0.70, 0.86, 1.0))
+	loading_label.size = Vector2(700, 24)
+	loading_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 	var help := _make_label(hud, "點一下鎖定視角；若無法鎖定，按住左鍵拖曳查看  |  WASD 移動  |  E 檢查  |  1-4 工具  |  ESC 暫停", Vector2(28, 690), 14, Color(0.60, 0.64, 0.72))
 	help.size = Vector2(900, 25)
@@ -734,7 +873,9 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		pos = get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 1.25, -0.09))
 		size = Vector3(0.16, 0.8, 0.16)
 	if issue_id == "closet_deadend":
-		pos = get_node("ClosetDoorLeft").position + Vector3(0.50, 0, 0.045)
+		var closet_door := get_node_or_null("ClosetDoorLeft") as Node3D
+		if closet_door != null:
+			pos = closet_door.position + Vector3(0.50, 0, 0.045)
 	return {
 		"id": issue_id,
 		"title": title,
@@ -761,8 +902,10 @@ func _add_issue_target(issue: Dictionary) -> void:
 
 	var body := _add_box("Issue_" + issue["id"], issue["size"], issue["pos"], _issue_mat(material_color), true)
 	# Inspection overlays must never act as invisible furniture or block doorways.
-	body.collision_layer = 2
+	var room_loaded := bool(loaded_rooms.get(str(issue["room"]), false))
+	body.collision_layer = 2 if room_loaded else 0
 	body.collision_mask = 0
+	body.visible = room_loaded
 	body.set_meta("issue_id", issue["id"])
 	body.set_meta("issue_title", issue["title"])
 	body.set_meta("issue_room", issue["room"])
@@ -779,6 +922,31 @@ func _add_issue_target(issue: Dictionary) -> void:
 		visual.rotation.y = PI / 2.0
 	preload("res://defect_visuals.gd").build(visual, str(issue["id"]))
 	issue_meshes[issue["id"]] = mesh
+
+
+func _refresh_room_issue_targets(room_name: String) -> void:
+	# Imported furniture can move an issue anchor. Resolve selected targets again
+	# after the room arrives, then enable only that room's inspection colliders.
+	var refreshed_by_id := {}
+	for issue in _get_issue_definitions():
+		refreshed_by_id[str(issue["id"])] = issue
+	for index in range(issue_records.size()):
+		var selected: Dictionary = issue_records[index]
+		if str(selected["room"]) != room_name or not refreshed_by_id.has(str(selected["id"])):
+			continue
+		var refreshed: Dictionary = refreshed_by_id[str(selected["id"])]
+		selected["pos"] = refreshed["pos"]
+		selected["size"] = refreshed["size"]
+		issue_records[index] = selected
+		var body := issue_bodies.get(str(selected["id"])) as StaticBody3D
+		if body == null:
+			continue
+		body.position = refreshed["pos"]
+		var shape := body.get_node_or_null("CollisionShape3D") as CollisionShape3D
+		if shape != null and shape.shape is BoxShape3D:
+			(shape.shape as BoxShape3D).size = refreshed["size"]
+		body.collision_layer = 0 if found_issues.has(str(selected["id"])) else 2
+		body.visible = not found_issues.has(str(selected["id"]))
 
 
 func _inspect_target() -> void:
