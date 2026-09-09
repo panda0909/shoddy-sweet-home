@@ -10,16 +10,15 @@ func _run() -> void:
 		body.queue_free()
 	game.issue_bodies.clear()
 	game.issue_records = game._get_issue_definitions()
-	game._start_round()
+	var inspected := 0
+	for issue in game._get_issue_definitions():
+		game._add_issue_target(issue)
 	game._show_hint()
 	if game.hint_world_label == null:
 		printerr("FAIL hint feedback")
 		game.queue_free()
 		await process_frame
 		quit(1)
-	var inspected := 0
-	for issue in game._get_issue_definitions():
-		game._add_issue_target(issue)
 	await physics_frame
 	await physics_frame
 	var space: PhysicsDirectSpaceState3D = game.get_world_3d().direct_space_state
