@@ -9,7 +9,7 @@ Web：https://panda0909.github.io/shoddy-sweet-home/
 
 本機匯出：`godot --headless --path . --export-release Web build/web/index.html`（先建立輸出資料夾）。
 透過 HTTP 伺服器開啟匯出檔，不可直接雙擊 HTML。使用單執行緒 Compatibility Web 匯出，不依賴跨來源隔離標頭。
-首次下載約 150 MB（目前 PCK 約 109 MB，另含 WebAssembly 執行檔），已透過貼圖重採樣與繁中字型子集降低下載量；建議使用桌面瀏覽器與鍵盤滑鼠。素材授權見 [CREDITS.txt](CREDITS.txt)。
+首次下載約 135 MB（目前 PCK 約 97 MB，另含約 38 MB WebAssembly 執行檔）。Web 建置會在 Godot 匯入階段將 3D 材質轉為 Basis Universal，並使用 Zstandard supercompression；原始 PNG 不會被覆蓋。建議使用桌面瀏覽器與鍵盤滑鼠。素材授權見 [CREDITS.txt](CREDITS.txt)。
 
 Godot 4 第一人稱搞笑驗屋遊戲原型。
 

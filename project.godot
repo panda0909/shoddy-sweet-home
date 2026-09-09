@@ -32,3 +32,6 @@ theme/default_font_multichannel_signed_distance_field=true
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.035, 0.045, 0.07, 1)
+textures/basis_universal/rdo_dict_size=2048
+textures/basis_universal/zstd_supercompression=true
+textures/basis_universal/zstd_supercompression_level=9
