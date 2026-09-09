@@ -46,6 +46,8 @@ var room_request_path := ""
 var room_request_progress: Array = []
 var initial_room_ready := false
 var progressive_loading := false
+var hint_world_label: Label3D
+var hint_until := 0.0
 
 var tool_names := ["手電筒", "水平儀", "空鼓槌", "驗電筆"]
 var tool_descriptions := [
@@ -106,6 +108,10 @@ func _process(delta: float) -> void:
 
 	if toast_until > 0.0 and Time.get_ticks_msec() / 1000.0 > toast_until:
 		toast_label.text = ""
+	if hint_world_label != null and Time.get_ticks_msec() / 1000.0 > hint_until:
+		hint_world_label.queue_free()
+		hint_world_label = null
+		hint_until = 0.0
 
 
 func _physics_process(delta: float) -> void:
@@ -156,6 +162,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_set_paused(not paused)
 		return
 	if paused:
+		return
+	if event.is_action_pressed("hint"):
+		_show_hint()
 		return
 	if event.is_action_pressed("toggle_mouse"):
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -731,7 +740,7 @@ func _build_ui() -> void:
 	loading_label.size = Vector2(700, 24)
 	loading_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
-	var help := _make_label(hud, "點一下鎖定視角；若無法鎖定，按住左鍵拖曳查看  |  WASD 移動  |  E 檢查  |  1-4 工具  |  ESC 暫停", Vector2(28, 690), 14, Color(0.60, 0.64, 0.72))
+	var help := _make_label(hud, "點一下鎖定視角；若無法鎖定，按住左鍵拖曳查看  |  WASD 移動  |  E 檢查  |  1-4 工具  |  H 線索  |  ESC 暫停", Vector2(28, 690), 14, Color(0.60, 0.64, 0.72))
 	help.size = Vector2(900, 25)
 
 	report_panel = ColorRect.new()
@@ -850,7 +859,7 @@ func _start_round() -> void:
 		_add_issue_target(issue)
 
 	_select_tool(0)
-	_show_toast("驗屋開始！這間房子看起來很正常，這正是最可疑的地方。", 4.0)
+	_show_toast("驗屋開始！這間房子看起來很正常，這正是最可疑的地方。按 H 可取得區域線索。", 4.0)
 
 
 func _get_issue_definitions() -> Array[Dictionary]:
@@ -1179,6 +1188,64 @@ func _show_toast(message: String, duration: float) -> void:
 	toast_until = Time.get_ticks_msec() / 1000.0 + duration
 
 
+func _show_hint() -> void:
+	var nearest: Dictionary = {}
+	var nearest_distance := INF
+	for issue in issue_records:
+		var issue_id := str(issue["id"])
+		if found_issues.has(issue_id):
+			continue
+		var body := issue_bodies.get(issue_id) as StaticBody3D
+		if body == null or not body.visible:
+			continue
+		var distance := player.global_position.distance_to(body.global_position)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest = issue
+	if nearest.is_empty():
+		_show_toast("目前沒有可提示的問題。再檢查一次工具與已開啟的房間。", 3.0)
+		return
+
+	var issue_id := str(nearest["id"])
+	var required_tool := int(nearest["tool"])
+	var tool_hint := "目視確認即可" if required_tool < 0 else "建議使用：" + tool_names[required_tool]
+	_show_toast("線索：%s\n%s" % [_issue_hint(issue_id), tool_hint], 5.0)
+	if hint_world_label != null and is_instance_valid(hint_world_label):
+		hint_world_label.queue_free()
+	hint_world_label = Label3D.new()
+	hint_world_label.text = "! 線索"
+	hint_world_label.font = preload("res://assets/fonts/NotoSansCJKtc-Subset.otf")
+	hint_world_label.font_size = 30
+	hint_world_label.modulate = Color(1.0, 0.72, 0.18)
+	hint_world_label.outline_size = 10
+	hint_world_label.outline_modulate = Color(0.08, 0.04, 0.01)
+	hint_world_label.no_depth_test = true
+	hint_world_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	hint_world_label.position = (issue_bodies[issue_id] as Node3D).global_position + Vector3(0, 0.62, 0)
+	add_child(hint_world_label)
+	hint_until = Time.get_ticks_msec() / 1000.0 + 5.0
+
+
+func _issue_hint(issue_id: String) -> String:
+	var hints := {
+		"rug_tilt": "客廳：查看地毯邊緣與地板接縫",
+		"tv_outlet": "客廳：查看電視附近的牆面插座",
+		"sofa_gap": "客廳：查看沙發後方靠牆的位置",
+		"sink_leak": "廚房：查看水槽下方的櫥櫃側面",
+		"vent_wrong": "廚房：查看抽油煙機與上方櫃體",
+		"kitchen_socket": "廚房：查看檯面附近偏低的插座",
+		"cabinet_blocked": "廚房：查看冰箱與櫃門相鄰的邊緣",
+		"bed_slope": "臥室：查看床底附近的地板",
+		"window_sealed": "臥室：查看床側的逃生窗",
+		"closet_deadend": "臥室：查看衣櫃門板與門把",
+		"drain_missing": "浴室：查看淋浴區地面中央",
+		"tile_hollow": "浴室：查看後牆的大面積牆磚",
+		"bath_door": "浴室：查看門框靠近洗手台的一側",
+		"bath_vent": "浴室：查看天花板上的排風扇"
+	}
+	return str(hints.get(issue_id, "附近有一個可疑的施工細節"))
+
+
 func _add_found_label(parent: Node3D, text_value: String) -> void:
 	var label := Label3D.new()
 	label.font = preload("res://assets/fonts/NotoSansCJKtc-Subset.otf")
@@ -1481,6 +1548,7 @@ func _ensure_input_actions() -> void:
 	_add_key_action("tool_2", KEY_2)
 	_add_key_action("tool_3", KEY_3)
 	_add_key_action("tool_4", KEY_4)
+	_add_key_action("hint", KEY_H)
 	if not InputMap.has_action("use_tool"):
 		InputMap.add_action("use_tool")
 		var mouse_event := InputEventMouseButton.new()
