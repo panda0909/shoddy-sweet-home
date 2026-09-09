@@ -124,7 +124,10 @@ func _input(event: InputEvent) -> void:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		get_viewport().set_input_as_handled()
 		return
-	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	# Some embedded browsers reject Pointer Lock entirely. Drag-to-look still
+	# permits exploration there, without requiring browser security changes.
+	var dragging_in_web := OS.has_feature("web") and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	if event is InputEventMouseMotion and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or dragging_in_web):
 		player.rotate_y(-event.screen_relative.x * MOUSE_SENSITIVITY)
 		camera.rotation.x = clampf(camera.rotation.x - event.screen_relative.y * MOUSE_SENSITIVITY, -1.35, 1.35)
 		get_viewport().set_input_as_handled()
@@ -531,7 +534,7 @@ func _build_ui() -> void:
 	progress_bar.show_percentage = false
 	hud.add_child(progress_bar)
 
-	var help := _make_label(hud, "點一下畫面鎖定滑鼠  |  WASD 移動  |  E / 左鍵檢查  |  1-4 切換工具  |  ESC 暫停／釋放", Vector2(28, 690), 14, Color(0.60, 0.64, 0.72))
+	var help := _make_label(hud, "點一下鎖定視角；若無法鎖定，按住左鍵拖曳查看  |  WASD 移動  |  E 檢查  |  1-4 工具  |  ESC 暫停", Vector2(28, 690), 14, Color(0.60, 0.64, 0.72))
 	help.size = Vector2(900, 25)
 
 	report_panel = ColorRect.new()
