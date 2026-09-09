@@ -62,7 +62,9 @@ var palette := {
 
 func _ready() -> void:
 	_ensure_input_actions()
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	# Web pointer lock must be requested by a real user gesture, never on load.
+	if OS.has_feature("web"):
+		Input.use_accumulated_input = false
 	_build_lighting()
 	_build_world()
 	_build_player()
@@ -113,16 +115,28 @@ func _physics_process(delta: float) -> void:
 		_reset_player()
 
 
+func _input(event: InputEvent) -> void:
+	if paused or round_finished:
+		return
+	# Capture before HUD Controls can consume the click. The first click only
+	# enters mouse-look; it must not also inspect or accidentally open a door.
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		player.rotate_y(-event.screen_relative.x * MOUSE_SENSITIVITY)
+		camera.rotation.x = clampf(camera.rotation.x - event.screen_relative.y * MOUSE_SENSITIVITY, -1.35, 1.35)
+		get_viewport().set_input_as_handled()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_mouse") and not round_finished:
 		_set_paused(not paused)
 		return
 	if paused:
 		return
-	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and not round_finished:
-		player.rotate_y(-event.relative.x * MOUSE_SENSITIVITY)
-		camera.rotation.x = clampf(camera.rotation.x - event.relative.y * MOUSE_SENSITIVITY, -1.35, 1.35)
-	elif event.is_action_pressed("toggle_mouse"):
+	if event.is_action_pressed("toggle_mouse"):
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		else:
@@ -517,7 +531,7 @@ func _build_ui() -> void:
 	progress_bar.show_percentage = false
 	hud.add_child(progress_bar)
 
-	var help := _make_label(hud, "WASD 移動  |  滑鼠查看  |  E / 左鍵檢查  |  1-4 切換工具  |  ESC 釋放滑鼠", Vector2(28, 690), 14, Color(0.60, 0.64, 0.72))
+	var help := _make_label(hud, "點一下畫面鎖定滑鼠  |  WASD 移動  |  E / 左鍵檢查  |  1-4 切換工具  |  ESC 暫停／釋放", Vector2(28, 690), 14, Color(0.60, 0.64, 0.72))
 	help.size = Vector2(900, 25)
 
 	report_panel = ColorRect.new()
@@ -587,7 +601,12 @@ func _build_held_tools() -> void:
 
 
 func _start_round() -> void:
-	_set_paused(false)
+	if OS.has_feature("web"):
+		paused = false
+		pause_panel.hide()
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	else:
+		_set_paused(false)
 	_reset_player()
 	for door_id in doors:
 		doors[door_id]["is_open"] = false

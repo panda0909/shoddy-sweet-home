@@ -34,6 +34,7 @@ jobs:
           godot=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64
           "$godot" --headless --editor --path . --import
           "$godot" --headless --path . --script tests/door_passage.gd
+          xvfb-run -a "$godot" --path . --script tests/mouse_look.gd
           "$godot" --headless --path . --script tests/issue_access.gd --quit-after 1800
           mkdir -p build/web
           "$godot" --headless --path . --export-release Web "build/web/game-${GITHUB_SHA}.html"

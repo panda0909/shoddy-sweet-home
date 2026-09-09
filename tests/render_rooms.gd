@@ -7,6 +7,7 @@ func _run() -> void:
 	game.set_process(false)
 	game.set_physics_process(false)
 	game.set_process_unhandled_input(false)
+	game.set_process_input(false)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	game.hud.hide()
 	for tool in game.held_tools:
