@@ -1,6 +1,6 @@
 Shoddy Sweet Home / 裝潢蟑螂
 
-Noto Sans CJK TC — The Noto Project Authors
+Noto Sans CJK TC (subset bundled for the game) — The Noto Project Authors
 SIL Open Font License 1.1; full license: assets/fonts/OFL.txt
 https://github.com/notofonts/noto-cjk/tree/main/Sans
 

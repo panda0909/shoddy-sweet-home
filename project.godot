@@ -24,7 +24,7 @@ window/stretch/mode="canvas_items"
 
 [gui]
 
-theme/custom_font="res://assets/fonts/NotoSansCJKtc-Regular.otf"
+theme/custom_font="res://assets/fonts/NotoSansCJKtc-Subset.otf"
 theme/default_font_multichannel_signed_distance_field=true
 
 [rendering]
