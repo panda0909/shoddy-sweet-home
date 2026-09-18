@@ -268,15 +268,17 @@ func _build_world() -> void:
 	_add_box("Ceiling", Vector3(20.0, 0.16, 12.0), Vector3(0, 3.05, 0), _mat(Color(0.66, 0.65, 0.60)), false)
 
 	# 隔間留出標準 1.3m 門洞，所有房門都能實際開關。
-	_add_box("DividerLowerA", Vector3(0.22, 3.0, 2.75), Vector3(0, 1.5, -4.625), _mat(palette["wall_dark"]), true)
-	_add_box("DividerLowerB", Vector3(0.22, 3.0, 0.55), Vector3(0, 1.5, -1.675), _mat(palette["wall_dark"]), true)
-	_add_box("DividerUpperA", Vector3(0.22, 3.0, 0.55), Vector3(0, 1.5, 1.675), _mat(palette["wall_dark"]), true)
-	_add_box("DividerUpperB", Vector3(0.22, 3.0, 2.75), Vector3(0, 1.5, 4.625), _mat(palette["wall_dark"]), true)
+	# Keep the central divider continuous while leaving the full swept width of
+	# both horizontal doorways clear. The old short boxes overlapped half of the
+	# LivingDoor and BedroomDoor openings, so a real player capsule stopped at
+	# the wall even though the door leaf itself had opened.
+	_add_box("DividerLowerA", Vector3(0.22, 3.0, 3.05), Vector3(0, 1.5, -4.475), _mat(palette["wall_dark"]), true)
+	_add_box("DividerLowerB", Vector3(0.22, 3.0, 3.60), Vector3(0, 1.5, 0.30), _mat(palette["wall_dark"]), true)
+	_add_box("DividerUpperA", Vector3(0.22, 3.0, 2.35), Vector3(0, 1.5, 4.825), _mat(palette["wall_dark"]), true)
 	_add_box("DividerLeftA", Vector3(1.85, 3.0, 0.22), Vector3(-9.075, 1.5, 0), _mat(palette["wall_dark"]), true)
 	_add_box("DividerLeftB", Vector3(1.45, 3.0, 0.22), Vector3(-6.125, 1.5, 0), _mat(palette["wall_dark"]), true)
 	_add_box("DividerRightA", Vector3(1.45, 3.0, 0.22), Vector3(6.125, 1.5, 0), _mat(palette["wall_dark"]), true)
 	_add_box("DividerRightB", Vector3(1.85, 3.0, 0.22), Vector3(9.075, 1.5, 0), _mat(palette["wall_dark"]), true)
-	_add_box("DividerCenterVertical", Vector3(0.22, 3.0, 2.8), Vector3(0, 1.5, 0), _mat(palette["wall_dark"]), true)
 	_add_box("DividerCenterHorizontal", Vector3(10.8, 3.0, 0.22), Vector3(0, 1.5, 0), _mat(palette["wall_dark"]), true)
 
 	_add_hinged_door("FrontEntrance", Vector3(0.95, 0, 6.0), 1.7, 0.0, -1.0, "大門", Color(0.27, 0.15, 0.09))

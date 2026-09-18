@@ -227,3 +227,9 @@
 - 浴室匯入資產加入 7m 高模 proxy 距離；玩家在入口時浴室可見三角面由 862,340 降至 558,988，進入浴室檢查位置後恢復 862,340 高細節三角面。
 - `tests/lod_visibility.gd` 新增浴室 proxy 存在性與距離檢查；`tests/triangle_budget.gd` 新增浴室遠景／近景雙狀態驗證，兩者均為 0 failures。
 - 四房 11 張近距離／逆光／手電筒／開門圖形驗收仍為 0 failures，Web 資產未增加新的外部貼圖。
+
+### 追加：中央隔間門洞與實際玩家穿越（2026-09-19）
+
+- 重切中央隔間牆的三段 BoxShape3D，依 `LivingDoor`／`BedroomDoor` 的實際 PI/2 鉸鏈方向保留門洞與膠囊半徑 clearance；移除會覆蓋門洞的重複中央牆盒。
+- 新增 `tests/player_walkthrough.gd`，以實際 `CharacterBody3D.move_and_collide()` 開門後穿越 LivingDoor、LeftInnerDoor、RightInnerDoor、BedroomDoor；四扇門均通過，0 failures。
+- 原有 `tests/door_passage.gd` 恢復 20 個開關／兩側門洞檢查 0 failures；缺陷可達性仍為 2004 個連通樣本、14 題全部通過。
