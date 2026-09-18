@@ -642,3 +642,10 @@
 - `tests/room_finish_quality.gd` 驗證玻璃網格、窗框、窗台與窗扣完整存在；客廳服務間距維持 `1.10m`。
 - 圖形截圖回歸：客廳 median `3.930ms`、p95 `4.924ms`、`742` draws；四房均成功渲染。
 - Web Release 回歸：PCK `103,723,596` bytes、WASM `39,514,754` bytes，合計 `143,238,350` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：客廳茶几下部結構（2026-09-19）
+
+- 依 `73_Table` 桌面與 `144_TableLegs` 實際 bounds 補上四支木質桌腳、兩支下方橫桿與四個腳墊，讓茶几不再只有漂浮桌面與收邊。
+- `tests/room_finish_quality.gd` 驗證桌腳數量、橫桿、腳墊與無碰撞；客廳門洞家具衝突維持 `0`。
+- 圖形截圖回歸：客廳 median `4.194ms`、p95 `5.053ms`、`782` draws；四房均成功渲染。
+- Web Release 回歸：PCK `103,724,236` bytes、WASM `39,514,754` bytes，合計 `143,238,990` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

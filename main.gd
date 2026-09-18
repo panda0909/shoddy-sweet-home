@@ -468,6 +468,27 @@ func _add_living_imported_details() -> void:
 		_add_box("LivingDetail_CoffeeTableEdge_Front", Vector3(table_bounds.size.x + 0.035, 0.032, 0.032), Vector3(table_center.x, edge_y, table_bounds.position.z - 0.010), wood_material, false)
 		_add_box("LivingDetail_CoffeeTableEdge_Back", Vector3(table_bounds.size.x + 0.035, 0.032, 0.032), Vector3(table_center.x, edge_y, table_bounds.end.z + 0.010), wood_material, false)
 		_add_box("LivingDetail_CoffeeTableInset", Vector3(table_bounds.size.x * 0.72, 0.018, table_bounds.size.z * 0.58), Vector3(table_center.x, edge_y + 0.010, table_center.z), _mat(Color(0.16, 0.19, 0.20)), false)
+		# The scan's thin table-leg mesh loses its silhouette under the close
+		# inspection light. Rebuild the joinery from the tabletop and source-leg
+		# bounds, keeping the additions render-only so the player still walks
+		# around the imported coffee table using its existing simple collider.
+		var source_leg_bounds := _find_living_mesh_bounds("144_TableLegs")
+		var floor_y := source_leg_bounds.position.y if source_leg_bounds.has_volume() else maxf(0.025, table_bounds.position.y - 0.42)
+		var leg_height := maxf(0.12, table_bounds.position.y - floor_y)
+		var leg_x_offset := table_bounds.size.x * 0.36
+		var leg_z_offset := table_bounds.size.z * 0.34
+		var leg_points := [
+			Vector3(table_center.x - leg_x_offset, floor_y + leg_height * 0.5, table_center.z - leg_z_offset),
+			Vector3(table_center.x + leg_x_offset, floor_y + leg_height * 0.5, table_center.z - leg_z_offset),
+			Vector3(table_center.x - leg_x_offset, floor_y + leg_height * 0.5, table_center.z + leg_z_offset),
+			Vector3(table_center.x + leg_x_offset, floor_y + leg_height * 0.5, table_center.z + leg_z_offset)
+		]
+		for leg_index in range(leg_points.size()):
+			_add_box("LivingDetail_CoffeeTableLeg_%d" % leg_index, Vector3(0.065, leg_height, 0.065), leg_points[leg_index], wood_material, false)
+		_add_box("LivingDetail_CoffeeTableLowerBraceX", Vector3(leg_x_offset * 2.0, 0.045, 0.045), Vector3(table_center.x, floor_y + leg_height * 0.36, table_center.z - leg_z_offset), wood_material, false)
+		_add_box("LivingDetail_CoffeeTableLowerBraceZ", Vector3(0.045, 0.045, leg_z_offset * 2.0), Vector3(table_center.x - leg_x_offset, floor_y + leg_height * 0.36, table_center.z), wood_material, false)
+		for foot_index in range(4):
+			_add_box("LivingDetail_CoffeeTableFoot_%d" % foot_index, Vector3(0.10, 0.025, 0.10), leg_points[foot_index] + Vector3(0, -leg_height * 0.5 + 0.012, 0), _mat(Color(0.10, 0.11, 0.11)), false)
 	# The imported TV is mounted on the left wall with almost no visible
 	# furniture below it. Build a shallow console and cable channel from the
 	# actual TV bevel bounds so the wall assembly keeps its scale and orientation

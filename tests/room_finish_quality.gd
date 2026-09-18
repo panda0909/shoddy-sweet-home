@@ -103,6 +103,18 @@ func _run() -> void:
 		if game.get_node_or_null(fireplace_piece) == null:
 			printerr("FAIL missing bounds-attached fireplace detail: ", fireplace_piece)
 			failures += 1
+	for coffee_piece in ["LivingDetail_CoffeeTableLeg_0", "LivingDetail_CoffeeTableLeg_3", "LivingDetail_CoffeeTableLowerBraceX", "LivingDetail_CoffeeTableFoot_0"]:
+		if game.get_node_or_null(coffee_piece) == null:
+			printerr("FAIL missing coffee table underframe detail: ", coffee_piece)
+			failures += 1
+	var coffee_legs: Array = game.find_children("LivingDetail_CoffeeTableLeg_*", "StaticBody3D", true, false)
+	if coffee_legs.size() != 4:
+		printerr("FAIL coffee table leg count: ", coffee_legs.size())
+		failures += 1
+	for coffee_detail in game.find_children("LivingDetail_CoffeeTable*", "StaticBody3D", true, false):
+		if coffee_detail.get_node_or_null("CollisionShape3D") != null:
+			printerr("FAIL coffee table finish detail blocks movement: ", coffee_detail.name)
+			failures += 1
 	var tv_bounds: AABB = game._find_living_mesh_bounds("60_TvBevel")
 	var tv_console := game.get_node_or_null("LivingDetail_TvConsole") as Node3D
 	var tv_expected := Vector3(tv_bounds.end.x + 0.24 * 0.50 + 0.025, tv_bounds.position.y - 0.10, tv_bounds.get_center().z) if tv_bounds.has_volume() else Vector3.ZERO
