@@ -43,6 +43,7 @@ jobs:
           "$godot" --headless --path . --script tests/bathroom_details.gd
           "$godot" --headless --path . --script tests/issue_visuals.gd
           "$godot" --headless --path . --script tests/lod_visibility.gd
+          "$godot" --headless --path . --script tests/triangle_budget.gd
           "$godot" --headless --path . --script tests/kitchen_details.gd
           "$godot" --headless --path . --script tests/room_finish_quality.gd
           "$godot" --headless --path . --script tests/issue_anchor_fit.gd

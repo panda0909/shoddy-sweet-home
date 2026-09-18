@@ -815,7 +815,8 @@ func _add_high_poly_lod_proxy(asset: Node3D, mesh: MeshInstance3D, bounds: AABB)
 	if _is_door_clearance_shell(mesh):
 		return
 	var triangles := _mesh_triangle_count(mesh.mesh)
-	if triangles < 4000:
+	var proxy_threshold := 1200 if asset.name == "KitchenRealAsset" else 4000
+	if triangles < proxy_threshold:
 		return
 	var proxy := MeshInstance3D.new()
 	proxy.name = "LODProxy_" + str(mesh.name)
@@ -829,12 +830,19 @@ func _add_high_poly_lod_proxy(asset: Node3D, mesh: MeshInstance3D, bounds: AABB)
 		proxy.material_override = source_material
 	add_child(proxy)
 	proxy.global_position = bounds.get_center()
+	var lod_distance := 15.0
+	if asset.name == "KitchenRealAsset":
+		# The kitchen source is the heaviest imported room. Keep the AABB proxy
+		# active while the player is in the living room, then restore the full
+		# model as soon as the player enters the kitchen inspection distance.
+		lod_distance = 7.5
 	high_poly_lod_entries.append({
 		"source": mesh,
 		"proxy": proxy,
-		"distance": 15.0
+		"distance": lod_distance
 	})
 	mesh.set_meta("high_poly_lod_triangles", triangles)
+	mesh.set_meta("high_poly_lod_distance", lod_distance)
 
 
 func _mesh_triangle_count(mesh: Mesh) -> int:

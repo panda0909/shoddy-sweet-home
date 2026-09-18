@@ -30,6 +30,8 @@ func _run() -> void:
 		["bathroom", Vector3(1, 1.6, -0.6), Vector3(5, 1, -4)]
 	]
 	for view in views:
+		game.player.global_position = Vector3(view[1].x, 1.0, view[1].z)
+		game._update_high_poly_lods()
 		game.camera.global_position = view[1]
 		game.camera.look_at(view[2])
 		for warmup in range(30):

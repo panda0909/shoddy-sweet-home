@@ -42,6 +42,8 @@ func _run() -> void:
 	]
 	var failures := 0
 	for view in views:
+		game.player.global_position = Vector3(view[1].x, 1.0, view[1].z)
+		game._update_high_poly_lods()
 		game.camera.global_position = view[1]
 		game.camera.look_at(view[2], Vector3.UP)
 		game._select_tool(int(view[3]))
@@ -64,6 +66,8 @@ func _run() -> void:
 	# hidden doorway shell or an accidental collision overlay.
 	game.doors["LivingDoor"]["is_open"] = true
 	game._animate_doors(1.0)
+	game.player.global_position = Vector3(-1.05, 1.0, 2.72)
+	game._update_high_poly_lods()
 	game.camera.global_position = Vector3(-1.05, 1.45, 2.72)
 	game.camera.look_at(Vector3(-3.8, 1.05, 3.80), Vector3.UP)
 	for tool in game.held_tools:
