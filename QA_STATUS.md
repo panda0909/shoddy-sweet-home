@@ -534,3 +534,8 @@
 
 - `closet_deadend` 改由 `ClosetDoorLeft` 的實際 Mesh bounds 推導門片外緣與前表面，門寬／衣櫃平移後仍會貼在門縫與把手側。
 - `tests/issue_anchor_fit.gd` 新增衣櫃門 bounds 驗收，避免缺陷標記回到固定半寬偏移。
+
+### 追加：Web 拖曳視角按鍵狀態相容（2026-09-19）
+
+- Web 版拖曳視角現在同時讀取 `Input.is_mouse_button_pressed()` 與 `InputEventMouseMotion.button_mask`，避免嵌入式瀏覽器只提供事件按鍵狀態時視角不轉。
+- Pointer Lock 流程不變；桌面版捕捉滑鼠與 ESC 暫停行為也不受影響。

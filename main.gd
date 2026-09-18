@@ -170,7 +170,10 @@ func _input(event: InputEvent) -> void:
 		return
 	# Some embedded browsers reject Pointer Lock entirely. Drag-to-look still
 	# permits exploration there, without requiring browser security changes.
-	var dragging_in_web := OS.has_feature("web") and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	# Embedded browsers do not all update Input's global button state while a
+	# drag is in progress; some expose the held button only on the motion event.
+	var motion_has_left_button := event is InputEventMouseMotion and (((event as InputEventMouseMotion).button_mask & MOUSE_BUTTON_MASK_LEFT) != 0)
+	var dragging_in_web := OS.has_feature("web") and (Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or motion_has_left_button)
 	if event is InputEventMouseMotion and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or dragging_in_web):
 		player.rotate_y(-event.screen_relative.x * MOUSE_SENSITIVITY)
 		camera.rotation.x = clampf(camera.rotation.x - event.screen_relative.y * MOUSE_SENSITIVITY, -1.35, 1.35)
