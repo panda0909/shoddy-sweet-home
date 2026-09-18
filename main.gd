@@ -1741,8 +1741,12 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 				size = Vector3(0.48, 0.04, 0.48)
 			elif issue_id == "tile_hollow":
 				# BackWall is the room's actual wall plane; keep the clue on
-				# its bathroom-side surface instead of floating in the room.
-				pos = Vector3(7.3, 1.45, bounds.end.z + 0.035)
+				# its bathroom-side surface instead of floating in the room. The
+				# horizontal location follows the imported bathroom room volume,
+				# rather than assuming the old 7.3m right edge.
+				var bathroom_volume := _find_anchor_bounds("849_Ceiling")
+				var tile_x := bathroom_volume.end.x - 0.20 if bathroom_volume.has_volume() else 7.3
+				pos = Vector3(tile_x, 1.45, bounds.end.z + 0.035)
 				size = Vector3(0.80, 1.0, 0.07)
 			elif issue_id == "bath_vent":
 				pos = bounds.get_center() + Vector3(0, 0.02, 0.02)

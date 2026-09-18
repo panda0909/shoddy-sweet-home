@@ -69,7 +69,9 @@ func _run() -> void:
 		printerr("FAIL sofa repair opening placement: ", sofa.position if sofa != null else "missing")
 		failures += 1
 	var tile := game.issue_bodies.get("tile_hollow") as Node3D
-	if tile == null or absf(tile.position.x - 7.3) > 0.05 or tile.position.z < -5.90 or tile.position.z > -5.75:
+	var bathroom_volume: AABB = game._find_anchor_bounds("849_Ceiling")
+	var tile_expected_x := bathroom_volume.end.x - 0.20 if bathroom_volume.has_volume() else 7.3
+	if tile == null or absf(tile.position.x - tile_expected_x) > 0.05 or tile.position.z < -5.90 or tile.position.z > -5.75:
 		printerr("FAIL bathroom tile wall placement: ", tile.position if tile != null else "missing")
 		failures += 1
 	var door := game.issue_bodies.get("bath_door") as Node3D
