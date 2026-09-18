@@ -635,3 +635,10 @@
 - `tests/bathroom_details.gd` 驗證玻璃網格、排水蓋板與無碰撞通行；浴室細節 57 個、材質批次 12，驗收為 `0 failures`。
 - 圖形截圖回歸：浴室 median `3.698ms`、p95 `5.107ms`、`626` draws；家具碰撞、14 題互動與三角面預算均維持 `0 failures`。
 - Web Release 回歸：PCK `103,723,452` bytes、WASM `39,514,754` bytes，合計 `143,238,206` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：客廳窗戶圓角玻璃與窗台（2026-09-19）
+
+- 客廳窗玻璃由銳利 BoxMesh 改為微圓角 ArrayMesh，並依原始窗框 bounds 新增窗台與窗扣；門洞家具衝突維持 `0`，新增節點沒有碰撞。
+- `tests/room_finish_quality.gd` 驗證玻璃網格、窗框、窗台與窗扣完整存在；客廳服務間距維持 `1.10m`。
+- 圖形截圖回歸：客廳 median `3.930ms`、p95 `4.924ms`、`742` draws；四房均成功渲染。
+- Web Release 回歸：PCK `103,723,596` bytes、WASM `39,514,754` bytes，合計 `143,238,350` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

@@ -91,10 +91,14 @@ func _run() -> void:
 		print("Living doorway closed bounds: ", closed_bounds)
 		print("Living doorway open bounds: ", open_bounds)
 		print("Living doorway furniture conflicts: ", blocked_meshes)
-	for window_piece in ["LivingWindowGlass", "LivingWindowFrame_Top", "LivingWindowFrame_Center"]:
+	for window_piece in ["LivingWindowGlass", "LivingWindowFrame_Top", "LivingWindowFrame_Center", "LivingWindowSill", "LivingWindowLatch"]:
 		if game.get_node_or_null(window_piece) == null:
 			printerr("FAIL missing rebuilt living window piece: ", window_piece)
 			failures += 1
+	var living_glass := game.get_node_or_null("LivingWindowGlass/Mesh") as MeshInstance3D
+	if living_glass == null or not living_glass.mesh is ArrayMesh:
+		printerr("FAIL living window glass still uses a sharp box silhouette")
+		failures += 1
 	for fireplace_piece in ["LivingDetail_FireplaceHearthEdge", "LivingDetail_FireplaceMantelEdge", "LivingDetail_FireplaceSideTrim"]:
 		if game.get_node_or_null(fireplace_piece) == null:
 			printerr("FAIL missing bounds-attached fireplace detail: ", fireplace_piece)

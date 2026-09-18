@@ -569,7 +569,10 @@ func _add_living_window_details() -> void:
 	var window_max_x := pane_bounds.end.x - 2.0
 	var center := Vector3(window_center_x, pane_bounds.get_center().y, pane_bounds.position.z - 0.025)
 	var glass_size := Vector3(pane_bounds.size.x * 0.94, pane_bounds.size.y * 0.88, 0.045)
-	_add_box("LivingWindowGlass", glass_size, center, glass_material, false)
+	var living_glass := _add_box("LivingWindowGlass", glass_size, center, glass_material, false)
+	var living_glass_mesh := living_glass.get_node("Mesh") as MeshInstance3D
+	if living_glass_mesh != null:
+		living_glass_mesh.mesh = bedroom_details_rounded(glass_size, 0.012)
 	var frame_width := 0.075
 	var frame_depth := 0.075
 	_add_box("LivingWindowFrame_Top", Vector3(pane_bounds.size.x + 0.12, frame_width, frame_depth), Vector3(center.x, pane_bounds.end.y + 0.02, center.z - 0.008), frame_material, false)
@@ -577,6 +580,8 @@ func _add_living_window_details() -> void:
 	_add_box("LivingWindowFrame_Left", Vector3(frame_width, pane_bounds.size.y + 0.04, frame_depth), Vector3(window_min_x - 0.02, center.y, center.z - 0.008), frame_material, false)
 	_add_box("LivingWindowFrame_Right", Vector3(frame_width, pane_bounds.size.y + 0.04, frame_depth), Vector3(window_max_x + 0.02, center.y, center.z - 0.008), frame_material, false)
 	_add_box("LivingWindowFrame_Center", Vector3(frame_width * 0.72, pane_bounds.size.y * 0.88, frame_depth * 0.84), Vector3(center.x, center.y, center.z - 0.010), frame_material, false)
+	_add_box("LivingWindowSill", Vector3(pane_bounds.size.x + 0.18, 0.08, 0.16), Vector3(center.x, pane_bounds.position.y - 0.075, center.z + 0.045), frame_material, false)
+	_add_box("LivingWindowLatch", Vector3(0.035, 0.12, 0.035), Vector3(center.x, center.y - 0.06, center.z - 0.050), _mat(Color(0.26, 0.24, 0.20)), false)
 
 
 func _reposition_living_sofa(asset: Node3D) -> void:
