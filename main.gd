@@ -1436,9 +1436,16 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			size = Vector3(0.12, 0.35, 0.4)
 		"sofa_gap":
 			# The repair opening belongs on the wall immediately behind the sofa,
-			# not on the unrelated side wall used by the old placeholder.
-			pos = Vector3(-6.55, 1.05, 5.84)
-			size = Vector3(1.45, 0.90, 0.10)
+			# not on the unrelated side wall used by the old placeholder. Derive
+			# both the horizontal placement and height from the actual sofa group.
+			var sofa_bounds := _find_anchor_group_bounds(["63_SofaLeather", "65_SofaLeather", "134_SofaLeather", "136_SofaLeather", "137_SofaLeather", "138_SofaLeather", "139_SofaLeather"])
+			var front_wall_bounds := _find_anchor_bounds("FrontWallLeft")
+			if sofa_bounds.has_volume() and front_wall_bounds.has_volume():
+				pos = Vector3(sofa_bounds.get_center().x, clampf(sofa_bounds.end.y + 0.42, 0.85, 1.35), front_wall_bounds.position.z - 0.035)
+				size = Vector3(clampf(sofa_bounds.size.x * 0.52, 1.10, 1.60), 0.90, 0.10)
+			else:
+				pos = Vector3(-6.55, 1.05, 5.84)
+				size = Vector3(1.45, 0.90, 0.10)
 			title = "檢修孔被木條封死"
 		"sink_leak":
 			pos = Vector3(6.39, 0.43, 4.6)
@@ -1549,6 +1556,18 @@ func _find_anchor_bounds(anchor_name: String) -> AABB:
 		if child_mesh != null:
 			return child_mesh.global_transform * child_mesh.get_aabb()
 	return AABB()
+
+
+func _find_anchor_group_bounds(anchor_names: Array) -> AABB:
+	var combined := AABB()
+	var found := false
+	for anchor_name in anchor_names:
+		var candidate := _find_anchor_bounds(anchor_name)
+		if not candidate.has_volume():
+			continue
+		combined = candidate if not found else combined.merge(candidate)
+		found = true
+	return combined if found else AABB()
 
 
 func _add_issue_target(issue: Dictionary) -> void:

@@ -256,3 +256,8 @@
 ### 追加：Web release 資產回歸（2026-09-19）
 
 - Godot Web release export 成功；本輪輸出約 HTML 5.9 KB、PCK 99 MB、WASM 38 MB，與上一版約 99／38 MB 持平，臥室／浴室新增細節沒有引入外部貼圖下載。
+
+### 追加：客廳檢修孔跟隨沙發群（2026-09-19）
+
+- `sofa_gap` 不再只使用固定 `(-6.55, 1.05, 5.84)`；現在合併 7 個沙發皮革構件與 `FrontWallLeft` bounds，依沙發中心、最高點與牆內側推導檢修孔位置與寬度。
+- `tests/issue_anchor_fit.gd` 已改為驗證沙發群／前牆的實際推導位置；14 個缺陷錨點仍為 0 failures。

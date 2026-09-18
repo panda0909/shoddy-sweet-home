@@ -45,7 +45,10 @@ func _run() -> void:
 			failures += 1
 
 	var sofa := game.issue_bodies.get("sofa_gap") as Node3D
-	if sofa == null or sofa.position.distance_to(Vector3(-6.55, 1.05, 5.84)) > 0.05:
+	var sofa_group: AABB = game._find_anchor_group_bounds(["63_SofaLeather", "65_SofaLeather", "134_SofaLeather", "136_SofaLeather", "137_SofaLeather", "138_SofaLeather", "139_SofaLeather"])
+	var front_wall: AABB = game._find_anchor_bounds("FrontWallLeft")
+	var sofa_expected := Vector3(sofa_group.get_center().x, clampf(sofa_group.end.y + 0.42, 0.85, 1.35), front_wall.position.z - 0.035) if sofa_group.has_volume() and front_wall.has_volume() else Vector3(-6.55, 1.05, 5.84)
+	if sofa == null or sofa.position.distance_to(sofa_expected) > 0.05:
 		printerr("FAIL sofa repair opening placement: ", sofa.position if sofa != null else "missing")
 		failures += 1
 	var tile := game.issue_bodies.get("tile_hollow") as Node3D
