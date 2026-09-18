@@ -233,3 +233,9 @@
 - 重切中央隔間牆的三段 BoxShape3D，依 `LivingDoor`／`BedroomDoor` 的實際 PI/2 鉸鏈方向保留門洞與膠囊半徑 clearance；移除會覆蓋門洞的重複中央牆盒。
 - 新增 `tests/player_walkthrough.gd`，以實際 `CharacterBody3D.move_and_collide()` 開門後穿越 LivingDoor、LeftInnerDoor、RightInnerDoor、BedroomDoor；四扇門均通過，0 failures。
 - 原有 `tests/door_passage.gd` 恢復 20 個開關／兩側門洞檢查 0 failures；缺陷可達性仍為 2004 個連通樣本、14 題全部通過。
+
+### 追加：浴室門扇與洗手台掃掠驗收（2026-09-19）
+
+- `tests/bathroom_details.gd` 增加門片與 bounds-attached 洗手台檯面的開／關狀態 AABB 掃掠檢查；浴室 28 個細節、主件碰撞與批次化仍為 0 failures。
+- 門片通行回歸：5 扇門 20 個開關／兩側狀態與防夾檢查 0 failures；`tests/player_walkthrough.gd` 實際膠囊穿越四扇室內門 0 failures。
+- `tests/issue_access.gd`：2004 個連通站位、四房 14 題可達、十題互動／結算 0 failures。

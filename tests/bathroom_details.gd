@@ -44,6 +44,22 @@ func _run() -> void:
 		if detail != null and detail.find_child("CollisionShape3D", true, false) != null and ("Vanity" in node_name or "MirrorEdge" in node_name):
 			printerr("FAIL bathroom finish detail blocks movement: ", node_name)
 			failures += 1
+	var door_leaf := game.find_child("RightInnerDoor", true, false) as StaticBody3D
+	var door_mesh := door_leaf.get_node_or_null("Mesh") as MeshInstance3D if door_leaf != null else null
+	var vanity := game.find_child("ImportedBath_VanityCounterEdge", true, false) as StaticBody3D
+	var vanity_mesh := vanity.get_node_or_null("Mesh") as MeshInstance3D if vanity != null else null
+	if door_mesh == null or vanity_mesh == null:
+		printerr("FAIL missing bathroom door or vanity bounds probe")
+		failures += 1
+	else:
+		var vanity_bounds: AABB = vanity_mesh.global_transform * vanity_mesh.get_aabb()
+		for opened in [false, true]:
+			game.doors["RightInnerDoor"]["is_open"] = opened
+			game._animate_doors(1.0)
+			var door_bounds: AABB = door_mesh.global_transform * door_mesh.get_aabb()
+			if door_bounds.intersects(vanity_bounds):
+				printerr("FAIL bathroom door sweep overlaps vanity; open=", opened)
+				failures += 1
 	print("Imported bathroom detail nodes: ", required.size())
 	print("Bathroom detail failures: ", failures)
 	game.queue_free()
