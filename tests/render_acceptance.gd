@@ -45,6 +45,9 @@ func _run() -> void:
 		game.camera.global_position = view[1]
 		game.camera.look_at(view[2], Vector3.UP)
 		game._select_tool(int(view[3]))
+		for tool in game.held_tools:
+			tool.hide()
+		game.camera.get_node("Flashlight").visible = int(view[3]) == 0
 		for warmup in range(20):
 			await process_frame
 		await RenderingServer.frame_post_draw
@@ -63,6 +66,8 @@ func _run() -> void:
 	game._animate_doors(1.0)
 	game.camera.global_position = Vector3(-1.05, 1.45, 2.72)
 	game.camera.look_at(Vector3(-3.8, 1.05, 3.80), Vector3.UP)
+	for tool in game.held_tools:
+		tool.hide()
 	for frame in range(20):
 		await process_frame
 	await RenderingServer.frame_post_draw
