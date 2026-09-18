@@ -478,6 +478,18 @@ func _add_living_imported_details() -> void:
 		_add_box("LivingDetail_TvConsole", Vector3(console_depth, 0.10, console_width), Vector3(console_x, tv_bounds.position.y - 0.10, tv_center.z), wood_material, false)
 		_add_box("LivingDetail_TvConsoleInset", Vector3(console_depth + 0.012, 0.018, console_width * 0.72), Vector3(console_x + 0.008, tv_bounds.position.y - 0.038, tv_center.z), _mat(Color(0.12, 0.075, 0.045)), false)
 		_add_box("LivingDetail_TvCableChannel", Vector3(0.035, tv_bounds.size.y * 0.62, 0.035), Vector3(tv_bounds.end.x + 0.035, tv_bounds.position.y - tv_bounds.size.y * 0.30, tv_center.z), _mat(Color(0.08, 0.09, 0.10)), false)
+	# The source sideboard is split into several thin white-paint meshes. Unite
+	# their real bounds with a top cap, plinth and shallow front inset so it
+	# reads as furniture rather than a stack of disconnected scan fragments.
+	var sideboard_bounds := _find_anchor_group_bounds(["54_WhitePaint", "55_WhitePaint", "56_WhitePaint", "57_DrawerHandles", "58_WhitePaint", "59_WhitePaint"])
+	if sideboard_bounds.has_volume():
+		var sideboard_white := _mat(Color(0.78, 0.79, 0.75))
+		sideboard_white.roughness = 0.42
+		sideboard_white.clearcoat = 0.10
+		var sideboard_dark := _mat(Color(0.14, 0.16, 0.17))
+		_add_box("LivingDetail_SideboardTop", Vector3(sideboard_bounds.size.x + 0.06, 0.04, sideboard_bounds.size.z + 0.05), Vector3(sideboard_bounds.get_center().x, sideboard_bounds.end.y + 0.02, sideboard_bounds.get_center().z), sideboard_white, false)
+		_add_box("LivingDetail_SideboardPlinth", Vector3(sideboard_bounds.size.x + 0.035, 0.06, sideboard_bounds.size.z + 0.035), Vector3(sideboard_bounds.get_center().x, sideboard_bounds.position.y + 0.03, sideboard_bounds.get_center().z), sideboard_white, false)
+		_add_box("LivingDetail_SideboardFrontInset", Vector3(0.026, sideboard_bounds.size.y * 0.62, sideboard_bounds.size.z * 0.72), Vector3(sideboard_bounds.position.x - 0.014, sideboard_bounds.get_center().y, sideboard_bounds.get_center().z), sideboard_dark, false)
 
 	var cushion_index := 0
 	var living_asset := get_node_or_null("LivingRoomRealAsset") as Node3D

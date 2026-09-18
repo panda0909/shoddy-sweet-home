@@ -61,6 +61,16 @@ func _run() -> void:
 	if not tv_bounds.has_volume() or tv_console == null or tv_console.global_position.distance_to(tv_expected) > 0.05:
 		printerr("FAIL TV console is not attached to imported TV bounds")
 		failures += 1
+	var sideboard_bounds: AABB = game._find_anchor_group_bounds(["54_WhitePaint", "55_WhitePaint", "56_WhitePaint", "57_DrawerHandles", "58_WhitePaint", "59_WhitePaint"])
+	var sideboard_top := game.get_node_or_null("LivingDetail_SideboardTop") as Node3D
+	var sideboard_expected := Vector3(sideboard_bounds.get_center().x, sideboard_bounds.end.y + 0.02, sideboard_bounds.get_center().z) if sideboard_bounds.has_volume() else Vector3.ZERO
+	if not sideboard_bounds.has_volume() or sideboard_top == null or sideboard_top.global_position.distance_to(sideboard_expected) > 0.05:
+		printerr("FAIL sideboard finish is not attached to imported white-paint bounds")
+		failures += 1
+	for sideboard_piece in ["LivingDetail_SideboardPlinth", "LivingDetail_SideboardFrontInset"]:
+		if game.get_node_or_null(sideboard_piece) == null:
+			printerr("FAIL missing sideboard finish: ", sideboard_piece)
+			failures += 1
 
 	print("Furniture contact shadows: ", shadow_count)
 	print("Kitchen hero scale: ", kitchen.scale.x if kitchen != null else -1.0)
