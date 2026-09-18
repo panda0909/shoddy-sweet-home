@@ -2036,12 +2036,43 @@ func _add_hinged_door(door_id: String, hinge_pos: Vector3, width: float, closed_
 func _add_door_frame_piece(parent: Node3D, node_name: String, size: Vector3, local_pos: Vector3, material: Material) -> void:
 	var mesh := MeshInstance3D.new()
 	mesh.name = node_name
-	var box_mesh := BoxMesh.new()
-	box_mesh.size = size
-	mesh.mesh = box_mesh
+	var minimum := minf(size.x, minf(size.y, size.z))
+	# Door trim, desk legs and curtain pleats share this path. Preserve a plain
+	# box for paper-thin trim, but give structural pieces a small manufactured
+	# radius so close views do not expose razor-sharp procedural corners.
+	mesh.mesh = bedroom_details_rounded(size, minf(0.025, minimum * 0.24)) if minimum >= 0.035 else _plain_box_mesh(size)
 	mesh.material_override = material
 	mesh.position = local_pos
 	parent.add_child(mesh)
+
+
+func bedroom_details_rounded(size: Vector3, radius: float) -> ArrayMesh:
+	var base := BoxMesh.new()
+	base.size = size
+	base.subdivide_width = 8
+	base.subdivide_height = 8
+	base.subdivide_depth = 8
+	var arrays := base.get_mesh_arrays()
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var r := minf(radius, minf(size.x, minf(size.y, size.z)) * 0.45)
+	var core := size * 0.5 - Vector3.ONE * r
+	for index in range(vertices.size()):
+		var vertex := vertices[index]
+		var nearest := Vector3(clampf(vertex.x, -core.x, core.x), clampf(vertex.y, -core.y, core.y), clampf(vertex.z, -core.z, core.z))
+		normals[index] = (vertex - nearest).normalized()
+		vertices[index] = nearest + normals[index] * r
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	var rounded_mesh := ArrayMesh.new()
+	rounded_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return rounded_mesh
+
+
+func _plain_box_mesh(size: Vector3) -> BoxMesh:
+	var box := BoxMesh.new()
+	box.size = size
+	return box
 
 
 func _add_door_panel(parent: Node3D, node_name: String, width: float, height: float, local_pos: Vector3, color: Color) -> void:

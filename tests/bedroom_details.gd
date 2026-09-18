@@ -68,6 +68,11 @@ func _run() -> void:
 		if collision == null or not collision.shape is BoxShape3D:
 			printerr("FAIL missing box-form desk assembly collision: ", id)
 			failures += 1
+	for id in ["Desk/Leg", "Desk/BackPanel", "CurtainLeft/Pleat", "CurtainRight/Pleat"]:
+		var structural_mesh := game.get_node_or_null(id) as MeshInstance3D
+		if structural_mesh == null or not structural_mesh.mesh is ArrayMesh:
+			printerr("FAIL structural detail is still a sharp box: ", id)
+			failures += 1
 	if game.get_node_or_null("DeskTop/CableGrommet") == null:
 		printerr("FAIL missing desk cable grommet")
 		failures += 1
