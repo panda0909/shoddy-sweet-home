@@ -34,7 +34,7 @@ func _run() -> void:
 			failures += 1
 			continue
 		var kind: String = check[1]
-		if kind == "metal" and material.metallic < 0.60:
+		if kind == "metal" and (material.metallic < 0.60 or material.clearcoat < 0.20 or material.clearcoat_roughness > 0.18):
 			printerr("FAIL metal semantic tuning: ", check[0], " metallic=", material.metallic)
 			failures += 1
 		elif kind == "glass" and (material.roughness > 0.30 or material.clearcoat < 0.20):

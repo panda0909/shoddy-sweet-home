@@ -1551,6 +1551,12 @@ func _tune_imported_materials(mesh: MeshInstance3D) -> void:
 		if _contains_any(semantic_name, ["metal", "steel", "chrome", "stainless", "iron", "gold", "handle", "burner", "extractor"]):
 			surface_roughness = 0.28
 			surface_metallic = 0.78
+			# Imported kitchen metal is often authored as a single metallic
+			# channel. A restrained clearcoat restores the clean appliance/fitting
+			# highlight without replacing the source texture or creating a new
+			# material group.
+			surface_clearcoat = 0.28
+			surface_clearcoat_roughness = 0.14
 		elif _contains_any(semantic_name, ["glass", "window", "mirror"]):
 			surface_roughness = 0.18
 			surface_clearcoat = 0.35

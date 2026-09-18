@@ -682,3 +682,10 @@
 - `tests/bathroom_details.gd` 驗證 58 個細節仍維持 12 批次、每個批次有 7m LOD 且沒有碰撞；`tests/lod_visibility.gd` 驗證 1168 個裝飾 LOD 與 182 個高面數 proxy，均為 `0 failures`。
 - 圖形回歸：浴室 median `3.602ms`、p95 `5.213ms`、`575` draws，近景細節完整可見。
 - Web Release 回歸：PCK `103,728,492` bytes、WASM `39,514,754` bytes，合計 `143,243,246` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：廚房匯入金屬 Clearcoat（2026-09-19）
+
+- 匯入材質的 metal／steel／chrome／stainless／extractor 分類現在統一使用 metallic `0.78`、roughness `0.28`、Clearcoat `0.28`／roughness `0.14`；保留原本 Albedo／貼圖與材質快取，不新增 Web 貼圖。
+- `tests/imported_materials.gd` 的金屬、木材、玻璃、布料 5 組 probes，以及 `tests/kitchen_details.gd`、`tests/issue_visuals.gd` 均為 `0 failures`。
+- 圖形回歸：廚房 median `5.701ms`、p95 `6.516ms`、`1382` draws；高光沒有造成效能退化。
+- Web Release 回歸：PCK `103,728,492` bytes、WASM `39,514,754` bytes，合計 `143,243,246` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
