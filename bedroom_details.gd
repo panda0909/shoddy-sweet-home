@@ -68,6 +68,16 @@ static func apply(room: Node3D) -> void:
 	_add_detail_box(mattress, "PipingLeft", Vector3(0.025, 0.025, 2.38), Vector3(-1.53, 0.215, 0), fabric_trim)
 	_add_detail_box(mattress, "PipingRight", Vector3(0.025, 0.025, 2.38), Vector3(1.53, 0.215, 0), fabric_trim)
 	var duvet: Node3D = room.get_node("Duvet")
+	# Keep the existing rounded duvet body as the soft volume, then add a
+	# subdivided quilt surface whose height varies between stitched channels.
+	# This creates real silhouette highlights without changing the no-collision
+	# behavior of the bedding.
+	var quilt_surface := MeshInstance3D.new()
+	quilt_surface.name = "QuiltSurface"
+	quilt_surface.mesh = _quilt_surface_mesh(3.08, 1.39, 17, 9)
+	quilt_surface.position.y = 0.081
+	quilt_surface.material_override = room._fabric_mat(Color(0.55, 0.70, 0.82))
+	duvet.add_child(quilt_surface)
 	for seam_index in range(4):
 		_add_detail_box(duvet, "DuvetSeam_%d" % seam_index, Vector3(0.025, 0.018, 1.34), Vector3(-1.15 + seam_index * 0.77, 0.09, 0), fabric_trim)
 	# A narrow side band and soft transverse folds give the mattress and duvet
@@ -308,6 +318,49 @@ static func _curtain_drape_mesh(width: float, height: float, fold_count: int) ->
 			var c := a + columns
 			var d := c + 1
 			# Winding faces the room (+Z), matching the bedroom inspection view.
+			indices.append(a)
+			indices.append(c)
+			indices.append(b)
+			indices.append(b)
+			indices.append(c)
+			indices.append(d)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
+
+
+static func _quilt_surface_mesh(width: float, depth: float, columns: int, rows: int) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	var x_step := width / float(columns - 1)
+	var z_step := depth / float(rows - 1)
+	for row in range(rows):
+		var v := float(row) / float(rows - 1)
+		for column in range(columns):
+			var u := float(column) / float(columns - 1)
+			var x := -width * 0.5 + u * width
+			var z := -depth * 0.5 + v * depth
+			# Broad stitched channels plus a soft side-to-side fold at the foot.
+			var y := sin(u * TAU * 3.0) * 0.010 + sin(v * PI * 1.4) * 0.012
+			var y_x := cos(u * TAU * 3.0) * 0.010 * TAU * 3.0 / width
+			var y_z := cos(v * PI * 1.4) * 0.012 * PI * 1.4 / depth
+			vertices.append(Vector3(x, y, z))
+			normals.append(Vector3(-y_x, 1.0, -y_z).normalized())
+			uvs.append(Vector2(u, v))
+	for row in range(rows - 1):
+		for column in range(columns - 1):
+			var a := row * columns + column
+			var b := a + 1
+			var c := a + columns
+			var d := c + 1
 			indices.append(a)
 			indices.append(c)
 			indices.append(b)

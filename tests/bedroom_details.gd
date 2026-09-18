@@ -72,6 +72,7 @@ func _run() -> void:
 		"Bookcase/Shelf_2", "BedroomBook_0/Binding", "BedroomRug/RugFringe_0", "BedroomRug/RugFringe_11",
 		"BedroomRug/RugTuft_0", "BedroomRug/RugTuft_6",
 		"Mattress/SideBandFront", "Duvet/DuvetFold_0", "Duvet/DuvetFold_2",
+		"Duvet/QuiltSurface",
 		"DeskChairSeat/BackCushion", "DeskChairSeat/BaseArm_0",
 		"Desk/FrontApron", "DeskTop/DesktopFrontNosing", "DeskTop/DesktopLeftReturn",
 		"DeskTop/KeyboardKey_00", "DeskTop/KeyboardKey_11", "Monitor/MonitorScreen",
@@ -82,6 +83,10 @@ func _run() -> void:
 		if game.get_node_or_null(id) == null:
 			printerr("FAIL missing P0 finish detail: ", id)
 			failures += 1
+	var quilt_surface := game.get_node_or_null("Duvet/QuiltSurface") as MeshInstance3D
+	if quilt_surface == null or not quilt_surface.mesh is ArrayMesh or quilt_surface.mesh.get_aabb().size.x < 3.0:
+		printerr("FAIL duvet quilt surface is incomplete")
+		failures += 1
 	var left_rod := game.get_node_or_null("CurtainLeft/CurtainRod") as MeshInstance3D
 	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:
 		printerr("FAIL curtain rod is not horizontal")

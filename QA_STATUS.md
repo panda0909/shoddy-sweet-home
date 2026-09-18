@@ -437,3 +437,8 @@
 
 - 將原本 10 根垂直方條替換成每片 15×9 細分的連續布料網格，加入週期褶皺、底部中央自然下垂與獨立下擺；仍是純視覺件，不新增碰撞。
 - `tests/bedroom_details.gd` 驗證兩側 `DrapePanel` 為完整 ArrayMesh、下擺存在；臥室 PBR 測試與 15 張圖形驗收均為 `0 failures`。
+
+### 追加：臥室被褥起伏表面（2026-09-19）
+
+- 在原有圓角被褥體上加入 17×9 細分 `QuiltSurface`，以多段縫線方向起伏建立真實高光變化；原有床品碰撞設定不變。
+- `tests/bedroom_details.gd` 確認被褥表面為完整 ArrayMesh；臥室 PBR 測試與 15 張圖形驗收均為 `0 failures`。
