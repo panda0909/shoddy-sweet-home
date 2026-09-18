@@ -1169,6 +1169,17 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	# small manufactured radius so it no longer reads as a sharp placeholder.
 	if tank_mesh != null:
 		tank_mesh.mesh = bedroom_details_rounded(Vector3(0.82, 0.80, 0.36), 0.055)
+	var tank_lid_size := Vector3(0.86, 0.045, 0.40)
+	var tank_lid := _add_box("ImportedBath_ToiletTankLid", tank_lid_size, toilet_anchor + Vector3(0, 1.405, -0.28), lid_material, false, detail_root)
+	var tank_lid_mesh := tank_lid.get_node("Mesh") as MeshInstance3D
+	if tank_lid_mesh != null:
+		tank_lid_mesh.mesh = bedroom_details_rounded(tank_lid_size, 0.018)
+	# A thin front seam and the wall-side water supply pipe give the tank a
+	# readable manufactured assembly without adding another physics obstacle.
+	_add_box("ImportedBath_ToiletTankSeam", Vector3(0.64, 0.018, 0.020), toilet_anchor + Vector3(0, 1.08, -0.475), button_material, false, detail_root)
+	var toilet_supply := _add_cylinder("ImportedBath_ToiletSupplyPipe", 0.018, 0.24, toilet_anchor + Vector3(0.34, 0.43, -0.28), steel, false, detail_root)
+	toilet_supply.rotation.z = PI / 2.0
+	_add_cylinder("ImportedBath_ToiletFootRing", 0.46, 0.018, toilet_anchor + Vector3(0, 0.018, 0), bowl_shadow_material, false, detail_root)
 	var toilet_seat := _add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, toilet_anchor + Vector3(0, 0.66, 0), seat_material, true, detail_root)
 	var seat_mesh := toilet_seat.get_node("Mesh") as MeshInstance3D
 	if seat_mesh != null:
@@ -1203,7 +1214,10 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		var tub_water_mesh := tub_water.get_node("Mesh") as MeshInstance3D
 		if tub_water_mesh != null:
 			tub_water_mesh.mesh = bedroom_details_rounded(tub_water_size, 0.012)
-		_add_cylinder("ImportedBath_TubDrain", 0.05, 0.012, Vector3(bathtub_bounds.get_center().x, bathtub_bounds.end.y - 0.026, bathtub_bounds.get_center().z), bath_fitting_material, false, detail_root)
+		var tub_drain_position := Vector3(bathtub_bounds.get_center().x, bathtub_bounds.end.y - 0.026, bathtub_bounds.get_center().z)
+		_add_cylinder("ImportedBath_TubDrain", 0.05, 0.012, tub_drain_position, bath_fitting_material, false, detail_root)
+		_add_box("ImportedBath_TubDrainCrossA", Vector3(0.075, 0.018, 0.012), tub_drain_position + Vector3(0, 0.012, 0), bath_fitting_material, false, detail_root)
+		_add_box("ImportedBath_TubDrainCrossB", Vector3(0.012, 0.018, 0.075), tub_drain_position + Vector3(0, 0.012, 0), bath_fitting_material, false, detail_root)
 		var tub_rim_size := Vector3(bathtub_bounds.size.x * 0.72, 0.035, 0.055)
 		var tub_rim := _add_box("ImportedBath_TubRim", tub_rim_size, Vector3(bathtub_bounds.get_center().x, bathtub_bounds.end.y + 0.018, tub_back_z), porcelain, false, detail_root)
 		var tub_rim_mesh := tub_rim.get_node("Mesh") as MeshInstance3D
@@ -1214,7 +1228,9 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		tub_spout.rotation.x = PI / 2.0
 		for handle_side in [-1, 1]:
 			_add_cylinder("ImportedBath_TubHandle_%s" % ("Left" if handle_side < 0 else "Right"), 0.045, 0.035, Vector3(tub_fitting_x + handle_side * 0.16, tub_fitting_y + 0.08, tub_back_z), bath_fitting_material, false, detail_root)
-		_add_cylinder("ImportedBath_TubOverflow", 0.07, 0.018, Vector3(bathtub_bounds.get_center().x, bathtub_bounds.position.y + bathtub_bounds.size.y * 0.78, bathtub_bounds.end.z - 0.035), bath_fitting_material, false, detail_root)
+		var tub_overflow_position := Vector3(bathtub_bounds.get_center().x, bathtub_bounds.position.y + bathtub_bounds.size.y * 0.78, bathtub_bounds.end.z - 0.035)
+		_add_cylinder("ImportedBath_TubOverflow", 0.07, 0.018, tub_overflow_position, bath_fitting_material, false, detail_root)
+		_add_cylinder("ImportedBath_TubOverflowRing", 0.092, 0.012, tub_overflow_position + Vector3(0, 0.012, 0), bath_fitting_material, false, detail_root)
 
 	var shower_size := Vector3(2.8, 0.10, 2.2)
 	var shower_center := Vector3(7.6, 0.08, -2.25)

@@ -13,7 +13,7 @@ func _run() -> void:
 	await physics_frame
 
 	var required := [
-		"ImportedBath_ToiletBase", "ImportedBath_ToiletTank", "ImportedBath_ToiletSeat",
+		"ImportedBath_ToiletBase", "ImportedBath_ToiletTank", "ImportedBath_ToiletTankLid", "ImportedBath_ToiletTankSeam", "ImportedBath_ToiletSupplyPipe", "ImportedBath_ToiletFootRing", "ImportedBath_ToiletSeat",
 		"ImportedBath_ToiletWater", "ImportedBath_ToiletBowlRim", "ImportedBath_ToiletBowlInset",
 		"ImportedBath_ToiletHingeLeft", "ImportedBath_ToiletHingeRight", "ImportedBath_FlushButtonRing", "ImportedBath_FlushLever",
 		"ImportedBath_ShowerTray", "ImportedBath_ShowerGlass", "ImportedBath_ShowerPipe",
@@ -27,8 +27,8 @@ func _run() -> void:
 		"ImportedBath_VanityHandle_0", "ImportedBath_VanityHandle_3",
 		"ImportedBath_MirrorEdgeTop", "ImportedBath_MirrorEdgeLeft", "ImportedBath_MirrorEdgeRight",
 		"ImportedBath_MirrorWallSpacer", "ImportedBath_VanityWallSeal",
-		"ImportedBath_TubWater", "ImportedBath_TubDrain", "ImportedBath_TubRim", "ImportedBath_TubFaucetStem", "ImportedBath_TubSpout",
-		"ImportedBath_TubHandle_Left", "ImportedBath_TubHandle_Right", "ImportedBath_TubOverflow"
+		"ImportedBath_TubWater", "ImportedBath_TubDrain", "ImportedBath_TubDrainCrossA", "ImportedBath_TubDrainCrossB", "ImportedBath_TubRim", "ImportedBath_TubFaucetStem", "ImportedBath_TubSpout",
+		"ImportedBath_TubHandle_Left", "ImportedBath_TubHandle_Right", "ImportedBath_TubOverflow", "ImportedBath_TubOverflowRing"
 	]
 	var failures := 0
 	var detail_root: Node = game.get_node_or_null("BathroomDetailBatch")
@@ -71,6 +71,10 @@ func _run() -> void:
 	var tank_mesh := game.find_child("ImportedBath_ToiletTank", true, false).find_child("Mesh", true, false) as MeshInstance3D
 	if tank_mesh == null or not tank_mesh.mesh is ArrayMesh:
 		printerr("FAIL toilet tank still uses a sharp box silhouette")
+		failures += 1
+	var tank_lid_mesh := game.find_child("ImportedBath_ToiletTankLid", true, false).find_child("Mesh", true, false) as MeshInstance3D
+	if tank_lid_mesh == null or not tank_lid_mesh.mesh is ArrayMesh or tank_lid_mesh.get_node_or_null("CollisionShape3D") != null:
+		printerr("FAIL toilet tank lid is missing a rounded render-only finish")
 		failures += 1
 	var seat_mesh := game.find_child("ImportedBath_ToiletSeat", true, false).find_child("Mesh", true, false) as MeshInstance3D
 	if seat_mesh == null or not seat_mesh.mesh is ArrayMesh or seat_mesh.mesh.get_surface_count() == 0 or seat_mesh.mesh.get_aabb().size.x < 0.60:
@@ -142,6 +146,11 @@ func _run() -> void:
 			failures += 1
 		if absf(tub_water.global_position.x - bathtub_bounds.get_center().x) > 0.06 or absf(tub_water.global_position.z - bathtub_bounds.get_center().z) > 0.06 or tub_water.global_position.y < bathtub_bounds.position.y or tub_water.global_position.y > bathtub_bounds.end.y:
 			printerr("FAIL bathtub water is not attached to imported tub bounds")
+			failures += 1
+	for tub_detail_name in ["ImportedBath_TubDrainCrossA", "ImportedBath_TubDrainCrossB", "ImportedBath_TubOverflowRing"]:
+		var tub_detail := game.find_child(tub_detail_name, true, false) as Node3D
+		if tub_detail == null or tub_detail.find_child("CollisionShape3D", true, false) != null:
+			printerr("FAIL tub plumbing finish is missing or collidable: ", tub_detail_name)
 			failures += 1
 	var toilet_base := game.find_child("ImportedBath_ToiletBase", true, false) as Node3D
 	var toilet_expected := Vector3(bathroom_reference_bounds.end.x - 0.20, 0.31, bathroom_reference_bounds.position.z + bathroom_reference_bounds.size.z * 0.58) if bathroom_reference_bounds.has_volume() else Vector3.ZERO
