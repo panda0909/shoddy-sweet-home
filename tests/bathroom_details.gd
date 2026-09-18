@@ -48,14 +48,9 @@ func _run() -> void:
 			printerr("FAIL missing bathroom collision: ", node_name)
 			failures += 1
 	var toilet_mesh := game.find_child("ImportedBath_ToiletBase", true, false).find_child("Mesh", true, false) as MeshInstance3D
-	if toilet_mesh == null or not toilet_mesh.mesh is SphereMesh:
-		printerr("FAIL toilet base still uses a low-detail cylinder silhouette")
+	if toilet_mesh == null or not toilet_mesh.mesh is ArrayMesh or toilet_mesh.mesh.get_surface_count() == 0 or toilet_mesh.mesh.get_aabb().size.y < 0.50:
+		printerr("FAIL toilet base still uses a low-detail or hollow-less silhouette")
 		failures += 1
-	else:
-		var bowl := toilet_mesh.mesh as SphereMesh
-		if bowl.radial_segments < 24 or bowl.rings < 12:
-			printerr("FAIL toilet bowl segment quality: ", bowl.radial_segments, "x", bowl.rings)
-			failures += 1
 	var tank_mesh := game.find_child("ImportedBath_ToiletTank", true, false).find_child("Mesh", true, false) as MeshInstance3D
 	if tank_mesh == null or not tank_mesh.mesh is ArrayMesh:
 		printerr("FAIL toilet tank still uses a sharp box silhouette")

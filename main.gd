@@ -1070,16 +1070,13 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		toilet_anchor = Vector3(bathroom_reference_bounds.end.x - 0.20, 0.0, bathroom_reference_bounds.position.z + bathroom_reference_bounds.size.z * 0.58)
 	var toilet_base := _add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, toilet_anchor + Vector3(0, 0.31, 0), porcelain, true, detail_root)
 	# Keep the box/cylinder collision predictable, but replace the visible
-	# placeholder cylinder with a high-segment ceramic bowl silhouette.
+	# placeholder cylinder with a high-segment ceramic bowl silhouette. The
+	# visible mesh has separate outer and inner walls, so the bowl no longer
+	# reads as a flattened sphere in the close bathroom view.
 	var toilet_mesh := toilet_base.get_node("Mesh") as MeshInstance3D
-	var bowl_mesh := SphereMesh.new()
-	bowl_mesh.radius = 0.50
-	bowl_mesh.height = 1.0
-	bowl_mesh.radial_segments = 32
-	bowl_mesh.rings = 16
-	toilet_mesh.mesh = bowl_mesh
-	toilet_mesh.scale = Vector3(1.0, 0.70, 1.10)
-	toilet_mesh.position.y = 0.05
+	toilet_mesh.mesh = _toilet_bowl_mesh()
+	toilet_mesh.scale = Vector3.ONE
+	toilet_mesh.position.y = -0.31
 	var toilet_tank := _add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), toilet_anchor + Vector3(0, 0.98, -0.28), porcelain, true, detail_root)
 	var tank_mesh := toilet_tank.get_node("Mesh") as MeshInstance3D
 	# Keep the tank collision box stable, but give the visible ceramic shell a
@@ -1096,9 +1093,9 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		seat_shape.rings = 16
 		seat_mesh.mesh = seat_shape
 		seat_mesh.scale = Vector3(1.0, 0.11, 1.08)
-	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, toilet_anchor + Vector3(0, 0.705, 0), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
-	_add_cylinder("ImportedBath_ToiletBowlRim", 0.46, 0.025, toilet_anchor + Vector3(0, 0.645, 0), porcelain, false, detail_root)
-	_add_cylinder("ImportedBath_ToiletBowlInset", 0.31, 0.012, toilet_anchor + Vector3(0, 0.686, 0), bowl_shadow_material, false, detail_root)
+	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, toilet_anchor + Vector3(0, 0.535, 0), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
+	_add_cylinder("ImportedBath_ToiletBowlRim", 0.46, 0.025, toilet_anchor + Vector3(0, 0.625, 0), porcelain, false, detail_root)
+	_add_cylinder("ImportedBath_ToiletBowlInset", 0.31, 0.012, toilet_anchor + Vector3(0, 0.555, 0), bowl_shadow_material, false, detail_root)
 	var toilet_lid := _add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), toilet_anchor + Vector3(0, 0.73, -0.20), lid_material, false, detail_root)
 	var lid_mesh := toilet_lid.get_node("Mesh") as MeshInstance3D
 	if lid_mesh != null:
@@ -2494,6 +2491,86 @@ func bedroom_details_rounded(size: Vector3, radius: float) -> ArrayMesh:
 	var rounded_mesh := ArrayMesh.new()
 	rounded_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return rounded_mesh
+
+
+func _toilet_bowl_mesh() -> ArrayMesh:
+	var segments := 32
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	var outer_starts: Array[int] = []
+	var outer_y := [0.03, 0.15, 0.42, 0.58]
+	var outer_radius := [0.40, 0.50, 0.38, 0.31]
+	for ring in range(outer_y.size()):
+		outer_starts.append(vertices.size())
+		for segment in range(segments):
+			var angle := TAU * float(segment) / float(segments)
+			var radial := Vector3(cos(angle), 0.0, sin(angle))
+			vertices.append(Vector3(radial.x * outer_radius[ring], outer_y[ring], radial.z * outer_radius[ring] * 1.08))
+			normals.append(Vector3(radial.x, 0.34, radial.z * 0.92).normalized())
+			uvs.append(Vector2(float(segment) / float(segments), float(ring) / float(outer_y.size() - 1)))
+	for ring in range(outer_starts.size() - 1):
+		for segment in range(segments):
+			var next_segment := (segment + 1) % segments
+			var a := outer_starts[ring] + segment
+			var b := outer_starts[ring] + next_segment
+			var c := outer_starts[ring + 1] + segment
+			var d := outer_starts[ring + 1] + next_segment
+			indices.append(a)
+			indices.append(c)
+			indices.append(b)
+			indices.append(b)
+			indices.append(c)
+			indices.append(d)
+
+	var inner_starts: Array[int] = []
+	var inner_y := [0.58, 0.45, 0.32]
+	var inner_radius := [0.255, 0.215, 0.135]
+	for ring in range(inner_y.size()):
+		inner_starts.append(vertices.size())
+		for segment in range(segments):
+			var angle := TAU * float(segment) / float(segments)
+			var radial := Vector3(cos(angle), 0.0, sin(angle))
+			vertices.append(Vector3(radial.x * inner_radius[ring], inner_y[ring], radial.z * inner_radius[ring] * 1.08))
+			normals.append(Vector3(-radial.x, 0.30, -radial.z * 0.92).normalized())
+			uvs.append(Vector2(float(segment) / float(segments), float(ring) / float(inner_y.size() - 1)))
+	for ring in range(inner_starts.size() - 1):
+		for segment in range(segments):
+			var next_segment := (segment + 1) % segments
+			var a := inner_starts[ring] + segment
+			var b := inner_starts[ring] + next_segment
+			var c := inner_starts[ring + 1] + segment
+			var d := inner_starts[ring + 1] + next_segment
+			indices.append(a)
+			indices.append(b)
+			indices.append(c)
+			indices.append(b)
+			indices.append(d)
+			indices.append(c)
+
+	# Join the ceramic rim from the outer lip to the inner lip.
+	for segment in range(segments):
+		var next_segment := (segment + 1) % segments
+		var outer_a := outer_starts[outer_starts.size() - 1] + segment
+		var outer_b := outer_starts[outer_starts.size() - 1] + next_segment
+		var inner_a := inner_starts[0] + segment
+		var inner_b := inner_starts[0] + next_segment
+		indices.append(outer_a)
+		indices.append(inner_a)
+		indices.append(outer_b)
+		indices.append(outer_b)
+		indices.append(inner_a)
+		indices.append(inner_b)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var bowl := ArrayMesh.new()
+	bowl.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return bowl
 
 
 func _plain_box_mesh(size: Vector3) -> BoxMesh:
