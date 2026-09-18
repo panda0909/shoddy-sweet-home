@@ -833,10 +833,14 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	var drain_material := steel
 	var bowl_shadow_material := _mat(Color(0.34, 0.43, 0.43))
 	var mirror_bounds := _find_bathroom_mesh_bounds("44_Mirror")
+	var vanity_source_bounds := _find_anchor_group_bounds(["43_Marble", "838_Marble"])
 	if mirror_bounds.has_volume():
-		var vanity_x := mirror_bounds.get_center().x
-		var vanity_y := mirror_bounds.position.y - 0.12
-		var vanity_z := mirror_bounds.end.z + 0.18
+		# Two separate imported marble slabs are the actual vanity top. Keep the
+		# mirror as the upper-width guide, but derive the counter center/depth
+		# from the slabs so the basins cannot float when the bathroom asset moves.
+		var vanity_x := vanity_source_bounds.get_center().x if vanity_source_bounds.has_volume() else mirror_bounds.get_center().x
+		var vanity_y := vanity_source_bounds.end.y + 0.11 if vanity_source_bounds.has_volume() else mirror_bounds.position.y - 0.12
+		var vanity_z := vanity_source_bounds.get_center().z if vanity_source_bounds.has_volume() else mirror_bounds.end.z + 0.18
 		var left_sink_x := vanity_x - mirror_bounds.size.x * 0.27
 		var right_sink_x := vanity_x + mirror_bounds.size.x * 0.27
 		_add_box("ImportedBath_VanityCounterEdge", Vector3(mirror_bounds.size.x + 0.16, 0.05, 0.56), Vector3(vanity_x, vanity_y, vanity_z), tray_material, false, detail_root)

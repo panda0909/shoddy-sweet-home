@@ -344,6 +344,11 @@
 - 依 `WindowGlass` 世界 bounds 新增完整窗寬的窗簾軌道與左右封頭，讓兩側布簾、窗框與逃生窗缺陷維持同一組施工基準。
 - `tests/bedroom_details.gd` 新增軌道位置與封頭存在檢查；軌道仍是純視覺件，不新增碰撞。
 
+### 追加：浴室雙盆檯面 marble bounds 貼合（2026-09-19）
+
+- 洗手台檯面、雙盆與鏡櫃寬度現在以匯入 `43_Marble`／`838_Marble` 雙片大理石的合併 bounds 為基準，避免只跟鏡子定位造成盆體與檯面微小漂移。
+- `tests/bathroom_details.gd` 新增檯面中心／高度貼合檢查；浴室門掃掠、12 材質批次與圖形驗收維持通過。
+
 ### 追加：廚房冰箱把手 bounds 貼合（2026-09-19）
 
 - `KitchenDetail_FridgeHandle` 不再使用舊廚房比例下的固定座標，改依匯入 `253_CupboardUnits` 世界 bounds 生成，與 `cabinet_blocked` 缺陷共用同一個冰箱／高櫃基準。

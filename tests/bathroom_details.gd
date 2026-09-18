@@ -62,6 +62,12 @@ func _run() -> void:
 			if basin.radial_segments < 20 or basin.rings < 10:
 				printerr("FAIL vanity basin segment quality: ", basin_name)
 				failures += 1
+	var vanity_source_bounds: AABB = game._find_anchor_group_bounds(["43_Marble", "838_Marble"])
+	var vanity_counter := game.find_child("ImportedBath_VanityCounterEdge", true, false) as Node3D
+	var vanity_expected := Vector3(vanity_source_bounds.get_center().x, vanity_source_bounds.end.y + 0.11, vanity_source_bounds.get_center().z) if vanity_source_bounds.has_volume() else Vector3.ZERO
+	if not vanity_source_bounds.has_volume() or vanity_counter == null or vanity_counter.global_position.distance_to(vanity_expected) > 0.06:
+		printerr("FAIL vanity counter is not attached to imported marble bounds")
+		failures += 1
 	for node_name in required:
 		var detail: Node = game.find_child(node_name, true, false)
 		if detail != null and detail.find_child("CollisionShape3D", true, false) != null and ("Vanity" in node_name or "MirrorEdge" in node_name):
