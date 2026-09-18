@@ -957,13 +957,22 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	# Keep the shower fittings in the wet zone, derived from the same tray.
 	var shower_back_z := shower_center.z - shower_size.z * 0.37
 	var shower_wall_x := shower_center.x - shower_size.x * 0.08
-	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(shower_wall_x, 2.05, shower_back_z), steel, false, detail_root)
-	_add_cylinder("ImportedBath_ShowerHead", 0.18, 0.10, Vector3(shower_wall_x, 2.68, shower_back_z), steel, false, detail_root)
-	_add_cylinder("ImportedBath_ShowerHeadRose", 0.12, 0.018, Vector3(shower_wall_x, 2.735, shower_back_z), steel, false, detail_root)
+	var shower_head_y := shower_center.y + 2.60
+	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(shower_wall_x, shower_center.y + 1.97, shower_back_z), steel, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerHead", 0.18, 0.10, Vector3(shower_wall_x, shower_head_y, shower_back_z), steel, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerHeadRose", 0.12, 0.018, Vector3(shower_wall_x, shower_head_y + 0.055, shower_back_z), steel, false, detail_root)
+	# Eight small nozzles make the head read as a manufactured fitting in the
+	# close-up view. They reuse the existing dark ceramic/button material, so
+	# the bathroom detail batch count does not grow.
+	for nozzle_index in range(8):
+		var nozzle_angle := TAU * float(nozzle_index) / 8.0
+		_add_cylinder("ImportedBath_ShowerNozzle_%d" % nozzle_index, 0.012, 0.008, Vector3(shower_wall_x + cos(nozzle_angle) * 0.075, shower_head_y - 0.055, shower_back_z + sin(nozzle_angle) * 0.075), button_material, false, detail_root)
 	_add_box("ImportedBath_ShowerShelf", Vector3(0.70, 0.06, 0.24), Vector3(shower_center.x + shower_size.x * 0.24, 1.55, shower_back_z), steel, false, detail_root)
 	_add_cylinder("ImportedBath_Shampoo", 0.08, 0.24, Vector3(shower_center.x + shower_size.x * 0.16, 1.70, shower_back_z), dark_shampoo, false, detail_root)
 	_add_cylinder("ImportedBath_Shampoo2", 0.08, 0.24, Vector3(shower_center.x + shower_size.x * 0.32, 1.70, shower_back_z), warm_shampoo, false, detail_root)
-	_add_cylinder("ImportedBath_ShowerControl", 0.07, 0.035, Vector3(shower_wall_x, 1.35, shower_back_z + 0.02), steel, false, detail_root)
+	var control_position := Vector3(shower_wall_x, shower_center.y + 1.27, shower_back_z + 0.02)
+	_add_cylinder("ImportedBath_ShowerControl", 0.07, 0.035, control_position, steel, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerControlRing", 0.105, 0.012, control_position + Vector3(0, 0.025, 0), button_material, false, detail_root)
 	_add_box("ImportedBath_ShowerDrainCrossA", Vector3(0.18, 0.024, 0.025), Vector3(shower_center.x, 0.16, shower_center.z), steel, false, detail_root)
 	_add_box("ImportedBath_ShowerDrainCrossB", Vector3(0.025, 0.024, 0.18), Vector3(shower_center.x, 0.16, shower_center.z), steel, false, detail_root)
 

@@ -385,3 +385,8 @@
 - `tests/bedroom_details.gd` 新增材質快取與 ShaderMaterial 防回歸檢查，避免木紋統一後又被程序 shader 覆蓋。
 - 修正 `room_finishes.gd` 的牆面名稱匹配，`WallArt` 不再被誤判為建築牆面而套用灰泥 shader。
 - 四房圖形量測：客廳 `2.821/3.581ms`、廚房 `4.514/5.107ms`、臥室 `4.624/5.407ms`、浴室 `2.862/4.140ms`（median/p95）；近景畫面無材質回歸。
+
+### 追加：浴室淋浴五金近距離細節（2026-09-19）
+
+- 以 `ImportedBath_ShowerTray` bounds 為基準補上蓮蓬頭 8 個噴嘴與控制器裝飾環；沿用既有材質，不增加玩家碰撞或新的材質批次。
+- `tests/bathroom_details.gd` 新增噴嘴數量、控制環貼合與無碰撞驗收。

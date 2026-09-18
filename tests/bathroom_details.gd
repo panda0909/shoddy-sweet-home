@@ -18,7 +18,8 @@ func _run() -> void:
 		"ImportedBath_ToiletHingeLeft", "ImportedBath_ToiletHingeRight", "ImportedBath_FlushButtonRing", "ImportedBath_FlushLever",
 		"ImportedBath_ShowerTray", "ImportedBath_ShowerGlass", "ImportedBath_ShowerPipe",
 		"ImportedBath_ShowerHead", "ImportedBath_ShowerFrame_Left", "ImportedBath_ShowerFrame_Top",
-		"ImportedBath_ShowerShelf", "ImportedBath_ShowerControl", "ImportedBath_ShowerDrainCrossA", "ImportedBath_ShowerDrainCrossB", "ImportedBath_TowelBar",
+		"ImportedBath_ShowerHeadRose", "ImportedBath_ShowerNozzle_0", "ImportedBath_ShowerNozzle_7",
+		"ImportedBath_ShowerShelf", "ImportedBath_ShowerControl", "ImportedBath_ShowerControlRing", "ImportedBath_ShowerDrainCrossA", "ImportedBath_ShowerDrainCrossB", "ImportedBath_TowelBar",
 		"ImportedBath_DrainCover", "ImportedBath_VanityCounterEdge", "ImportedBath_TowelFold_0", "ImportedBath_TowelFold_2",
 		"ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight",
 		"ImportedBath_VanityFaucetLeft", "ImportedBath_VanityFaucetRight",
@@ -103,6 +104,15 @@ func _run() -> void:
 		if fitting == null or not tray_bounds.has_volume() or absf((fitting as Node3D).global_position.x - tray_bounds.get_center().x) > tray_bounds.size.x * 0.75 or absf((fitting as Node3D).global_position.z - tray_bounds.get_center().z) > tray_bounds.size.z * 0.75:
 			printerr("FAIL shower fitting is outside tray alignment: ", fitting_name)
 			failures += 1
+	var shower_ring := game.find_child("ImportedBath_ShowerControlRing", true, false) as Node3D
+	var shower_control := game.find_child("ImportedBath_ShowerControl", true, false) as Node3D
+	if shower_ring == null or shower_control == null or shower_ring.global_position.distance_to(shower_control.global_position + Vector3(0, 0.025, 0)) > 0.06:
+		printerr("FAIL shower control ring is not attached to the control bounds")
+		failures += 1
+	var nozzle_count: int = game.find_children("ImportedBath_ShowerNozzle_*", "StaticBody3D", true, false).size()
+	if nozzle_count != 8:
+		printerr("FAIL shower head nozzle count: ", nozzle_count)
+		failures += 1
 	var glass_node: Node = game.find_child("ImportedBath_ShowerGlass", true, false)
 	var glass_mesh := glass_node.find_child("Mesh", true, false) as MeshInstance3D if glass_node != null else null
 	var glass_bounds: AABB = glass_mesh.global_transform * glass_mesh.get_aabb() if glass_mesh != null else AABB()
@@ -128,7 +138,7 @@ func _run() -> void:
 	if not ceiling_bounds.has_volume() or ceiling_vent == null or ceiling_vent.global_position.distance_to(vent_expected) > 0.06:
 		printerr("FAIL bathroom exhaust vent is not attached to ceiling bounds")
 		failures += 1
-	print("Imported bathroom detail nodes: ", required.size(), "; material batches: ", detail_batches.size())
+	print("Imported bathroom detail nodes: ", required.size(), "; shower nozzles: ", nozzle_count, "; material batches: ", detail_batches.size())
 	print("Bathroom detail failures: ", failures)
 	game.queue_free()
 	await process_frame
