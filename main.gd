@@ -810,7 +810,19 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		for sink_data in [["Left", left_sink_x], ["Right", right_sink_x]]:
 			var sink_name: String = sink_data[0]
 			var sink_x: float = sink_data[1]
-			_add_cylinder("ImportedBath_VanityBasin" + sink_name, 0.18, 0.07, Vector3(sink_x, vanity_y + 0.055, vanity_z + 0.04), porcelain, false, detail_root)
+			var basin_body := _add_cylinder("ImportedBath_VanityBasin" + sink_name, 0.18, 0.07, Vector3(sink_x, vanity_y + 0.055, vanity_z + 0.04), porcelain, false, detail_root)
+			# A shallow ellipsoid reads as a ceramic basin while remaining a
+			# render-only detail, so it cannot catch the player's capsule.
+			var basin_mesh := basin_body.get_node("Mesh") as MeshInstance3D
+			var basin_shape := SphereMesh.new()
+			basin_shape.radius = 0.18
+			basin_shape.height = 0.36
+			basin_shape.radial_segments = 24
+			basin_shape.rings = 12
+			basin_mesh.mesh = basin_shape
+			basin_mesh.scale = Vector3(1.0, 0.34, 1.18)
+			basin_mesh.position.y = 0.035
+			_add_cylinder("ImportedBath_VanityBasinInset" + sink_name, 0.125, 0.012, Vector3(sink_x, vanity_y + 0.145, vanity_z + 0.04), bowl_shadow_material, false, detail_root)
 			_add_cylinder("ImportedBath_VanityFaucet" + sink_name, 0.025, 0.20, Vector3(sink_x, vanity_y + 0.19, vanity_z - 0.08), steel, false, detail_root)
 			_add_box("ImportedBath_VanitySpout" + sink_name, Vector3(0.16, 0.025, 0.025), Vector3(sink_x, vanity_y + 0.29, vanity_z + 0.02), steel, false, detail_root)
 		_add_box("ImportedBath_MirrorEdgeTop", Vector3(mirror_bounds.size.x + 0.06, 0.035, 0.035), Vector3(vanity_x, mirror_bounds.end.y + 0.018, mirror_bounds.end.z + 0.018), steel, false, detail_root)

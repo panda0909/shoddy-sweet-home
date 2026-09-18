@@ -52,6 +52,16 @@ func _run() -> void:
 		if bowl.radial_segments < 24 or bowl.rings < 12:
 			printerr("FAIL toilet bowl segment quality: ", bowl.radial_segments, "x", bowl.rings)
 			failures += 1
+	for basin_name in ["ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight"]:
+		var basin_mesh := game.find_child(basin_name, true, false).find_child("Mesh", true, false) as MeshInstance3D
+		if basin_mesh == null or not basin_mesh.mesh is SphereMesh:
+			printerr("FAIL vanity basin still uses a low-detail cylinder silhouette: ", basin_name)
+			failures += 1
+		else:
+			var basin := basin_mesh.mesh as SphereMesh
+			if basin.radial_segments < 20 or basin.rings < 10:
+				printerr("FAIL vanity basin segment quality: ", basin_name)
+				failures += 1
 	for node_name in required:
 		var detail: Node = game.find_child(node_name, true, false)
 		if detail != null and detail.find_child("CollisionShape3D", true, false) != null and ("Vanity" in node_name or "MirrorEdge" in node_name):

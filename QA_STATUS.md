@@ -313,3 +313,8 @@
 
 - 依匯入壁爐的 `117_BlackMarble`、`118_WhitePaint`、`119_WhitePaint` 三組實際 bounds 補上 hearth、mantel edge 與側收邊，改善壁爐／邊櫃貼牆薄片感。
 - `room_finish_quality.gd` 新增三個客廳建築細節檢查；客廳 bounds details 增至 10 個，11 張圖形驗收仍為 0 failures。
+
+### 追加：浴室雙洗手盆高細節（2026-09-19）
+
+- 雙洗手盆由低細節 CylinderMesh 改為 24 徑向段、12 環的橢圓陶瓷 basin，並加入 bounds 內的深色內凹件；視覺件不新增碰撞。
+- `tests/bathroom_details.gd` 新增左右 basin 網格品質檢查；浴室材質批次仍為 13 組，11 張圖形驗收 0 failures。
