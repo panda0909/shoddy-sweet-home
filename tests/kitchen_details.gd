@@ -38,6 +38,15 @@ func _run() -> void:
 	if dining_pads.is_empty():
 		printerr("FAIL no bounds-attached dining chair pads")
 		failures += 1
+	var chair_piping: Array = game.find_children("KitchenDetail_ChairPad_Piping_*", "StaticBody3D", true, false)
+	var chair_fasteners: Array = game.find_children("KitchenDetail_ChairPad_Fastener_*", "StaticBody3D", true, false)
+	if chair_piping.size() < 16 or chair_fasteners.size() < 16:
+		printerr("FAIL dining chair upholstery/hardware details: piping=", chair_piping.size(), " fasteners=", chair_fasteners.size())
+		failures += 1
+	for detail in chair_piping + chair_fasteners:
+		if detail.get_node_or_null("CollisionShape3D") != null:
+			printerr("FAIL dining chair finish detail blocks movement: ", detail.name)
+			failures += 1
 	var table_foot_pads: Array = game.find_children("KitchenDetail_TableFootPad_*", "StaticBody3D", true, false)
 	if table_foot_pads.size() != 4:
 		printerr("FAIL dining table floor contact pads: ", table_foot_pads.size())

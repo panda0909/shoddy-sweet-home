@@ -854,7 +854,18 @@ func _add_kitchen_dining_details() -> void:
 		var pad_size := Vector3(cushion_bounds.size.x * 0.88, 0.038, cushion_bounds.size.z * 0.88)
 		var pad_position := Vector3(cushion_bounds.get_center().x, cushion_bounds.end.y + 0.021, cushion_bounds.get_center().z)
 		_add_box("KitchenDetail_ChairPad_%02d" % cushion_index, pad_size, pad_position, fabric, false)
-		_add_box("KitchenDetail_ChairPad_Piping_%02d" % cushion_index, Vector3(pad_size.x + 0.018, 0.012, 0.018), Vector3(pad_position.x, pad_position.y + 0.023, pad_position.z - pad_size.z * 0.5), dark_wood, false)
+		# Wrap the cushion with four separate seams and add small fasteners at
+		# the corners. A single front strip looked like a floating decal in the
+		# close view; these bounds-derived pieces read as sewn upholstery and
+		# remain correct if the imported chair proportions change.
+		_add_box("KitchenDetail_ChairPad_Piping_Front_%02d" % cushion_index, Vector3(pad_size.x + 0.018, 0.012, 0.018), Vector3(pad_position.x, pad_position.y + 0.023, pad_position.z - pad_size.z * 0.5), dark_wood, false)
+		_add_box("KitchenDetail_ChairPad_Piping_Back_%02d" % cushion_index, Vector3(pad_size.x + 0.018, 0.012, 0.018), Vector3(pad_position.x, pad_position.y + 0.023, pad_position.z + pad_size.z * 0.5), dark_wood, false)
+		_add_box("KitchenDetail_ChairPad_Piping_Left_%02d" % cushion_index, Vector3(0.018, 0.012, pad_size.z), Vector3(pad_position.x - pad_size.x * 0.5, pad_position.y + 0.023, pad_position.z), dark_wood, false)
+		_add_box("KitchenDetail_ChairPad_Piping_Right_%02d" % cushion_index, Vector3(0.018, 0.012, pad_size.z), Vector3(pad_position.x + pad_size.x * 0.5, pad_position.y + 0.023, pad_position.z), dark_wood, false)
+		for corner in range(4):
+			var corner_x := pad_position.x - pad_size.x * 0.34 if corner % 2 == 0 else pad_position.x + pad_size.x * 0.34
+			var corner_z := pad_position.z - pad_size.z * 0.34 if corner < 2 else pad_position.z + pad_size.z * 0.34
+			_add_cylinder("KitchenDetail_ChairPad_Fastener_%02d_%d" % [cushion_index, corner], 0.012, 0.008, Vector3(corner_x, pad_position.y + 0.032, corner_z), steel, false)
 		cushion_index += 1
 	if cushion_index == 0:
 		# Keep the test scene useful even if a later kitchen asset renames its
