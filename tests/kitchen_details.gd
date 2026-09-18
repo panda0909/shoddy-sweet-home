@@ -17,6 +17,7 @@ func _run() -> void:
 		"KitchenDetail_FaucetSpout", "KitchenDetail_FaucetHandle", "KitchenDetail_CuttingBoard",
 		"KitchenDetail_Cup", "KitchenDetail_SinkLeakTrap", "KitchenDetail_SinkLeakJoint", "KitchenDetail_SinkLeakDrop",
 		"KitchenDetail_FridgeHandle", "KitchenDetail_UnderCabinetLight",
+		"KitchenDetail_CookerKnob_0", "KitchenDetail_CookerKnob_3",
 		"KitchenDetail_FridgeDoorPanel", "KitchenDetail_FridgeGasketTop", "KitchenDetail_FridgeGasketBottom",
 		"KitchenDetail_FridgeHingeTop", "KitchenDetail_FridgeHingeBottom", "KitchenDetail_FridgeDisplay",
 		"KitchenDetail_OvenGlass", "KitchenDetail_OvenHandle", "KitchenDetail_OvenFrameTop",
@@ -55,6 +56,15 @@ func _run() -> void:
 		printerr("FAIL sink leak issue is not attached to the real sink plumbing bounds")
 		failures += 1
 	var table_bounds: AABB = game._find_kitchen_mesh_bounds("63_Tabletop")
+	var cooker_bounds: AABB = game._find_kitchen_mesh_bounds("251_CookerBlack")
+	var cooker_knob := game.get_node_or_null("KitchenDetail_CookerKnob_0") as Node3D
+	if not cooker_bounds.has_volume() or cooker_knob == null or absf(cooker_knob.global_position.x - (cooker_bounds.position.x - 0.035)) > 0.06 or cooker_knob.global_position.y < cooker_bounds.position.y or cooker_knob.global_position.y > cooker_bounds.end.y:
+		printerr("FAIL cooker knobs are not attached to the real cooker bounds")
+		failures += 1
+	var cutting_board := game.get_node_or_null("KitchenDetail_CuttingBoard") as Node3D
+	if not sink_worktop.has_volume() or cutting_board == null or cutting_board.global_position.x < sink_worktop.position.x or cutting_board.global_position.x > sink_worktop.end.x or cutting_board.global_position.z < sink_worktop.position.z or cutting_board.global_position.z > sink_worktop.end.z:
+		printerr("FAIL cutting board is not attached to the real worktop bounds")
+		failures += 1
 	var table_edge := game.get_node_or_null("KitchenDetail_TableEdge_Front") as Node3D
 	if not table_bounds.has_volume() or table_edge == null:
 		printerr("FAIL dining table bounds-attached edge")
@@ -118,7 +128,6 @@ func _run() -> void:
 		if fridge_sweep.visible:
 			printerr("FAIL refrigerator sweep visual did not disable")
 			failures += 1
-	var cooker_bounds: AABB = game._find_kitchen_mesh_bounds("251_CookerBlack")
 	var oven_glass := game.get_node_or_null("KitchenDetail_OvenGlass") as Node3D
 	var oven_expected_x := cooker_bounds.position.x - 0.015 if cooker_bounds.has_volume() else 0.0
 	if not cooker_bounds.has_volume() or oven_glass == null or absf(oven_glass.global_position.x - oven_expected_x) > 0.06:

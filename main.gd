@@ -624,6 +624,7 @@ func _add_kitchen_imported_details() -> void:
 	# assembly to the real worktop bounds so the basin and the sink_leak anchor
 	# remain coincident when the kitchen hero scale changes.
 	var sink_worktop := _find_kitchen_mesh_bounds("123_Worktops")
+	var cooker_bounds := _find_kitchen_mesh_bounds("251_CookerBlack")
 	var sink_center := _kitchen_point(Vector3(6.35, 0.65, 4.55))
 	var sink_surface_y := sink_center.y
 	var sink_size := Vector2(0.72, 0.48)
@@ -653,10 +654,20 @@ func _add_kitchen_imported_details() -> void:
 		var drip_material := _emissive_mat(Color(0.10, 0.42, 0.52), 0.12)
 		_add_cylinder("KitchenDetail_SinkLeakDrop", 0.014, 0.10, Vector3(pipe_x + 0.065, leak_y - 0.20, pipe_z), drip_material, false)
 	for knob_index in range(4):
-		_add_cylinder("KitchenDetail_CookerKnob_%d" % knob_index, 0.045, 0.025, _kitchen_point(Vector3(6.25 + knob_index * 0.18, 0.70, 3.62)), steel, false)
-	_add_box("KitchenDetail_CuttingBoard", Vector3(0.48, 0.035, 0.34), _kitchen_point(Vector3(5.25, 0.66, 4.32)), wood, false)
-	_add_cylinder("KitchenDetail_Cup", 0.09, 0.16, _kitchen_point(Vector3(5.68, 0.76, 4.12)), ceramic, false)
-	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, _kitchen_point(Vector3(5.78, 0.76, 4.12)), ceramic, false)
+		var knob_position := _kitchen_point(Vector3(6.25 + knob_index * 0.18, 0.70, 3.62))
+		if cooker_bounds.has_volume():
+			var knob_fraction := float(knob_index) / 3.0
+			knob_position = Vector3(cooker_bounds.position.x - 0.035, cooker_bounds.end.y - 0.10, lerpf(cooker_bounds.position.z + cooker_bounds.size.z * 0.28, cooker_bounds.position.z + cooker_bounds.size.z * 0.72, knob_fraction))
+		_add_cylinder("KitchenDetail_CookerKnob_%d" % knob_index, 0.045, 0.025, knob_position, steel, false)
+	var cutting_board_position := _kitchen_point(Vector3(5.25, 0.66, 4.32))
+	var cup_position := _kitchen_point(Vector3(5.68, 0.76, 4.12))
+	if sink_worktop.has_volume():
+		var prep_y := sink_worktop.end.y + 0.035
+		cutting_board_position = Vector3(sink_worktop.position.x + sink_worktop.size.x * 0.22, prep_y, sink_worktop.position.z + sink_worktop.size.z * 0.18)
+		cup_position = Vector3(sink_worktop.end.x - sink_worktop.size.x * 0.18, prep_y + 0.11, sink_worktop.position.z + sink_worktop.size.z * 0.30)
+	_add_box("KitchenDetail_CuttingBoard", Vector3(0.48, 0.035, 0.34), cutting_board_position, wood, false)
+	_add_cylinder("KitchenDetail_Cup", 0.09, 0.16, cup_position, ceramic, false)
+	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, cup_position + Vector3(0.10, 0, 0), ceramic, false)
 	# Bind the refrigerator pull to the tall imported cabinet that also anchors
 	# the cabinet-blocked inspection issue. The old authored point belonged to
 	# the previous kitchen scale and appeared as a floating vertical bar.
@@ -691,7 +702,6 @@ func _add_kitchen_imported_details() -> void:
 	# The cooker has a separate glass front and a handle on the same imported
 	# front plane. These are visual-only finish pieces; the original furniture
 	# box continues to be the sole movement collider.
-	var cooker_bounds := _find_kitchen_mesh_bounds("251_CookerBlack")
 	if cooker_bounds.has_volume():
 		var cooker_front_x := cooker_bounds.position.x - 0.015
 		var oven_glass := _glass_mat(Color(0.08, 0.11, 0.12), 0.76)
