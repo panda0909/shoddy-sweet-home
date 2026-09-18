@@ -60,6 +60,11 @@ jobs:
           cp CREDITS.txt build/web/CREDITS.txt
           test -s "build/web/game-${GITHUB_SHA}.pck"
           test -s "build/web/game-${GITHUB_SHA}.wasm"
+          pck_bytes=$(stat -c%s "build/web/game-${GITHUB_SHA}.pck")
+          wasm_bytes=$(stat -c%s "build/web/game-${GITHUB_SHA}.wasm")
+          download_bytes=$((pck_bytes + wasm_bytes))
+          echo "Web packaged download bytes: ${download_bytes}"
+          test "${download_bytes}" -le 157286400
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
