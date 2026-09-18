@@ -68,6 +68,12 @@ func _run() -> void:
 	if not vanity_source_bounds.has_volume() or vanity_counter == null or vanity_counter.global_position.distance_to(vanity_expected) > 0.06:
 		printerr("FAIL vanity counter is not attached to imported marble bounds")
 		failures += 1
+	var bathroom_reference_bounds: AABB = game._find_bathroom_mesh_bounds("849_Ceiling")
+	var toilet_base := game.find_child("ImportedBath_ToiletBase", true, false) as Node3D
+	var toilet_expected := Vector3(bathroom_reference_bounds.end.x - 0.20, 0.31, bathroom_reference_bounds.position.z + bathroom_reference_bounds.size.z * 0.58) if bathroom_reference_bounds.has_volume() else Vector3.ZERO
+	if not bathroom_reference_bounds.has_volume() or toilet_base == null or toilet_base.global_position.distance_to(toilet_expected) > 0.06:
+		printerr("FAIL toilet fixture is not attached to bathroom room bounds")
+		failures += 1
 	for node_name in required:
 		var detail: Node = game.find_child(node_name, true, false)
 		if detail != null and detail.find_child("CollisionShape3D", true, false) != null and ("Vanity" in node_name or "MirrorEdge" in node_name):

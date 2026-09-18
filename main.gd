@@ -901,7 +901,14 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		for handle_index in range(4):
 			var handle_x := mirror_bounds.position.x + mirror_bounds.size.x * (0.18 + 0.21 * handle_index)
 			_add_box("ImportedBath_VanityHandle_%d" % handle_index, Vector3(0.20, 0.025, 0.032), Vector3(handle_x, handle_y, vanity_z + 0.035), steel, false, detail_root)
-	var toilet_base := _add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, Vector3(7.3, 0.31, -4.5), porcelain, true, detail_root)
+	# The imported ceiling is the stable room-volume reference. Keep the toilet
+	# on the right-hand sanitary wall, but derive its anchor from that bounds so
+	# the whole fixture follows a future bathroom translation or scale.
+	var bathroom_reference_bounds := _find_bathroom_mesh_bounds("849_Ceiling")
+	var toilet_anchor := Vector3(7.3, 0.0, -4.5)
+	if bathroom_reference_bounds.has_volume():
+		toilet_anchor = Vector3(bathroom_reference_bounds.end.x - 0.20, 0.0, bathroom_reference_bounds.position.z + bathroom_reference_bounds.size.z * 0.58)
+	var toilet_base := _add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, toilet_anchor + Vector3(0, 0.31, 0), porcelain, true, detail_root)
 	# Keep the box/cylinder collision predictable, but replace the visible
 	# placeholder cylinder with a high-segment ceramic bowl silhouette.
 	var toilet_mesh := toilet_base.get_node("Mesh") as MeshInstance3D
@@ -913,17 +920,17 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	toilet_mesh.mesh = bowl_mesh
 	toilet_mesh.scale = Vector3(1.0, 0.70, 1.10)
 	toilet_mesh.position.y = 0.05
-	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), Vector3(7.3, 0.98, -4.78), porcelain, true, detail_root)
-	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, Vector3(7.3, 0.66, -4.5), seat_material, true, detail_root)
-	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, Vector3(7.3, 0.705, -4.5), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
-	_add_cylinder("ImportedBath_ToiletBowlRim", 0.46, 0.025, Vector3(7.3, 0.645, -4.5), porcelain, false, detail_root)
-	_add_cylinder("ImportedBath_ToiletBowlInset", 0.31, 0.012, Vector3(7.3, 0.686, -4.5), bowl_shadow_material, false, detail_root)
-	_add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), Vector3(7.3, 0.73, -4.70), lid_material, false, detail_root)
-	_add_box("ImportedBath_ToiletHingeLeft", Vector3(0.07, 0.035, 0.045), Vector3(7.13, 0.765, -4.73), button_material, false, detail_root)
-	_add_box("ImportedBath_ToiletHingeRight", Vector3(0.07, 0.035, 0.045), Vector3(7.47, 0.765, -4.73), button_material, false, detail_root)
-	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, Vector3(7.3, 1.39, -4.78), button_material, false, detail_root)
-	_add_cylinder("ImportedBath_FlushButtonRing", 0.085, 0.012, Vector3(7.3, 1.405, -4.78), steel, false, detail_root)
-	_add_box("ImportedBath_FlushLever", Vector3(0.035, 0.16, 0.035), Vector3(7.73, 1.18, -4.78), steel, false, detail_root)
+	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), toilet_anchor + Vector3(0, 0.98, -0.28), porcelain, true, detail_root)
+	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, toilet_anchor + Vector3(0, 0.66, 0), seat_material, true, detail_root)
+	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, toilet_anchor + Vector3(0, 0.705, 0), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
+	_add_cylinder("ImportedBath_ToiletBowlRim", 0.46, 0.025, toilet_anchor + Vector3(0, 0.645, 0), porcelain, false, detail_root)
+	_add_cylinder("ImportedBath_ToiletBowlInset", 0.31, 0.012, toilet_anchor + Vector3(0, 0.686, 0), bowl_shadow_material, false, detail_root)
+	_add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), toilet_anchor + Vector3(0, 0.73, -0.20), lid_material, false, detail_root)
+	_add_box("ImportedBath_ToiletHingeLeft", Vector3(0.07, 0.035, 0.045), toilet_anchor + Vector3(-0.17, 0.765, -0.23), button_material, false, detail_root)
+	_add_box("ImportedBath_ToiletHingeRight", Vector3(0.07, 0.035, 0.045), toilet_anchor + Vector3(0.17, 0.765, -0.23), button_material, false, detail_root)
+	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, toilet_anchor + Vector3(0, 1.39, -0.28), button_material, false, detail_root)
+	_add_cylinder("ImportedBath_FlushButtonRing", 0.085, 0.012, toilet_anchor + Vector3(0, 1.405, -0.28), steel, false, detail_root)
+	_add_box("ImportedBath_FlushLever", Vector3(0.035, 0.16, 0.035), toilet_anchor + Vector3(0.43, 1.18, -0.28), steel, false, detail_root)
 
 	var shower_tray := _add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), tray_material, true, detail_root)
 	# Keep the entire glass/frame assembly attached to the tray. The old glass
