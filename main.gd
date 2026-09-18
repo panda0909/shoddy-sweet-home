@@ -636,8 +636,12 @@ func _add_kitchen_imported_details() -> void:
 		sink_surface_y = sink_center.y
 		sink_size = Vector2(minf(0.44, sink_worktop.size.x * 0.72), minf(0.48, sink_worktop.size.z * 0.42))
 	var basin_size := Vector3(sink_size.x, 0.08, sink_size.y)
-	_add_box("KitchenDetail_SinkBasin", basin_size, Vector3(sink_center.x, sink_surface_y - 0.035, sink_center.z), dark, false)
+	var sink_basin := _add_box("KitchenDetail_SinkBasin", basin_size, Vector3(sink_center.x, sink_surface_y - 0.035, sink_center.z), dark, false)
+	var sink_basin_mesh := sink_basin.get_node("Mesh") as MeshInstance3D
+	if sink_basin_mesh != null:
+		sink_basin_mesh.mesh = _kitchen_sink_basin_mesh(sink_size)
 	_add_box("KitchenDetail_SinkRim", Vector3(sink_size.x + 0.12, 0.045, sink_size.y + 0.12), Vector3(sink_center.x, sink_surface_y + 0.005, sink_center.z), steel, false)
+	_add_cylinder("KitchenDetail_SinkDrain", minf(sink_size.x, sink_size.y) * 0.11, 0.012, Vector3(sink_center.x, sink_surface_y - 0.010, sink_center.z), steel, false)
 	_add_cylinder("KitchenDetail_FaucetStem", 0.035, 0.38, Vector3(sink_center.x, sink_surface_y + 0.20, sink_center.z - sink_size.y * 0.40), steel, false)
 	_add_box("KitchenDetail_FaucetSpout", Vector3(0.24, 0.045, 0.045), Vector3(sink_center.x, sink_surface_y + 0.37, sink_center.z - sink_size.y * 0.16), steel, false)
 	_add_cylinder("KitchenDetail_FaucetHandle", 0.025, 0.14, Vector3(sink_center.x + sink_size.x * 0.42, sink_surface_y + 0.20, sink_center.z - sink_size.y * 0.40), steel, false)
@@ -2681,6 +2685,84 @@ func _vanity_basin_mesh() -> ArrayMesh:
 
 	# Connect the outer lip to the inner lip, leaving the center open for the
 	# separate dark inset and drain detail.
+	for segment in range(segments):
+		var next_segment := (segment + 1) % segments
+		var outer_a := outer_starts[outer_starts.size() - 1] + segment
+		var outer_b := outer_starts[outer_starts.size() - 1] + next_segment
+		var inner_a := inner_starts[0] + segment
+		var inner_b := inner_starts[0] + next_segment
+		indices.append(outer_a)
+		indices.append(inner_a)
+		indices.append(outer_b)
+		indices.append(outer_b)
+		indices.append(inner_a)
+		indices.append(inner_b)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var basin := ArrayMesh.new()
+	basin.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return basin
+
+
+func _kitchen_sink_basin_mesh(size: Vector2) -> ArrayMesh:
+	var segments := 24
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	var outer_starts: Array[int] = []
+	var outer_y := [-0.040, -0.020, 0.012]
+	var outer_scale := [1.00, 1.02, 0.84]
+	for ring in range(outer_y.size()):
+		outer_starts.append(vertices.size())
+		for segment in range(segments):
+			var angle := TAU * float(segment) / float(segments)
+			var radial := Vector3(cos(angle), 0.0, sin(angle))
+			vertices.append(Vector3(radial.x * size.x * 0.50 * outer_scale[ring], outer_y[ring], radial.z * size.y * 0.50 * outer_scale[ring]))
+			normals.append(Vector3(radial.x, 0.28, radial.z).normalized())
+			uvs.append(Vector2(float(segment) / float(segments), float(ring) / float(outer_y.size() - 1)))
+	for ring in range(outer_starts.size() - 1):
+		for segment in range(segments):
+			var next_segment := (segment + 1) % segments
+			var a := outer_starts[ring] + segment
+			var b := outer_starts[ring] + next_segment
+			var c := outer_starts[ring + 1] + segment
+			var d := outer_starts[ring + 1] + next_segment
+			indices.append(a)
+			indices.append(c)
+			indices.append(b)
+			indices.append(b)
+			indices.append(c)
+			indices.append(d)
+
+	var inner_starts: Array[int] = []
+	var inner_y := [0.004, -0.010, -0.028]
+	var inner_scale := [0.74, 0.63, 0.28]
+	for ring in range(inner_y.size()):
+		inner_starts.append(vertices.size())
+		for segment in range(segments):
+			var angle := TAU * float(segment) / float(segments)
+			var radial := Vector3(cos(angle), 0.0, sin(angle))
+			vertices.append(Vector3(radial.x * size.x * 0.50 * inner_scale[ring], inner_y[ring], radial.z * size.y * 0.50 * inner_scale[ring]))
+			normals.append(Vector3(-radial.x, 0.28, -radial.z).normalized())
+			uvs.append(Vector2(float(segment) / float(segments), float(ring) / float(inner_y.size() - 1)))
+	for ring in range(inner_starts.size() - 1):
+		for segment in range(segments):
+			var next_segment := (segment + 1) % segments
+			var a := inner_starts[ring] + segment
+			var b := inner_starts[ring] + next_segment
+			var c := inner_starts[ring + 1] + segment
+			var d := inner_starts[ring + 1] + next_segment
+			indices.append(a)
+			indices.append(b)
+			indices.append(c)
+			indices.append(b)
+			indices.append(d)
+			indices.append(c)
 	for segment in range(segments):
 		var next_segment := (segment + 1) % segments
 		var outer_a := outer_starts[outer_starts.size() - 1] + segment

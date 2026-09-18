@@ -13,7 +13,7 @@ func _run() -> void:
 	await physics_frame
 
 	var required := [
-		"KitchenDetail_SinkBasin", "KitchenDetail_SinkRim", "KitchenDetail_FaucetStem",
+		"KitchenDetail_SinkBasin", "KitchenDetail_SinkRim", "KitchenDetail_SinkDrain", "KitchenDetail_FaucetStem",
 		"KitchenDetail_FaucetSpout", "KitchenDetail_FaucetHandle", "KitchenDetail_CuttingBoard",
 		"KitchenDetail_Cup", "KitchenDetail_SinkLeakTrap", "KitchenDetail_SinkLeakJoint", "KitchenDetail_SinkLeakDrop",
 		"KitchenDetail_FridgeHandle", "KitchenDetail_UnderCabinetLight",
@@ -55,6 +55,19 @@ func _run() -> void:
 	var sink := game.get_node_or_null("KitchenDetail_SinkBasin") as Node3D
 	if not sink_worktop.has_volume() or sink == null or sink.global_position.distance_to(sink_worktop.get_center()) > 0.40:
 		printerr("FAIL sink is not attached to real worktop bounds")
+		failures += 1
+	var sink_mesh := sink.get_node_or_null("Mesh") as MeshInstance3D if sink != null else null
+	if sink_mesh == null or not sink_mesh.mesh is ArrayMesh or sink_mesh.mesh.get_surface_count() == 0:
+		printerr("FAIL sink still uses a low-detail or solid basin mesh")
+		failures += 1
+	else:
+		var sink_bounds := sink_mesh.mesh.get_aabb()
+		if sink_bounds.size.x < 0.20 or sink_bounds.size.z < 0.20 or sink_bounds.size.y < 0.04:
+			printerr("FAIL sink basin shell dimensions: ", sink_bounds)
+			failures += 1
+	var sink_drain := game.get_node_or_null("KitchenDetail_SinkDrain") as Node3D
+	if sink_drain == null or sink_drain.find_child("CollisionShape3D", true, false) != null:
+		printerr("FAIL sink drain missing or blocks movement")
 		failures += 1
 	var leak_position := Vector3.ZERO
 	var sink_cabinet: AABB = game._find_kitchen_mesh_bounds("261_CupboardUnits")

@@ -586,3 +586,10 @@
 - `tests/bathroom_details.gd` 現在驗證雙盆具有實際中空幾何、尺寸與排水件，浴室細節由 52 增至 54 個，材質批次維持 12。
 - 圖形截圖回歸：浴室 median `3.512ms`、p95 `5.085ms`、583 draws；14 題互動、家具碰撞與三角面預算均維持 `0 failures`。
 - Web Release 回歸：PCK `103,715,772` bytes、WASM `39,514,754` bytes，合計 `143,230,526` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：廚房中空水槽與排水件（2026-09-19）
+
+- `KitchenDetail_SinkBasin` 由扁平 BoxMesh 改為 24 段外壁／內壁／盆緣 ArrayMesh，並新增 bounds-attached `KitchenDetail_SinkDrain`；水槽、龍頭與漏水管仍共同使用真實 `123_Worktops`／`261_CupboardUnits` bounds。
+- `tests/kitchen_details.gd` 現在驗證水槽是中空幾何、排水件存在且不阻擋玩家；廚房細節 `33` 個、餐椅包邊／五金與水槽貼合驗收均為 `0 failures`。
+- 圖形截圖回歸：廚房 median `5.646ms`、p95 `6.326ms`、`1343` draws；14 題互動與家具碰撞仍為 `0 failures`。
+- Web Release 回歸：PCK `103,718,204` bytes、WASM `39,514,754` bytes，合計 `143,232,958` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
