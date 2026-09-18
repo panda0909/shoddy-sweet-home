@@ -479,6 +479,61 @@ func _add_kitchen_imported_details() -> void:
 	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, _kitchen_point(Vector3(5.78, 0.76, 4.12)), ceramic, false)
 	_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.72, 0.045), _kitchen_point(Vector3(6.27, 1.04, 2.72)), steel, false)
 	_add_box("KitchenDetail_UnderCabinetLight", Vector3(1.20, 0.025, 0.06), _kitchen_point(Vector3(6.25, 1.14, 4.00)), _emissive_mat(Color(1.0, 0.72, 0.38), 0.75), false)
+	_add_kitchen_dining_details()
+
+
+func _add_kitchen_dining_details() -> void:
+	# The table and chairs are part of the imported model. Derive the close-up
+	# finish pieces from their actual world bounds so a future asset scale change
+	# cannot leave trim, seat pads, or fasteners floating in the room.
+	var table_bounds := _find_kitchen_mesh_bounds("63_Tabletop")
+	if not table_bounds.has_volume():
+		return
+	var wood := _wood_mat(Color(0.58, 0.31, 0.14))
+	var fabric := _mat(Color(0.13, 0.22, 0.25))
+	var dark_wood := _wood_mat(Color(0.24, 0.10, 0.045))
+	var steel := _mat(Color(0.48, 0.51, 0.50))
+	var table_center := table_bounds.get_center()
+	var edge_y := table_bounds.end.y + 0.018
+	var edge_x := table_bounds.size.x + 0.045
+	var edge_z := table_bounds.size.z + 0.045
+	var edge_thickness := 0.036
+	_add_box("KitchenDetail_TableEdge_Front", Vector3(edge_x, edge_thickness, edge_thickness), Vector3(table_center.x, edge_y, table_bounds.position.z - 0.012), dark_wood, false)
+	_add_box("KitchenDetail_TableEdge_Back", Vector3(edge_x, edge_thickness, edge_thickness), Vector3(table_center.x, edge_y, table_bounds.end.z + 0.012), dark_wood, false)
+	_add_box("KitchenDetail_TableEdge_Left", Vector3(edge_thickness, edge_thickness, edge_z), Vector3(table_bounds.position.x - 0.012, edge_y, table_center.z), dark_wood, false)
+	_add_box("KitchenDetail_TableEdge_Right", Vector3(edge_thickness, edge_thickness, edge_z), Vector3(table_bounds.end.x + 0.012, edge_y, table_center.z), dark_wood, false)
+	for corner_index in range(4):
+		var corner_x := table_bounds.position.x + (table_bounds.size.x if corner_index % 2 == 1 else 0.0)
+		var corner_z := table_bounds.position.z + (table_bounds.size.z if corner_index >= 2 else 0.0)
+		_add_cylinder("KitchenDetail_TableBolt_%d" % corner_index, 0.014, 0.012, Vector3(corner_x, edge_y + 0.018, corner_z), steel, false)
+
+	var cushion_index := 0
+	for cushion in get_node("KitchenRealAsset").find_children("*", "MeshInstance3D", true, false):
+		var mesh := cushion as MeshInstance3D
+		if mesh == null or "cushion1" not in str(mesh.name).to_lower():
+			continue
+		var cushion_bounds := mesh.global_transform * mesh.get_aabb()
+		if cushion_bounds.size.x < 0.12 or cushion_bounds.size.z < 0.12:
+			continue
+		var pad_size := Vector3(cushion_bounds.size.x * 0.88, 0.038, cushion_bounds.size.z * 0.88)
+		var pad_position := Vector3(cushion_bounds.get_center().x, cushion_bounds.end.y + 0.021, cushion_bounds.get_center().z)
+		_add_box("KitchenDetail_ChairPad_%02d" % cushion_index, pad_size, pad_position, fabric, false)
+		_add_box("KitchenDetail_ChairPad_Piping_%02d" % cushion_index, Vector3(pad_size.x + 0.018, 0.012, 0.018), Vector3(pad_position.x, pad_position.y + 0.023, pad_position.z - pad_size.z * 0.5), dark_wood, false)
+		cushion_index += 1
+	if cushion_index == 0:
+		# Keep the test scene useful even if a later kitchen asset renames its
+		# cushion nodes: this fallback still stays attached to the table bounds.
+		_add_box("KitchenDetail_ChairPad_Fallback", Vector3(0.30, 0.038, 0.26), Vector3(table_center.x - table_bounds.size.x * 0.35, edge_y - 0.20, table_bounds.end.z + 0.28), fabric, false)
+
+
+func _find_kitchen_mesh_bounds(mesh_name: String) -> AABB:
+	var kitchen_asset := get_node_or_null("KitchenRealAsset") as Node3D
+	if kitchen_asset == null:
+		return AABB()
+	var mesh := kitchen_asset.find_child(mesh_name, true, false) as MeshInstance3D
+	if mesh == null:
+		return AABB()
+	return mesh.global_transform * mesh.get_aabb()
 
 
 func _kitchen_point(base_point: Vector3) -> Vector3:

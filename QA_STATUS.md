@@ -173,3 +173,10 @@
 - 馬桶、淋浴框、玻璃、蓮蓬頭、毛巾與排水孔收進 `BathroomDetailBatch`；19 個執行期物件合併為 10 個材質批次，碰撞形狀與缺陷錨點保留。
 - 修正 `static_batch.gd` 搜尋未設 owner 的執行期 MeshInstance3D，避免「宣稱 batching 但實際 0 物件」的假通過。
 - 排風扇改為天花板薄型構件並同步旋轉缺陷視覺；浴室圖形驗收 median 7.073ms / p95 11.933ms，細節測試與四房截圖通過。
+
+### 追加：廚房餐桌與椅墊近距離細節（2026-09-18）
+
+- 餐桌收邊、四角金屬固定件與椅墊／滾邊改以匯入模型 `63_Tabletop`、`*Cushion1` 的實際世界 bounds 對齊；不再依賴獨立固定座標，桌椅縮放後仍能貼合。
+- 新增 13 個驗收用廚房細節節點與 8 個 bounds-attached 椅墊，全部為無碰撞裝飾，避免近距離細節讓玩家卡住。
+- `tests/kitchen_details.gd`、`tests/furniture_collision.gd`、`tests/room_finish_quality.gd`、`tests/issue_access.gd` 通過；圖形化四房截圖與 7 張近距離情境驗收皆為 0 failures。
+- 最新圖形測試：廚房 frame median 7.372ms / p95 11.916ms / 1188 draws；臥室 7.029ms / 12.290ms；浴室 6.413ms / 12.023ms。滑鼠視角測試 0 failures。
