@@ -33,6 +33,10 @@ func _run() -> void:
 	if dining_pads.is_empty():
 		printerr("FAIL no bounds-attached dining chair pads")
 		failures += 1
+	var table_foot_pads: Array = game.find_children("KitchenDetail_TableFootPad_*", "StaticBody3D", true, false)
+	if table_foot_pads.size() != 4:
+		printerr("FAIL dining table floor contact pads: ", table_foot_pads.size())
+		failures += 1
 	var sink_worktop: AABB = game._find_kitchen_mesh_bounds("123_Worktops")
 	var sink := game.get_node_or_null("KitchenDetail_SinkBasin") as Node3D
 	if not sink_worktop.has_volume() or sink == null or sink.global_position.distance_to(sink_worktop.get_center()) > 0.40:
@@ -69,7 +73,7 @@ func _run() -> void:
 		if handle_box == null or handle_box.size.y < 0.48 or handle_box.size.y > 0.68:
 			printerr("FAIL refrigerator handle has unexpected vertical proportion")
 			failures += 1
-	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size())
+	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size(), "; table foot pads: ", table_foot_pads.size())
 	print("Kitchen detail failures: ", failures)
 	game.queue_free()
 	await process_frame

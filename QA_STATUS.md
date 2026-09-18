@@ -334,6 +334,11 @@
 - 依匯入 `60_TvBevel` 實際 bounds 新增淺型電視櫃、櫃面內縮與走線收邊，補足電視牆下方空洞的比例與接觸細節。
 - `tests/room_finish_quality.gd` 新增 TV console 貼合檢查；細節保持無碰撞，不影響玩家通行。
 
+### 追加：廚房餐桌落地腳墊（2026-09-19）
+
+- 依 `63_Tabletop` 世界 bounds 新增四個桌腳落地腳墊，補上餐桌與地板的接觸收尾；腳墊是視覺件，不增加玩家碰撞。
+- `tests/kitchen_details.gd` 新增四個腳墊數量回歸檢查，並維持餐桌／椅墊的 bounds 貼合。
+
 ### 追加：廚房冰箱把手 bounds 貼合（2026-09-19）
 
 - `KitchenDetail_FridgeHandle` 不再使用舊廚房比例下的固定座標，改依匯入 `253_CupboardUnits` 世界 bounds 生成，與 `cabinet_blocked` 缺陷共用同一個冰箱／高櫃基準。

@@ -677,6 +677,15 @@ func _add_kitchen_dining_details() -> void:
 		var corner_x := table_bounds.position.x + (table_bounds.size.x if corner_index % 2 == 1 else 0.0)
 		var corner_z := table_bounds.position.z + (table_bounds.size.z if corner_index >= 2 else 0.0)
 		_add_cylinder("KitchenDetail_TableBolt_%d" % corner_index, 0.014, 0.012, Vector3(corner_x, edge_y + 0.018, corner_z), steel, false)
+	# Give the imported table a readable floor contact at each leg position.
+	# These are render-only rubber/metal pads, deliberately kept separate from
+	# the player's collision furniture so they cannot catch the capsule.
+	var foot_material := _mat(Color(0.12, 0.13, 0.13))
+	var foot_y := maxf(0.025, table_bounds.position.y - 0.56)
+	for foot_index in range(4):
+		var foot_x := table_bounds.position.x + 0.16 if foot_index % 2 == 0 else table_bounds.end.x - 0.16
+		var foot_z := table_bounds.position.z + 0.16 if foot_index < 2 else table_bounds.end.z - 0.16
+		_add_box("KitchenDetail_TableFootPad_%d" % foot_index, Vector3(0.16, 0.025, 0.16), Vector3(foot_x, foot_y, foot_z), foot_material, false)
 
 	var cushion_index := 0
 	for cushion in get_node("KitchenRealAsset").find_children("*", "MeshInstance3D", true, false):
