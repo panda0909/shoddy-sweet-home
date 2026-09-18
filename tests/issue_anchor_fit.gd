@@ -93,7 +93,10 @@ func _run() -> void:
 		printerr("FAIL bathroom door-frame placement: ", door.position if door != null else "missing")
 		failures += 1
 	var vanity_issue := game.issue_bodies.get("bath_vanity") as Node3D
-	var vanity_anchor: Vector3 = game.get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 0.24, -0.09)) + Vector3(-0.45, 0, -0.28)
+	var vanity_bounds: AABB = game._find_anchor_group_bounds(["43_Marble", "838_Marble"])
+	var vanity_anchor: Vector3 = game.get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 0.10, -0.09))
+	if vanity_bounds.has_volume():
+		vanity_anchor = Vector3(vanity_bounds.end.x - 0.12, 0.10, vanity_bounds.end.z + 0.22)
 	if vanity_issue == null or vanity_issue.position.distance_to(vanity_anchor) > 0.05:
 		printerr("FAIL bathroom door/vanity issue placement: ", vanity_issue.position if vanity_issue != null else "missing")
 		failures += 1

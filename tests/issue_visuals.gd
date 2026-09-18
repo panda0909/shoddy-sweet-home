@@ -69,6 +69,14 @@ func _run() -> void:
 		elif visual.find_children("*", "CollisionShape3D", true, false).size() != 0:
 			printerr("FAIL issue visual added collision: ", visual_issue)
 			failures += 1
+		elif visual_issue == "bath_vanity":
+			var sweep_segments := 0
+			for child in visual.get_children():
+				if child is MeshInstance3D and child.mesh is BoxMesh:
+					sweep_segments += 1
+			if sweep_segments < 16 or not is_finite(visual.rotation.y):
+				printerr("FAIL vanity clearance sweep is incomplete or not oriented toward the door: ", sweep_segments)
+				failures += 1
 	print("Cabinet swing arc segments: ", 15 if failures == 0 else 0)
 	print("Issue visual failures: ", failures)
 	game.queue_free()

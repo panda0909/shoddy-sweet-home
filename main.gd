@@ -1866,9 +1866,15 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		"cabinet_wear":
 			title = "櫥櫃門板磨損"
 		"bath_vanity":
-			var door_floor_anchor: Vector3 = get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 0.24, -0.09))
-			pos = door_floor_anchor + Vector3(-0.45, 0, -0.28)
-			size = Vector3(0.80, 0.20, 0.80)
+			# Put the answer on the real vanity front edge. The old door-frame
+			# coordinate was several metres away from the sink in this layout.
+			var vanity_bounds := _find_anchor_group_bounds(["43_Marble", "838_Marble"])
+			if vanity_bounds.has_volume():
+				pos = Vector3(vanity_bounds.end.x - 0.12, 0.10, vanity_bounds.end.z + 0.22)
+				size = Vector3(clampf(vanity_bounds.size.x * 0.46, 0.62, 0.90), 0.18, 0.62)
+			else:
+				pos = get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 0.10, -0.09))
+				size = Vector3(0.80, 0.20, 0.80)
 		"bed_slope":
 			pos = Vector3(-4.6, 0.07, -3.3)
 			size = Vector3(0.7, 0.14, 0.9)
@@ -2016,6 +2022,11 @@ func _add_issue_target(issue: Dictionary) -> void:
 	body.add_child(visual)
 	if issue["id"] == "bath_vent":
 		visual.rotation.x = PI / 2.0
+	if issue["id"] == "bath_vanity":
+		# Aim the washstand clearance sweep toward the actual bathroom door.
+		var door_anchor: Vector3 = get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 0.10, 0.0))
+		var sweep_delta: Vector3 = door_anchor - body.global_position
+		visual.rotation.y = atan2(sweep_delta.x, sweep_delta.z)
 	if issue["id"] in ["sink_leak", "vent_wrong", "cabinet_blocked", "cabinet_wear"]:
 		visual.rotation.y = PI / 2.0
 	preload("res://defect_visuals.gd").build(visual, str(issue["id"]))
