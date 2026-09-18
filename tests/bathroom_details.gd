@@ -20,12 +20,17 @@ func _run() -> void:
 		"ImportedBath_DrainCover"
 	]
 	var failures := 0
+	var detail_root: Node = game.get_node_or_null("BathroomDetailBatch")
+	var detail_batches: Array = detail_root.find_children("StaticBatch_*", "MeshInstance3D", true, false) if detail_root != null else []
+	if detail_root == null or detail_batches.size() < 3:
+		printerr("FAIL bathroom details were not batched: ", detail_batches.size())
+		failures += 1
 	for node_name in required:
-		if game.get_node_or_null(node_name) == null:
+		if game.find_child(node_name, true, false) == null:
 			printerr("FAIL missing imported bathroom detail: ", node_name)
 			failures += 1
 	for node_name in ["ImportedBath_ToiletBase", "ImportedBath_ToiletTank", "ImportedBath_ToiletSeat", "ImportedBath_ShowerTray"]:
-		var node: Node = game.get_node_or_null(node_name)
+		var node: Node = game.find_child(node_name, true, false)
 		if node == null or node.find_child("CollisionShape3D", true, false) == null:
 			printerr("FAIL missing bathroom collision: ", node_name)
 			failures += 1

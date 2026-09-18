@@ -167,3 +167,9 @@
 - 沙發檢修孔改放在沙發後方的前牆面，並修正視覺平面方向；不再落在側牆。
 - 淋浴地排、浴室排風扇改以執行期生成的 `ImportedBath_DrainCover`／`ImportedBath_CeilingVent` 錨點定位；牆磚缺陷貼到 `BackWall` 的浴室側表面。
 - 新增 `tests/issue_anchor_fit.gd`，逐項檢查 14 個缺陷與匯入／生成家具錨點或實際門框位置；結果為 14 項、0 failures。`tests/issue_access.gd` 仍確認全部14題可達與10題結算。
+
+### 追加：浴室配件局部 batching（2026-09-18）
+
+- 馬桶、淋浴框、玻璃、蓮蓬頭、毛巾與排水孔收進 `BathroomDetailBatch`；19 個執行期物件合併為 10 個材質批次，碰撞形狀與缺陷錨點保留。
+- 修正 `static_batch.gd` 搜尋未設 owner 的執行期 MeshInstance3D，避免「宣稱 batching 但實際 0 物件」的假通過。
+- 排風扇改為天花板薄型構件並同步旋轉缺陷視覺；浴室圖形驗收 median 7.073ms / p95 11.933ms，細節測試與四房截圖通過。

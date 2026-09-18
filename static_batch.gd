@@ -3,7 +3,9 @@ extends RefCounted
 static func build(root: Node3D) -> void:
 	var groups: Dictionary = {}
 	var originals: Array[MeshInstance3D] = []
-	for node in root.find_children("*", "MeshInstance3D"):
+	# Runtime-generated detail nodes have no scene owner. Include them in the
+	# local batch just like imported scene-owned meshes.
+	for node in root.find_children("*", "MeshInstance3D", true, false):
 		var source: MeshInstance3D = node
 		if not source.is_visible_in_tree() or source.mesh == null:
 			continue

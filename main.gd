@@ -564,35 +564,57 @@ func _build_bathroom(scene_override: PackedScene = null) -> void:
 
 	_prepare_furniture(bathroom_asset)
 	preload("res://static_batch.gd").build(bathroom_asset)
-	_add_bathroom_imported_details()
+	var bathroom_detail_root := Node3D.new()
+	bathroom_detail_root.name = "BathroomDetailBatch"
+	add_child(bathroom_detail_root)
+	_add_bathroom_imported_details(bathroom_detail_root)
+	# Batch on the next idle frame, after the newly-created root has entered the
+	# scene tree; this keeps visibility checks valid in both headless QA and Web.
+	call_deferred("_batch_bathroom_details", bathroom_detail_root)
 
 
-func _add_bathroom_imported_details() -> void:
+func _batch_bathroom_details(detail_root: Node3D) -> void:
+	if is_instance_valid(detail_root):
+		preload("res://static_batch.gd").build(detail_root)
+
+
+func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	# The imported bathroom provides the vanity and tub, but leaves the wet
 	# zone visually unfinished. Add the missing sanitaryware as separate,
 	# readable pieces after batching so each prop keeps its own silhouette.
-	_add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, Vector3(7.3, 0.31, -4.5), _mat(Color(0.76, 0.78, 0.76)), true)
-	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), Vector3(7.3, 0.98, -4.78), _mat(Color(0.76, 0.78, 0.76)), true)
-	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, Vector3(7.3, 0.66, -4.5), _mat(Color(0.58, 0.60, 0.58)), true)
-	_add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), Vector3(7.3, 0.73, -4.70), _mat(Color(0.84, 0.85, 0.82)), false)
-	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, Vector3(7.3, 1.39, -4.78), _mat(Color(0.42, 0.44, 0.42)), false)
+	var porcelain := _mat(Color(0.76, 0.78, 0.76))
+	var seat_material := _mat(Color(0.58, 0.60, 0.58))
+	var lid_material := _mat(Color(0.84, 0.85, 0.82))
+	var button_material := _mat(Color(0.42, 0.44, 0.42))
+	var steel := _mat(palette["metal"])
+	var tray_material := _mat(Color(0.68, 0.70, 0.68))
+	var glass_material := _glass_mat(Color(0.35, 0.62, 0.70), 0.12)
+	var dark_shampoo := _mat(Color(0.24, 0.52, 0.70))
+	var warm_shampoo := _mat(Color(0.75, 0.38, 0.28))
+	var towel_material := _mat(Color(0.72, 0.48, 0.35))
+	var drain_material := _mat(Color(0.30, 0.33, 0.34))
+	_add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, Vector3(7.3, 0.31, -4.5), porcelain, true, detail_root)
+	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), Vector3(7.3, 0.98, -4.78), porcelain, true, detail_root)
+	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, Vector3(7.3, 0.66, -4.5), seat_material, true, detail_root)
+	_add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), Vector3(7.3, 0.73, -4.70), lid_material, false, detail_root)
+	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, Vector3(7.3, 1.39, -4.78), button_material, false, detail_root)
 
-	_add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), _mat(Color(0.68, 0.70, 0.68)), true)
-	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), _glass_mat(Color(0.35, 0.62, 0.70), 0.12), false)
-	_add_box("ImportedBath_ShowerFrame_Left", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -3.76), _mat(palette["metal"]), false)
-	_add_box("ImportedBath_ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -1.24), _mat(palette["metal"]), false)
-	_add_box("ImportedBath_ShowerFrame_Top", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 2.34, -2.5), _mat(palette["metal"]), false)
-	_add_box("ImportedBath_ShowerFrame_Bottom", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 0.08, -2.5), _mat(palette["metal"]), false)
-	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(7.35, 2.05, -5.18), _mat(palette["metal"]), false)
-	_add_cylinder("ImportedBath_ShowerHead", 0.18, 0.10, Vector3(7.35, 2.68, -5.18), _mat(palette["metal"]), false)
-	_add_box("ImportedBath_ShowerShelf", Vector3(0.70, 0.06, 0.24), Vector3(8.28, 1.55, -3.25), _mat(palette["metal"]), false)
-	_add_cylinder("ImportedBath_Shampoo", 0.08, 0.24, Vector3(8.08, 1.70, -3.25), _mat(Color(0.24, 0.52, 0.70)), false)
-	_add_cylinder("ImportedBath_Shampoo2", 0.08, 0.24, Vector3(8.30, 1.70, -3.25), _mat(Color(0.75, 0.38, 0.28)), false)
+	_add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), tray_material, true, detail_root)
+	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), glass_material, false, detail_root)
+	_add_box("ImportedBath_ShowerFrame_Left", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -3.76), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -1.24), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerFrame_Top", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 2.34, -2.5), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerFrame_Bottom", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 0.08, -2.5), steel, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(7.35, 2.05, -5.18), steel, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerHead", 0.18, 0.10, Vector3(7.35, 2.68, -5.18), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerShelf", Vector3(0.70, 0.06, 0.24), Vector3(8.28, 1.55, -3.25), steel, false, detail_root)
+	_add_cylinder("ImportedBath_Shampoo", 0.08, 0.24, Vector3(8.08, 1.70, -3.25), dark_shampoo, false, detail_root)
+	_add_cylinder("ImportedBath_Shampoo2", 0.08, 0.24, Vector3(8.30, 1.70, -3.25), warm_shampoo, false, detail_root)
 
-	_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), _mat(palette["metal"]), false)
-	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), _mat(Color(0.72, 0.48, 0.35)), false)
-	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(7.6, 0.145, -2.25), _mat(Color(0.30, 0.33, 0.34)), false)
-	_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.12, 0.55), Vector3(3.1, 2.5, -5.78), _mat(palette["metal"]), false)
+	_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), steel, false, detail_root)
+	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
+	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(7.6, 0.145, -2.25), drain_material, false, detail_root)
+	_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.05, 0.55), Vector3(6.15, 2.96, -3.60), steel, false, detail_root)
 
 
 func _prepare_furniture(asset: Node3D) -> void:
@@ -1354,6 +1376,8 @@ func _add_issue_target(issue: Dictionary) -> void:
 	body.add_child(visual)
 	if issue["id"] == "tv_outlet":
 		visual.rotation.y = -PI / 2.0
+	if issue["id"] == "bath_vent":
+		visual.rotation.x = PI / 2.0
 	if issue["id"] in ["sink_leak", "vent_wrong", "cabinet_blocked"]:
 		visual.rotation.y = PI / 2.0
 	preload("res://defect_visuals.gd").build(visual, str(issue["id"]))
@@ -1781,11 +1805,11 @@ func _animate_doors(delta: float) -> void:
 		pivot.rotation.y = next_angle
 
 
-func _add_box(node_name: String, size: Vector3, pos: Vector3, material: Material, collision: bool) -> StaticBody3D:
+func _add_box(node_name: String, size: Vector3, pos: Vector3, material: Material, collision: bool, parent: Node3D = null) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = node_name
 	body.position = pos
-	add_child(body)
+	(parent if parent != null else self).add_child(body)
 	var mesh := MeshInstance3D.new()
 	mesh.name = "Mesh"
 	var box_mesh := BoxMesh.new()
@@ -1816,11 +1840,11 @@ func _add_collision_box(node_name: String, size: Vector3, pos: Vector3) -> Stati
 	return body
 
 
-func _add_cylinder(node_name: String, radius: float, height: float, pos: Vector3, material: Material, collision: bool) -> StaticBody3D:
+func _add_cylinder(node_name: String, radius: float, height: float, pos: Vector3, material: Material, collision: bool, parent: Node3D = null) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = node_name
 	body.position = pos
-	add_child(body)
+	(parent if parent != null else self).add_child(body)
 	var mesh := MeshInstance3D.new()
 	mesh.name = "Mesh"
 	var cylinder := CylinderMesh.new()
