@@ -16,6 +16,7 @@ func _run() -> void:
 		"KitchenDetail_SinkBasin", "KitchenDetail_SinkRim", "KitchenDetail_FaucetStem",
 		"KitchenDetail_FaucetSpout", "KitchenDetail_FaucetHandle", "KitchenDetail_CuttingBoard",
 		"KitchenDetail_Cup", "KitchenDetail_FridgeHandle", "KitchenDetail_UnderCabinetLight",
+		"KitchenDetail_ExtractorHood_Rim", "KitchenDetail_ExtractorHood_Duct", "KitchenDetail_ExtractorHood_Flange",
 		"KitchenDetail_TableEdge_Front", "KitchenDetail_TableEdge_Back",
 		"KitchenDetail_TableEdge_Left", "KitchenDetail_TableEdge_Right"
 	]
@@ -49,6 +50,12 @@ func _run() -> void:
 		failures += 1
 	elif cabinet_light.global_position.y >= upper_cabinet_bounds.position.y or absf(cabinet_light.global_position.x - upper_cabinet_bounds.get_center().x) > 0.25 or absf(cabinet_light.global_position.z - upper_cabinet_bounds.get_center().z) > 0.25:
 		printerr("FAIL under-cabinet light is not attached to upper cabinet bounds: ", cabinet_light.global_position)
+		failures += 1
+	var hood_bounds: AABB = game._find_kitchen_mesh_bounds("255_ExtractorHood")
+	var hood_rim := game.get_node_or_null("KitchenDetail_ExtractorHood_Rim") as Node3D
+	var hood_rim_expected := Vector3(hood_bounds.get_center().x, hood_bounds.position.y - 0.018, hood_bounds.get_center().z) if hood_bounds.has_volume() else Vector3.ZERO
+	if not hood_bounds.has_volume() or hood_rim == null or hood_rim.global_position.distance_to(hood_rim_expected) > 0.05:
+		printerr("FAIL extractor hood trim is not attached to real hood bounds")
 		failures += 1
 	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size())
 	print("Kitchen detail failures: ", failures)

@@ -587,6 +587,18 @@ func _add_kitchen_imported_details() -> void:
 	_add_cylinder("KitchenDetail_Cup", 0.09, 0.16, _kitchen_point(Vector3(5.68, 0.76, 4.12)), ceramic, false)
 	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, _kitchen_point(Vector3(5.78, 0.76, 4.12)), ceramic, false)
 	_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.72, 0.045), _kitchen_point(Vector3(6.27, 1.04, 2.72)), steel, false)
+	# The extractor hood is a dense imported hero mesh, but its scan has no
+	# readable duct transition. Build the trim from its real bounds so the
+	# exhaust clue and the cabinet connection remain aligned after rescaling.
+	var hood_bounds := _find_kitchen_mesh_bounds("255_ExtractorHood")
+	if hood_bounds.has_volume():
+		var hood_center := hood_bounds.get_center()
+		var hood_trim := _mat(Color(0.22, 0.24, 0.24))
+		hood_trim.metallic = 0.62
+		hood_trim.roughness = 0.30
+		_add_box("KitchenDetail_ExtractorHood_Rim", Vector3(hood_bounds.size.x + 0.08, 0.045, hood_bounds.size.z + 0.08), Vector3(hood_center.x, hood_bounds.position.y - 0.018, hood_center.z), hood_trim, false)
+		_add_box("KitchenDetail_ExtractorHood_Duct", Vector3(hood_bounds.size.x * 0.56, maxf(0.16, hood_bounds.size.y * 0.72), hood_bounds.size.z * 0.48), Vector3(hood_center.x, hood_bounds.end.y + hood_bounds.size.y * 0.32, hood_center.z), hood_trim, false)
+		_add_box("KitchenDetail_ExtractorHood_Flange", Vector3(hood_bounds.size.x * 0.68, 0.035, hood_bounds.size.z * 0.58), Vector3(hood_center.x, hood_bounds.end.y + hood_bounds.size.y * 0.70, hood_center.z), steel, false)
 	# Derive the under-cabinet light from the actual upper cabinet bounds. The
 	# previous authored point used the old 0.60 scale and left a long glowing
 	# bar inside the cabinet run after the kitchen was enlarged to 0.72.

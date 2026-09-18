@@ -298,3 +298,8 @@
 
 - Compatibility renderer 實測 120 frame：客廳 median/p95 `2.456/3.092ms`、廚房 `3.229/4.067ms`、臥室 `3.416/6.022ms`、浴室 `2.251/2.721ms`。
 - 同一輪量測 draw calls：客廳 `742`、廚房 `1155`、臥室 `1048`、浴室 `561`；LOD 與浴室 13 材質批次沒有造成長幀回歸。
+
+### 追加：廚房抽油煙機 bounds 收邊（2026-09-19）
+
+- 依 `255_ExtractorHood` 實際 bounds 新增抽油煙機底部金屬收邊、上接風管與法蘭，修正原本 hood 與上櫃之間缺少結構連接的問題。
+- `tests/kitchen_details.gd` 現在驗證 hood trim 與真實模型中心／底部對齊；廚房細節與 11 張圖形驗收均為 0 failures。
