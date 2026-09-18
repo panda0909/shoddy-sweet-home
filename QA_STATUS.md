@@ -252,3 +252,7 @@
 - 淋浴管、蓮蓬頭、蓮蓬頭出水面、控制器與置物架改以 `ImportedBath_ShowerTray` 的實際世界 bounds 生成；修正舊固定座標把管件放到洗手台旁的問題。
 - `tests/bathroom_details.gd` 新增管件落在淋浴盤範圍內的驗收；浴室批次仍為 40 物件／12 材質組，細節與圖形驗收 0 failures。
 - 14 題可達、四扇室內門實際膠囊穿越、家具碰撞、LOD 與三角面預算重新回歸，全部 0 failures。
+
+### 追加：Web release 資產回歸（2026-09-19）
+
+- Godot Web release export 成功；本輪輸出約 HTML 5.9 KB、PCK 99 MB、WASM 38 MB，與上一版約 99／38 MB 持平，臥室／浴室新增細節沒有引入外部貼圖下載。
