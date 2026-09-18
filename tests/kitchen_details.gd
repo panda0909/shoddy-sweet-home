@@ -16,6 +16,9 @@ func _run() -> void:
 		"KitchenDetail_SinkBasin", "KitchenDetail_SinkRim", "KitchenDetail_FaucetStem",
 		"KitchenDetail_FaucetSpout", "KitchenDetail_FaucetHandle", "KitchenDetail_CuttingBoard",
 		"KitchenDetail_Cup", "KitchenDetail_FridgeHandle", "KitchenDetail_UnderCabinetLight",
+		"KitchenDetail_FridgeDoorPanel", "KitchenDetail_FridgeGasketTop", "KitchenDetail_FridgeGasketBottom",
+		"KitchenDetail_FridgeHingeTop", "KitchenDetail_FridgeHingeBottom", "KitchenDetail_FridgeDisplay",
+		"KitchenDetail_OvenGlass", "KitchenDetail_OvenHandle", "KitchenDetail_OvenFrameTop",
 		"KitchenDetail_ExtractorHood_Rim", "KitchenDetail_ExtractorHood_Duct", "KitchenDetail_ExtractorHood_Flange",
 		"KitchenDetail_TableEdge_Front", "KitchenDetail_TableEdge_Back",
 		"KitchenDetail_TableEdge_Left", "KitchenDetail_TableEdge_Right"
@@ -73,6 +76,17 @@ func _run() -> void:
 		if handle_box == null or handle_box.size.y < 0.48 or handle_box.size.y > 0.68:
 			printerr("FAIL refrigerator handle has unexpected vertical proportion")
 			failures += 1
+	var fridge_panel := game.get_node_or_null("KitchenDetail_FridgeDoorPanel") as Node3D
+	var fridge_panel_expected := Vector3(fridge_bounds.position.x - 0.014, fridge_bounds.get_center().y, fridge_bounds.get_center().z) if fridge_bounds.has_volume() else Vector3.ZERO
+	if not fridge_bounds.has_volume() or fridge_panel == null or fridge_panel.global_position.distance_to(fridge_panel_expected) > 0.06:
+		printerr("FAIL refrigerator door panel is not attached to the imported front bounds")
+		failures += 1
+	var cooker_bounds: AABB = game._find_kitchen_mesh_bounds("251_CookerBlack")
+	var oven_glass := game.get_node_or_null("KitchenDetail_OvenGlass") as Node3D
+	var oven_expected_x := cooker_bounds.position.x - 0.015 if cooker_bounds.has_volume() else 0.0
+	if not cooker_bounds.has_volume() or oven_glass == null or absf(oven_glass.global_position.x - oven_expected_x) > 0.06:
+		printerr("FAIL oven front is not attached to the imported cooker bounds")
+		failures += 1
 	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size(), "; table foot pads: ", table_foot_pads.size())
 	print("Kitchen detail failures: ", failures)
 	game.queue_free()

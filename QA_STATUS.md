@@ -363,3 +363,8 @@
 
 - `KitchenDetail_FridgeHandle` 不再使用舊廚房比例下的固定座標，改依匯入 `253_CupboardUnits` 世界 bounds 生成，與 `cabinet_blocked` 缺陷共用同一個冰箱／高櫃基準。
 - 把手高度依實際櫃體高度縮放並限制在 0.48–0.68m；`tests/kitchen_details.gd` 新增位置與比例驗收，避免把手再次漂浮或穿出櫃體。
+
+### 追加：廚房冰箱／烤箱門片細節（2026-09-19）
+
+- 依 `253_CupboardUnits` bounds 新增冰箱門板、密封膠條、上下鉸鏈與顯示面板；依 `251_CookerBlack` bounds 新增烤箱玻璃、門把與上框，讓家電不再只呈現單一方盒。
+- 所有新增件都是無碰撞視覺 finish，`tests/kitchen_details.gd` 新增前方面板貼合與無碰撞驗收。

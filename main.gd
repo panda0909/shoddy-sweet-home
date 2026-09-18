@@ -626,8 +626,38 @@ func _add_kitchen_imported_details() -> void:
 		var fridge_handle_height := clampf(fridge_bounds.size.y * 0.86, 0.48, 0.68)
 		var fridge_handle_pos := Vector3(fridge_bounds.position.x - 0.035, fridge_bounds.get_center().y, fridge_bounds.get_center().z)
 		_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, fridge_handle_height, 0.045), fridge_handle_pos, steel, false)
+		# Give the refrigerator a readable door assembly instead of leaving the
+		# imported cabinet as one uninterrupted slab. The source handle is on the
+		# minimum-X face, so every trim piece is derived from that same face and
+		# remains attached when the kitchen asset is rescaled.
+		var enamel := _mat(Color(0.72, 0.74, 0.73))
+		enamel.metallic = 0.16
+		enamel.roughness = 0.31
+		var fridge_front_x := fridge_bounds.position.x - 0.014
+		var fridge_panel_size := Vector3(0.018, maxf(0.40, fridge_bounds.size.y - 0.095), maxf(0.72, fridge_bounds.size.z - 0.10))
+		_add_box("KitchenDetail_FridgeDoorPanel", fridge_panel_size, Vector3(fridge_front_x, fridge_bounds.get_center().y, fridge_bounds.get_center().z), enamel, false)
+		var gasket := _mat(Color(0.10, 0.12, 0.12))
+		_add_box("KitchenDetail_FridgeGasketTop", Vector3(0.022, 0.022, fridge_panel_size.z), Vector3(fridge_front_x - 0.014, fridge_bounds.end.y - 0.045, fridge_bounds.get_center().z), gasket, false)
+		_add_box("KitchenDetail_FridgeGasketBottom", Vector3(0.022, 0.022, fridge_panel_size.z), Vector3(fridge_front_x - 0.014, fridge_bounds.position.y + 0.045, fridge_bounds.get_center().z), gasket, false)
+		_add_box("KitchenDetail_FridgeGasketLeft", Vector3(0.022, fridge_panel_size.y, 0.022), Vector3(fridge_front_x - 0.014, fridge_bounds.get_center().y, fridge_bounds.position.z + 0.050), gasket, false)
+		_add_box("KitchenDetail_FridgeGasketRight", Vector3(0.022, fridge_panel_size.y, 0.022), Vector3(fridge_front_x - 0.014, fridge_bounds.get_center().y, fridge_bounds.end.z - 0.050), gasket, false)
+		_add_cylinder("KitchenDetail_FridgeHingeTop", 0.028, 0.10, Vector3(fridge_front_x - 0.020, fridge_bounds.end.y - 0.075, fridge_bounds.position.z + 0.075), steel, false)
+		_add_cylinder("KitchenDetail_FridgeHingeBottom", 0.028, 0.10, Vector3(fridge_front_x - 0.020, fridge_bounds.position.y + 0.075, fridge_bounds.position.z + 0.075), steel, false)
+		_add_box("KitchenDetail_FridgeDisplay", Vector3(0.026, 0.095, 0.30), Vector3(fridge_front_x - 0.020, fridge_bounds.end.y - 0.13, fridge_bounds.get_center().z), dark, false)
 	else:
 		_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.60, 0.045), _kitchen_point(Vector3(6.27, 1.04, 2.72)), steel, false)
+	# The cooker has a separate glass front and a handle on the same imported
+	# front plane. These are visual-only finish pieces; the original furniture
+	# box continues to be the sole movement collider.
+	var cooker_bounds := _find_kitchen_mesh_bounds("251_CookerBlack")
+	if cooker_bounds.has_volume():
+		var cooker_front_x := cooker_bounds.position.x - 0.015
+		var oven_glass := _glass_mat(Color(0.08, 0.11, 0.12), 0.76)
+		var oven_panel_size := Vector3(0.020, minf(0.44, cooker_bounds.size.y * 0.68), minf(0.72, cooker_bounds.size.z * 0.82))
+		var oven_center_y := cooker_bounds.position.y + cooker_bounds.size.y * 0.34
+		_add_box("KitchenDetail_OvenGlass", oven_panel_size, Vector3(cooker_front_x, oven_center_y, cooker_bounds.get_center().z), oven_glass, false)
+		_add_box("KitchenDetail_OvenHandle", Vector3(0.045, 0.045, oven_panel_size.z + 0.10), Vector3(cooker_front_x - 0.035, cooker_bounds.position.y + cooker_bounds.size.y * 0.72, cooker_bounds.get_center().z), steel, false)
+		_add_box("KitchenDetail_OvenFrameTop", Vector3(0.030, 0.028, oven_panel_size.z + 0.08), Vector3(cooker_front_x - 0.018, oven_center_y + oven_panel_size.y * 0.5 + 0.035, cooker_bounds.get_center().z), steel, false)
 	# The extractor hood is a dense imported hero mesh, but its scan has no
 	# readable duct transition. Build the trim from its real bounds so the
 	# exhaust clue and the cabinet connection remain aligned after rescaling.
