@@ -16,8 +16,20 @@ func _run() -> void:
 	var preserved := 0
 	var repositioned := 0
 	var shell_hidden := 0
+	var area_lights_hidden := 0
+	var blinds_hidden := 0
 	for node in game.find_children("*", "MeshInstance3D", true, false):
 		var mesh := node as MeshInstance3D
+		if mesh.has_meta("hidden_imported_area_light"):
+			area_lights_hidden += 1
+			if mesh.visible:
+				printerr("FAIL imported area-light card remains visible: ", mesh.name)
+				failures += 1
+		if mesh.has_meta("hidden_imported_blind"):
+			blinds_hidden += 1
+			if mesh.visible:
+				printerr("FAIL imported blind strip remains visible: ", mesh.name)
+				failures += 1
 		if mesh.has_meta("door_clearance_visual_only"):
 			preserved += 1
 			# Bathroom static batching hides source meshes after this pass. The
@@ -32,6 +44,8 @@ func _run() -> void:
 			repositioned += 1
 
 	print("Door-clearance furniture preserved: ", preserved)
+	print("Imported area-light cards hidden: ", area_lights_hidden)
+	print("Imported blind strips hidden: ", blinds_hidden)
 	print("Door-clearance decorative pieces repositioned: ", repositioned)
 	print("Door-clearance shell pieces hidden: ", shell_hidden)
 	print("Furniture visibility failures: ", failures)

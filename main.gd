@@ -428,8 +428,10 @@ func _build_living_room(scene_override: PackedScene = null) -> void:
 	living_asset.scale = Vector3.ONE * 0.72
 	add_child(living_asset)
 	_remove_asset_shell(living_asset)
+	_reposition_living_sofa(living_asset)
 	_prepare_furniture(living_asset)
 	_add_living_imported_details()
+	_add_living_window_details()
 
 
 func _build_living_room_procedural() -> void:
@@ -474,6 +476,54 @@ func _add_living_imported_details() -> void:
 		cushion_index += 1
 	if cushion_index == 0:
 		return
+
+
+func _add_living_window_details() -> void:
+	# The source living scene's blind material is authored with an area-light /
+	# alpha combination that renders as floating dark strips in Web Compatibility.
+	# Rebuild the window from the source pane bounds with the same readable frame
+	# language used by the rest of the playable house.
+	var pane_bounds := _find_living_mesh_bounds("184_diffuse_00")
+	if not pane_bounds.has_volume():
+		return
+	var glass_material := _glass_mat(Color(0.22, 0.54, 0.70), 0.55)
+	var frame_material := _mat(Color(0.70, 0.66, 0.57))
+	# Keep the hero sofa in the inspection-camera composition and move the
+	# rebuilt window to the open wall reveal beside it.
+	var window_center_x := pane_bounds.get_center().x - 2.0
+	var window_min_x := pane_bounds.position.x - 2.0
+	var window_max_x := pane_bounds.end.x - 2.0
+	var center := Vector3(window_center_x, pane_bounds.get_center().y, pane_bounds.position.z - 0.025)
+	var glass_size := Vector3(pane_bounds.size.x * 0.94, pane_bounds.size.y * 0.88, 0.045)
+	_add_box("LivingWindowGlass", glass_size, center, glass_material, false)
+	var frame_width := 0.075
+	var frame_depth := 0.075
+	_add_box("LivingWindowFrame_Top", Vector3(pane_bounds.size.x + 0.12, frame_width, frame_depth), Vector3(center.x, pane_bounds.end.y + 0.02, center.z - 0.008), frame_material, false)
+	_add_box("LivingWindowFrame_Bottom", Vector3(pane_bounds.size.x + 0.12, frame_width, frame_depth), Vector3(center.x, pane_bounds.position.y - 0.02, center.z - 0.008), frame_material, false)
+	_add_box("LivingWindowFrame_Left", Vector3(frame_width, pane_bounds.size.y + 0.04, frame_depth), Vector3(window_min_x - 0.02, center.y, center.z - 0.008), frame_material, false)
+	_add_box("LivingWindowFrame_Right", Vector3(frame_width, pane_bounds.size.y + 0.04, frame_depth), Vector3(window_max_x + 0.02, center.y, center.z - 0.008), frame_material, false)
+	_add_box("LivingWindowFrame_Center", Vector3(frame_width * 0.72, pane_bounds.size.y * 0.88, frame_depth * 0.84), Vector3(center.x, center.y, center.z - 0.010), frame_material, false)
+
+
+func _reposition_living_sofa(asset: Node3D) -> void:
+	# The imported sofa was authored in the center of the room, leaving more
+	# than two metres behind it. Keep a believable 1.10m service gap to the
+	# playable front wall and move the complete leather/cushion assembly before
+	# furniture collision and contact-shadow generation.
+	var sofa_names: Array = ["63_SofaLeather", "65_SofaLeather", "134_SofaLeather", "136_SofaLeather", "137_SofaLeather", "138_SofaLeather", "139_SofaLeather"]
+	var sofa_bounds := _find_anchor_group_bounds(sofa_names)
+	var wall_bounds := _find_anchor_bounds("FrontWallLeft")
+	if not sofa_bounds.has_volume() or not wall_bounds.has_volume():
+		return
+	var desired_clearance := 1.10
+	var delta_z := (wall_bounds.position.z - desired_clearance) - sofa_bounds.end.z
+	var delta_x := 0.0
+	if absf(delta_z) < 0.02 and absf(delta_x) < 0.02:
+		return
+	for mesh in asset.find_children("*", "MeshInstance3D", true, false):
+		var mesh_name := str(mesh.name)
+		if "SofaLeather" in mesh_name or "Cushion" in mesh_name or mesh_name in ["73_Table", "144_TableLegs", "141_Carpet"]:
+			mesh.global_position += Vector3(delta_x, 0, delta_z)
 
 
 func _find_living_mesh_bounds(mesh_name: String) -> AABB:
@@ -806,6 +856,19 @@ func _prepare_furniture(asset: Node3D) -> void:
 	_align_wall_fixtures(asset)
 	for mesh in asset.find_children("*", "MeshInstance3D"):
 		if not mesh.is_visible_in_tree():
+			continue
+		var imported_material_name := str(mesh.get_active_material(0).resource_name).to_lower() if mesh.get_active_material(0) != null else ""
+		if asset.name == "LivingRoomRealAsset" and ("blind" in str(mesh.name).to_lower() or "blind" in imported_material_name):
+			mesh.set_meta("hidden_imported_blind", true)
+			mesh.hide()
+			continue
+		# Some source scenes contain invisible area-light cards exported as
+		# `diffuse_00`. Compatibility renders those cards as black/brown planes;
+		# the playable house already owns its real-time lights, so the cards must
+		# not become visible furniture or collision candidates.
+		if "diffuse_00" in str(mesh.name).to_lower() or "area_light" in imported_material_name:
+			mesh.set_meta("hidden_imported_area_light", true)
+			mesh.hide()
 			continue
 		_tune_imported_materials(mesh)
 		# Old room-wide cornices/skirting no longer have supporting walls.

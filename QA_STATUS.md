@@ -272,3 +272,9 @@
 
 - 合併馬桶內碗、蓮蓬頭出水面與毛巾折痕的共用材質；浴室細節批次由 16 組降至 13 組，並以 `tests/bathroom_details.gd` 設定 13 組上限防止回歸。
 - 11 張圖形驗收、14 題互動／可達、家具碰撞、LOD 與三角面預算 0 failures；Web release 仍為約 PCK 99 MB、WASM 38 MB。
+
+### 追加：客廳窗景與沙發維修距離（2026-09-19）
+
+- 客廳沙發群現在依 `FrontWallLeft` 實際 bounds 保留 1.10m 維修距離，檢修孔與沙發群同步定位；`room_finish_quality` 驗證服務距離 1.00–1.20m，通過。
+- 隱藏匯入場景中的 9 張 area-light 卡片與 24 條百葉窗條，避免 Web Compatibility 把它們渲染成漂浮黑／棕色平面；以 `LivingWindowGlass` 與完整窗框重建可讀窗景。
+- 客廳窗玻璃與左右窗框使用同一組左移後 bounds；客廳／家具可見性／14 題可達性回歸測試 0 failures。
