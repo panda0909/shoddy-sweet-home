@@ -14,6 +14,25 @@ static func box(parent: Node3D, size: Vector3, at: Vector3, color: Color, tilt: 
 	node.rotation.z = tilt
 	parent.add_child(node)
 
+
+static func floor_arc(parent: Node3D, radius: float, start_degrees: float, end_degrees: float, color: Color) -> void:
+	var material := StandardMaterial3D.new()
+	material.albedo_color = color
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.no_depth_test = true
+	var steps := maxi(2, int(absf(end_degrees - start_degrees) / 10.0))
+	for i in range(steps + 1):
+		var angle := deg_to_rad(lerpf(start_degrees, end_degrees, float(i) / float(steps)))
+		var node := MeshInstance3D.new()
+		var segment := BoxMesh.new()
+		segment.size = Vector3(0.025, 0.012, 0.18)
+		node.mesh = segment
+		node.material_override = material
+		node.position = Vector3(cos(angle) * radius, 0.012, sin(angle) * radius)
+		node.rotation.y = -angle
+		parent.add_child(node)
+
 static func build(parent: Node3D, id: String) -> void:
 	var ivory := Color(0.72, 0.70, 0.62)
 	var dark := Color(0.07, 0.06, 0.045)
@@ -65,3 +84,8 @@ static func build(parent: Node3D, id: String) -> void:
 			# Surface scuffs, not a second floating wooden post.
 			for y in [-0.18, -0.05, 0.08, 0.21]:
 				box(parent, Vector3(0.009, 0.07, 0.003), Vector3(-0.02, y, -0.002), ivory, 0.2)
+			if id == "cabinet_blocked":
+				# The red floor arc shows the refrigerator/cabinet door sweep.
+				# It is visual-only; the real passage remains governed by the
+				# furniture BoxShape3D and the inspection hitbox.
+				floor_arc(parent, 0.58, -72.0, 72.0, Color(0.92, 0.20, 0.12, 0.72))

@@ -41,6 +41,7 @@ jobs:
           "$godot" --headless --path . --script tests/furniture_visibility.gd
           "$godot" --headless --path . --script tests/bedroom_details.gd
           "$godot" --headless --path . --script tests/bathroom_details.gd
+          "$godot" --headless --path . --script tests/issue_visuals.gd
           xvfb-run -a "$godot" --path . --script tests/mouse_look.gd
           "$godot" --headless --path . --script tests/issue_access.gd --quit-after 1800
           mkdir -p build/web

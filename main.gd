@@ -1018,8 +1018,8 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		"cabinet_blocked":
 			pos = Vector3(6.43, 0.40, 2.70)
 			size = Vector3(0.16, 0.65, 0.3)
-			title = "櫥櫃門邊緣磨損"
-			joke = "每次開門，都順便替門板磨一次皮。"
+			title = "冰箱門會撞到櫃子"
+			joke = "每次開門，都順便替門板磨一次皮。地產廣告沒說這是附贈功能。"
 		"bed_slope":
 			pos = Vector3(-4.6, 0.07, -3.3)
 			size = Vector3(0.7, 0.14, 0.9)
