@@ -1964,12 +1964,28 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 				if issue_id == "sink_leak":
 					pos.y = 0.38
 	if issue_id == "bath_door":
-		pos = get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 1.25, -0.09))
-		size = Vector3(0.16, 0.8, 0.16)
+		# Anchor the scratch to the actual hinge-side/right door-frame trim.
+		# The previous fixed 1.30m offset only happened to match the original
+		# 1.3m doorway and drifted as soon as the frame width or rotation changed.
+		var frame_right := get_node_or_null("RightInnerDoorFrame/FrameRight") as MeshInstance3D
+		if frame_right != null:
+			var frame_bounds: AABB = frame_right.global_transform * frame_right.get_aabb()
+			pos = Vector3(frame_bounds.get_center().x, frame_bounds.get_center().y, frame_bounds.position.z - 0.035)
+			size = Vector3(minf(0.16, frame_bounds.size.x * 0.82), minf(0.80, frame_bounds.size.y * 0.36), 0.12)
+		else:
+			pos = get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 1.25, -0.09))
+			size = Vector3(0.16, 0.8, 0.16)
 	if issue_id == "closet_deadend":
 		var closet_door := get_node_or_null("ClosetDoorLeft") as Node3D
 		if closet_door != null:
-			pos = closet_door.position + Vector3(0.50, 0, 0.045)
+			var closet_bounds := _find_anchor_bounds("ClosetDoorLeft")
+			if closet_bounds.has_volume():
+				# Keep the inspection surface on the actual outer edge/front face
+				# of the left door instead of assuming its old half-width.
+				pos = Vector3(closet_bounds.end.x + 0.02, closet_bounds.get_center().y, closet_bounds.end.z + 0.025)
+				size = Vector3(0.10, minf(1.75, closet_bounds.size.y * 0.82), 0.10)
+			else:
+				pos = closet_door.position + Vector3(0.50, 0, 0.045)
 	return {
 		"id": issue_id,
 		"title": title,

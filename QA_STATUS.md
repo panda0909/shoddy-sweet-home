@@ -524,3 +524,13 @@
 
 - 實測匯入浴室殼只覆蓋後半部；淋浴盤位於可玩房屋的右側延伸區，因此驗收改以 `RightWall`、`BackWall` 與門洞平面作為房屋真實邊界。
 - `tests/bathroom_details.gd` 現在拒絕淋浴盤越過右牆／後牆，或侵入門洞前方；同時保留玻璃、門檻、蓮蓬頭與排水盤彼此 bounds 貼合檢查。
+
+### 追加：浴室門框缺陷跟隨實際門框（2026-09-19）
+
+- `bath_door` 不再以固定 `1.30m` 偏移定位，改直接取 `RightInnerDoorFrame/FrameRight` 的世界 bounds，門框寬度或旋轉變更時刮痕仍會貼在實際門框上。
+- `tests/issue_anchor_fit.gd` 同步驗證門框右側 Mesh 與缺陷錨點距離，避免只驗證舊座標而漏掉視覺漂移。
+
+### 追加：臥室衣櫃缺陷跟隨門片外緣（2026-09-19）
+
+- `closet_deadend` 改由 `ClosetDoorLeft` 的實際 Mesh bounds 推導門片外緣與前表面，門寬／衣櫃平移後仍會貼在門縫與把手側。
+- `tests/issue_anchor_fit.gd` 新增衣櫃門 bounds 驗收，避免缺陷標記回到固定半寬偏移。

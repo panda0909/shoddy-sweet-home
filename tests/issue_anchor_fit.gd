@@ -88,7 +88,11 @@ func _run() -> void:
 		printerr("FAIL bathroom tile wall placement: ", tile.position if tile != null else "missing")
 		failures += 1
 	var door := game.issue_bodies.get("bath_door") as Node3D
+	var frame_right := game.get_node_or_null("RightInnerDoorFrame/FrameRight") as MeshInstance3D
 	var door_anchor: Vector3 = game.get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 1.25, -0.09))
+	if frame_right != null:
+		var frame_bounds: AABB = frame_right.global_transform * frame_right.get_aabb()
+		door_anchor = Vector3(frame_bounds.get_center().x, frame_bounds.get_center().y, frame_bounds.position.z - 0.035)
 	if door == null or door.position.distance_to(door_anchor) > 0.05:
 		printerr("FAIL bathroom door-frame placement: ", door.position if door != null else "missing")
 		failures += 1
@@ -102,6 +106,9 @@ func _run() -> void:
 		failures += 1
 	var closet := game.issue_bodies.get("closet_deadend") as Node3D
 	var closet_anchor: Vector3 = game.get_node("ClosetDoorLeft").position + Vector3(0.50, 0, 0.045)
+	var closet_bounds: AABB = game._find_anchor_bounds("ClosetDoorLeft")
+	if closet_bounds.has_volume():
+		closet_anchor = Vector3(closet_bounds.end.x + 0.02, closet_bounds.get_center().y, closet_bounds.end.z + 0.025)
 	if closet == null or closet.position.distance_to(closet_anchor) > 0.05:
 		printerr("FAIL closet-door placement: ", closet.position if closet != null else "missing")
 		failures += 1
