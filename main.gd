@@ -1028,18 +1028,13 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 			var sink_name: String = sink_data[0]
 			var sink_x: float = sink_data[1]
 			var basin_body := _add_cylinder("ImportedBath_VanityBasin" + sink_name, 0.18, 0.07, Vector3(sink_x, vanity_y + 0.055, vanity_z + 0.04), porcelain, false, detail_root)
-			# A shallow ellipsoid reads as a ceramic basin while remaining a
-			# render-only detail, so it cannot catch the player's capsule.
+			# Use a hollow ceramic shell instead of a flattened sphere. The basin is
+			# still render-only, but its outer wall, inner bowl and rolled rim give
+			# the close vanity view a believable manufactured silhouette.
 			var basin_mesh := basin_body.get_node("Mesh") as MeshInstance3D
-			var basin_shape := SphereMesh.new()
-			basin_shape.radius = 0.18
-			basin_shape.height = 0.36
-			basin_shape.radial_segments = 24
-			basin_shape.rings = 12
-			basin_mesh.mesh = basin_shape
-			basin_mesh.scale = Vector3(1.0, 0.34, 1.18)
-			basin_mesh.position.y = 0.035
+			basin_mesh.mesh = _vanity_basin_mesh()
 			_add_cylinder("ImportedBath_VanityBasinInset" + sink_name, 0.125, 0.012, Vector3(sink_x, vanity_y + 0.145, vanity_z + 0.04), bowl_shadow_material, false, detail_root)
+			_add_cylinder("ImportedBath_VanityDrain" + sink_name, 0.032, 0.010, Vector3(sink_x, vanity_y + 0.145, vanity_z + 0.04), steel, false, detail_root)
 			_add_cylinder("ImportedBath_VanityFaucet" + sink_name, 0.025, 0.20, Vector3(sink_x, vanity_y + 0.19, vanity_z - 0.08), steel, false, detail_root)
 			_add_box("ImportedBath_VanitySpout" + sink_name, Vector3(0.16, 0.025, 0.025), Vector3(sink_x, vanity_y + 0.29, vanity_z + 0.02), steel, false, detail_root)
 		_add_box("ImportedBath_MirrorEdgeTop", Vector3(mirror_bounds.size.x + 0.06, 0.035, 0.035), Vector3(vanity_x, mirror_bounds.end.y + 0.018, mirror_bounds.end.z + 0.018), steel, false, detail_root)
@@ -2626,6 +2621,87 @@ func _toilet_seat_mesh() -> ArrayMesh:
 	var seat := ArrayMesh.new()
 	seat.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return seat
+
+
+func _vanity_basin_mesh() -> ArrayMesh:
+	var segments := 24
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	var outer_starts: Array[int] = []
+	var outer_y := [0.00, 0.035, 0.075]
+	var outer_radius := [0.19, 0.20, 0.16]
+	for ring in range(outer_y.size()):
+		outer_starts.append(vertices.size())
+		for segment in range(segments):
+			var angle := TAU * float(segment) / float(segments)
+			var radial := Vector3(cos(angle), 0.0, sin(angle))
+			vertices.append(Vector3(radial.x * outer_radius[ring], outer_y[ring], radial.z * outer_radius[ring] * 1.14))
+			normals.append(Vector3(radial.x, 0.30, radial.z * 0.90).normalized())
+			uvs.append(Vector2(float(segment) / float(segments), float(ring) / float(outer_y.size() - 1)))
+	for ring in range(outer_starts.size() - 1):
+		for segment in range(segments):
+			var next_segment := (segment + 1) % segments
+			var a := outer_starts[ring] + segment
+			var b := outer_starts[ring] + next_segment
+			var c := outer_starts[ring + 1] + segment
+			var d := outer_starts[ring + 1] + next_segment
+			indices.append(a)
+			indices.append(c)
+			indices.append(b)
+			indices.append(b)
+			indices.append(c)
+			indices.append(d)
+
+	var inner_starts: Array[int] = []
+	var inner_y := [0.070, 0.043, 0.018]
+	var inner_radius := [0.145, 0.115, 0.060]
+	for ring in range(inner_y.size()):
+		inner_starts.append(vertices.size())
+		for segment in range(segments):
+			var angle := TAU * float(segment) / float(segments)
+			var radial := Vector3(cos(angle), 0.0, sin(angle))
+			vertices.append(Vector3(radial.x * inner_radius[ring], inner_y[ring], radial.z * inner_radius[ring] * 1.14))
+			normals.append(Vector3(-radial.x, 0.28, -radial.z * 0.90).normalized())
+			uvs.append(Vector2(float(segment) / float(segments), float(ring) / float(inner_y.size() - 1)))
+	for ring in range(inner_starts.size() - 1):
+		for segment in range(segments):
+			var next_segment := (segment + 1) % segments
+			var a := inner_starts[ring] + segment
+			var b := inner_starts[ring] + next_segment
+			var c := inner_starts[ring + 1] + segment
+			var d := inner_starts[ring + 1] + next_segment
+			indices.append(a)
+			indices.append(b)
+			indices.append(c)
+			indices.append(b)
+			indices.append(d)
+			indices.append(c)
+
+	# Connect the outer lip to the inner lip, leaving the center open for the
+	# separate dark inset and drain detail.
+	for segment in range(segments):
+		var next_segment := (segment + 1) % segments
+		var outer_a := outer_starts[outer_starts.size() - 1] + segment
+		var outer_b := outer_starts[outer_starts.size() - 1] + next_segment
+		var inner_a := inner_starts[0] + segment
+		var inner_b := inner_starts[0] + next_segment
+		indices.append(outer_a)
+		indices.append(inner_a)
+		indices.append(outer_b)
+		indices.append(outer_b)
+		indices.append(inner_a)
+		indices.append(inner_b)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var basin := ArrayMesh.new()
+	basin.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return basin
 
 
 func _plain_box_mesh(size: Vector3) -> BoxMesh:

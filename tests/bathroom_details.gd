@@ -22,6 +22,7 @@ func _run() -> void:
 		"ImportedBath_ShowerShelf", "ImportedBath_ShowerControl", "ImportedBath_ShowerControlRing", "ImportedBath_ShowerDrainCrossA", "ImportedBath_ShowerDrainCrossB", "ImportedBath_ShowerThreshold", "ImportedBath_ShowerGlassSeal", "ImportedBath_ShowerGlassHandle", "ImportedBath_TowelBar",
 		"ImportedBath_DrainCover", "ImportedBath_VanityCounterEdge", "ImportedBath_VanityFrontLip", "ImportedBath_TowelFold_0", "ImportedBath_TowelFold_2",
 		"ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight",
+		"ImportedBath_VanityDrainLeft", "ImportedBath_VanityDrainRight",
 		"ImportedBath_VanityFaucetLeft", "ImportedBath_VanityFaucetRight",
 		"ImportedBath_VanityHandle_0", "ImportedBath_VanityHandle_3",
 		"ImportedBath_MirrorEdgeTop", "ImportedBath_MirrorEdgeLeft", "ImportedBath_MirrorEdgeRight",
@@ -65,13 +66,13 @@ func _run() -> void:
 		failures += 1
 	for basin_name in ["ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight"]:
 		var basin_mesh := game.find_child(basin_name, true, false).find_child("Mesh", true, false) as MeshInstance3D
-		if basin_mesh == null or not basin_mesh.mesh is SphereMesh:
-			printerr("FAIL vanity basin still uses a low-detail cylinder silhouette: ", basin_name)
+		if basin_mesh == null or not basin_mesh.mesh is ArrayMesh or basin_mesh.mesh.get_surface_count() == 0:
+			printerr("FAIL vanity basin still uses a low-detail or solid silhouette: ", basin_name)
 			failures += 1
 		else:
-			var basin := basin_mesh.mesh as SphereMesh
-			if basin.radial_segments < 20 or basin.rings < 10:
-				printerr("FAIL vanity basin segment quality: ", basin_name)
+			var basin_bounds := basin_mesh.mesh.get_aabb()
+			if basin_bounds.size.x < 0.30 or basin_bounds.size.y < 0.06 or basin_bounds.size.z < 0.34:
+				printerr("FAIL vanity basin shell dimensions: ", basin_name, " ", basin_bounds)
 				failures += 1
 	var vanity_source_bounds: AABB = game._find_anchor_group_bounds(["43_Marble", "838_Marble"])
 	var vanity_counter := game.find_child("ImportedBath_VanityCounterEdge", true, false) as Node3D
@@ -135,6 +136,11 @@ func _run() -> void:
 		var detail: Node = game.find_child(node_name, true, false)
 		if detail != null and detail.find_child("CollisionShape3D", true, false) != null and ("Vanity" in node_name or "MirrorEdge" in node_name):
 			printerr("FAIL bathroom finish detail blocks movement: ", node_name)
+			failures += 1
+	for drain_name in ["ImportedBath_VanityDrainLeft", "ImportedBath_VanityDrainRight"]:
+		var drain := game.find_child(drain_name, true, false) as Node3D
+		if drain == null or drain.find_child("CollisionShape3D", true, false) != null:
+			printerr("FAIL vanity drain missing or blocks movement: ", drain_name)
 			failures += 1
 	var door_leaf := game.find_child("RightInnerDoor", true, false) as StaticBody3D
 	var door_mesh := door_leaf.get_node_or_null("Mesh") as MeshInstance3D if door_leaf != null else null
