@@ -1535,6 +1535,7 @@ func _tune_imported_materials(mesh: MeshInstance3D) -> void:
 	var metallic := 0.0
 	var clearcoat := 0.0
 	var clearcoat_roughness := 0.35
+	var albedo_tint := Color.WHITE
 	for surface in range(mesh.mesh.get_surface_count()):
 		var source := mesh.get_active_material(surface)
 		if not source is BaseMaterial3D:
@@ -1567,11 +1568,16 @@ func _tune_imported_materials(mesh: MeshInstance3D) -> void:
 			surface_clearcoat_roughness = 0.28
 		elif _contains_any(semantic_name, ["sofa", "cushion", "carpet", "blind", "towel", "foam", "rug"]):
 			surface_roughness = 0.90
+			# The living-room scan carries an almost-white fabric base. A restrained
+			# cool tint preserves the source texture while keeping seams, contact
+			# shadows and cushion silhouettes readable under the warm key light.
+			if _contains_any(semantic_name, ["sofa", "cushion"]):
+				albedo_tint = Color(0.84, 0.86, 0.88)
 		elif _contains_any(semantic_name, ["ceramic", "porcelain", "marble", "tile", "tiles"]):
 			surface_roughness = 0.34
 			surface_clearcoat = 0.18
 			surface_clearcoat_roughness = 0.22
-		var cache_key := "%d:%.2f:%.2f:%.2f:%.2f" % [source.get_instance_id(), surface_roughness, surface_metallic, surface_clearcoat, surface_clearcoat_roughness]
+		var cache_key := "%d:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f:%.2f" % [source.get_instance_id(), surface_roughness, surface_metallic, surface_clearcoat, surface_clearcoat_roughness, albedo_tint.r, albedo_tint.g, albedo_tint.b]
 		var tuned := imported_material_cache.get(cache_key) as BaseMaterial3D
 		if tuned == null:
 			tuned = source.duplicate() as BaseMaterial3D
@@ -1582,6 +1588,7 @@ func _tune_imported_materials(mesh: MeshInstance3D) -> void:
 				standard.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				standard.clearcoat = surface_clearcoat
 				standard.clearcoat_roughness = surface_clearcoat_roughness
+				standard.albedo_color = standard.albedo_color * albedo_tint
 			imported_material_cache[cache_key] = tuned
 		mesh.set_surface_override_material(surface, tuned)
 

@@ -689,3 +689,10 @@
 - `tests/imported_materials.gd` 的金屬、木材、玻璃、布料 5 組 probes，以及 `tests/kitchen_details.gd`、`tests/issue_visuals.gd` 均為 `0 failures`。
 - 圖形回歸：廚房 median `5.701ms`、p95 `6.516ms`、`1382` draws；高光沒有造成效能退化。
 - Web Release 回歸：PCK `103,728,492` bytes、WASM `39,514,754` bytes，合計 `143,243,246` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：客廳布料曝光與可讀性（2026-09-19）
+
+- 客廳 sofa／cushion 匯入材質加入輕微冷色 Albedo tint `0.84/0.86/0.88`，保留原始布料貼圖與 roughness，讓縫線、接觸陰影與坐墊輪廓在暖色燈下不再接近純白過曝。
+- `tests/imported_materials.gd` 新增沙發色調 probe；客廳門洞、沙發 1.10m 維修間距、窗框與家具比例驗收均為 `0 failures`。
+- 圖形回歸：客廳 median `4.192ms`、p95 `4.961ms`、`782` draws；完整 15 張近距離／逆光／手電筒／開門驗收畫面全部成功。
+- Web Release 回歸：PCK `103,728,540` bytes、WASM `39,514,754` bytes，合計 `143,243,294` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

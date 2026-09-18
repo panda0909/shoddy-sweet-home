@@ -46,6 +46,11 @@ func _run() -> void:
 		elif kind == "fabric" and material.roughness < 0.75:
 			printerr("FAIL fabric semantic tuning: ", check[0], " roughness=", material.roughness)
 			failures += 1
+	var sofa_mesh := _find_mesh(game, "63_SofaLeather")
+	var sofa_material := sofa_mesh.get_surface_override_material(0) as StandardMaterial3D if sofa_mesh != null else null
+	if sofa_material == null or sofa_material.albedo_color.r > 0.90 or sofa_material.albedo_color.b < sofa_material.albedo_color.r:
+		printerr("FAIL living sofa fabric tint does not preserve close-view contrast")
+		failures += 1
 
 	print("Imported material probes: ", checks.size())
 	print("Imported material failures: ", failures)
