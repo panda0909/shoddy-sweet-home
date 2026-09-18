@@ -23,9 +23,13 @@ func _run() -> void:
 
 	var routes := [
 		["living furniture aisle", [Vector3(-8.8, 1.0, 1.0), Vector3(-8.8, 1.0, 5.25), Vector3(-3.6, 1.0, 5.25), Vector3(-3.6, 1.0, 1.15)]],
+		["living coffee table perimeter", [Vector3(-8.0, 1.0, 2.2), Vector3(-7.0, 1.0, 2.2), Vector3(-7.0, 1.0, 3.55), Vector3(-5.0, 1.0, 3.55), Vector3(-5.0, 1.0, 2.2)]],
 		["kitchen furniture aisle", [Vector3(7.8, 1.0, 0.8), Vector3(9.2, 1.0, 0.8), Vector3(9.2, 1.0, 5.25), Vector3(7.8, 1.0, 5.25)]],
+		["kitchen dining perimeter", [Vector3(9.2, 1.0, 1.6), Vector3(9.2, 1.0, 5.25), Vector3(8.2, 1.0, 5.25), Vector3(8.2, 1.0, 4.85), Vector3(9.2, 1.0, 4.85)]],
 		["bedroom furniture aisle", [Vector3(-8.5, 1.0, -1.0), Vector3(-8.5, 1.0, -3.65), Vector3(-8.35, 1.0, -3.65), Vector3(-8.35, 1.0, -5.25), Vector3(-3.8, 1.0, -5.25), Vector3(-3.8, 1.0, -1.0)]],
-		["bathroom furniture aisle", [Vector3(7.8, 1.0, -1.0), Vector3(9.2, 1.0, -1.0), Vector3(9.2, 1.0, -5.5), Vector3(4.0, 1.0, -5.5), Vector3(1.2, 1.0, -5.5)]]
+		["bedroom closet and desk perimeter", [Vector3(-3.8, 1.0, -1.0), Vector3(-3.8, 1.0, -4.05), Vector3(-3.2, 1.0, -4.05), Vector3(-3.2, 1.0, -2.1), Vector3(-3.8, 1.0, -1.0)]],
+		["bathroom furniture aisle", [Vector3(7.8, 1.0, -1.0), Vector3(9.2, 1.0, -1.0), Vector3(9.2, 1.0, -5.5), Vector3(4.0, 1.0, -5.5), Vector3(1.2, 1.0, -5.5)]],
+		["bathroom wet-zone perimeter", [Vector3(9.2, 1.0, -1.0), Vector3(9.2, 1.0, -5.5), Vector3(8.6, 1.0, -5.5), Vector3(8.6, 1.0, -4.0), Vector3(9.2, 1.0, -3.0)]]
 	]
 	var failures := 0
 	for route_data in routes:
