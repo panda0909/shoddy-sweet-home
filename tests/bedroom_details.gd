@@ -87,6 +87,15 @@ func _run() -> void:
 	if quilt_surface == null or not quilt_surface.mesh is ArrayMesh or quilt_surface.mesh.get_aabb().size.x < 3.0:
 		printerr("FAIL duvet quilt surface is incomplete")
 		failures += 1
+	var chair_seat_mesh := game.get_node_or_null("DeskChairSeat/Mesh") as MeshInstance3D
+	if chair_seat_mesh == null or not chair_seat_mesh.mesh is SphereMesh:
+		printerr("FAIL desk chair seat still uses a low-detail cylinder silhouette")
+		failures += 1
+	else:
+		var chair_seat := chair_seat_mesh.mesh as SphereMesh
+		if chair_seat.radial_segments < 24 or chair_seat.rings < 12:
+			printerr("FAIL desk chair seat segment quality: ", chair_seat.radial_segments, "x", chair_seat.rings)
+			failures += 1
 	var left_rod := game.get_node_or_null("CurtainLeft/CurtainRod") as MeshInstance3D
 	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:
 		printerr("FAIL curtain rod is not horizontal")

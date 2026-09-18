@@ -26,6 +26,17 @@ static func apply(room: Node3D) -> void:
 			material.normal_enabled = room.generated_fabric_normal_texture != null
 			material.normal_texture = room.generated_fabric_normal_texture
 			material.normal_scale = 0.12
+	# The chair body keeps its simple cylinder collider, while the visible seat
+	# becomes a flattened high-segment cushion with a rounded silhouette.
+	var chair_seat_mesh := room.get_node("DeskChairSeat/Mesh") as MeshInstance3D
+	if chair_seat_mesh != null:
+		var seat_shape := SphereMesh.new()
+		seat_shape.radius = 0.40
+		seat_shape.height = 0.80
+		seat_shape.radial_segments = 32
+		seat_shape.rings = 16
+		chair_seat_mesh.mesh = seat_shape
+		chair_seat_mesh.scale = Vector3(1.0, 0.18, 1.0)
 	# Replace the solid desk front with four legs and a modesty panel.
 	var desk: Node3D = room.get_node("Desk")
 	desk.get_node("Mesh").hide()
