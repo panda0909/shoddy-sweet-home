@@ -277,6 +277,40 @@ static func apply(room: Node3D) -> void:
 		_add_detail_sphere(room, "BedroomCurtainFinialRight", 0.055, rail_position + Vector3((window_bounds.size.x + 0.32) * 0.5, 0, 0), rail_material)
 		room._add_door_frame_piece(room, "BedroomWindowSill", Vector3(window_bounds.size.x + 0.18, 0.08, 0.16), Vector3(window_bounds.get_center().x, window_bounds.position.y - 0.075, window_bounds.end.z + 0.045), rail_material)
 		room._add_door_frame_piece(room, "BedroomWindowLatch", Vector3(0.035, 0.12, 0.035), Vector3(window_bounds.get_center().x, window_bounds.get_center().y - 0.06, window_bounds.end.z + 0.030), room._mat(Color(0.26, 0.24, 0.20)))
+	# Procedural bedroom furniture does not pass through the imported-furniture
+	# contact-shadow helper. Add one small, unlit footprint per hero piece using
+	# the assembled visible bounds, so the shadows follow the rounded furniture
+	# and never become movement colliders.
+	var bedroom_shadow_material: StandardMaterial3D = room._mat(Color(0.012, 0.016, 0.020, 0.18))
+	bedroom_shadow_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bedroom_shadow_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bedroom_shadow_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	for shadow_data in [
+		["BedBase", "BedroomContactShadow_Bed", 0.90, 3.4],
+		["BedsideTable_Left", "BedroomContactShadow_BedsideLeft", 0.86, 0.80],
+		["BedsideTable_Right", "BedroomContactShadow_BedsideRight", 0.86, 0.80],
+		["Closet", "BedroomContactShadow_Closet", 0.92, 2.4],
+		["DeskTop", "BedroomContactShadow_Desk", 0.90, 2.5],
+		["Bookcase", "BedroomContactShadow_Bookcase", 0.88, 0.82],
+		["BedroomPlantPot", "BedroomContactShadow_Plant", 0.82, 0.62]
+	]:
+		var source := room.get_node_or_null(str(shadow_data[0])) as Node3D
+		if source == null:
+			continue
+		var source_bounds := _visible_bounds(source)
+		if not source_bounds.has_volume():
+			continue
+		var shadow := MeshInstance3D.new()
+		shadow.name = str(shadow_data[1])
+		shadow.set_meta("contact_shadow", true)
+		shadow.set_meta("no_collision", true)
+		var shadow_mesh := BoxMesh.new()
+		var footprint := float(shadow_data[3])
+		shadow_mesh.size = Vector3(clampf(source_bounds.size.x * float(shadow_data[2]), 0.18, footprint), 0.008, clampf(source_bounds.size.z * float(shadow_data[2]), 0.18, footprint))
+		shadow.mesh = shadow_mesh
+		shadow.material_override = bedroom_shadow_material
+		shadow.position = Vector3(source_bounds.get_center().x, 0.009, source_bounds.get_center().z)
+		room.add_child(shadow)
 
 
 static func _chair_back_mesh(size: Vector3) -> ArrayMesh:
@@ -521,6 +555,31 @@ static func _add_box_collision(parent: Node3D, node_name: String, size: Vector3,
 	collision.position = local_pos
 	parent.add_child(collision)
 	return collision
+
+
+static func _visible_bounds(root: Node3D) -> AABB:
+	var result := AABB()
+	var has_bounds := false
+	for mesh_node in root.find_children("*", "MeshInstance3D", true, false):
+		var mesh := mesh_node as MeshInstance3D
+		if mesh == null or mesh.mesh == null or not mesh.visible:
+			continue
+		# apply() runs while the bedroom is being assembled, before every new
+		# child is guaranteed to be inside the scene tree. Build the transform
+		# relative to the furniture root in that case instead of asking Godot for
+		# a global transform on an unattached node.
+		var local_to_root := Transform3D.IDENTITY
+		var cursor: Node = mesh
+		while cursor != root and cursor != null:
+			local_to_root = (cursor as Node3D).transform * local_to_root
+			cursor = cursor.get_parent()
+		var bounds: AABB = local_to_root * mesh.get_aabb()
+		if not has_bounds:
+			result = bounds
+			has_bounds = true
+		else:
+			result = result.merge(bounds)
+	return result
 
 static func rounded(size: Vector3, radius: float) -> ArrayMesh:
 	var base := BoxMesh.new()

@@ -13,6 +13,15 @@ func _run() -> void:
 	await physics_frame
 
 	var failures := 0
+	var expected_shadows := [
+		"BedroomContactShadow_Bed", "BedroomContactShadow_BedsideLeft", "BedroomContactShadow_BedsideRight",
+		"BedroomContactShadow_Closet", "BedroomContactShadow_Desk", "BedroomContactShadow_Bookcase", "BedroomContactShadow_Plant"
+	]
+	for shadow_name in expected_shadows:
+		var shadow := game.get_node_or_null(shadow_name) as MeshInstance3D
+		if shadow == null or not shadow.has_meta("contact_shadow") or shadow.get_node_or_null("CollisionShape3D") != null or not shadow.has_meta("no_collision"):
+			printerr("FAIL bedroom contact shadow is missing or collidable: ", shadow_name)
+			failures += 1
 	var oak_a := game._wood_mat(Color(0.72, 0.47, 0.25)) as StandardMaterial3D
 	var oak_b := game._wood_mat(Color(0.72, 0.47, 0.25)) as StandardMaterial3D
 	var fabric_a := game._fabric_mat(Color(0.34, 0.48, 0.59)) as StandardMaterial3D
