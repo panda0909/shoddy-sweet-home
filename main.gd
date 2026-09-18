@@ -55,6 +55,8 @@ var generated_oak_roughness_texture: Texture2D
 var generated_fabric_roughness_texture: Texture2D
 var generated_oak_normal_texture: Texture2D
 var generated_fabric_normal_texture: Texture2D
+var high_poly_lod_entries: Array[Dictionary] = []
+var lod_refresh_elapsed := 0.0
 
 var tool_names := ["手電筒", "水平儀", "空鼓槌", "驗電筆"]
 var tool_descriptions := [
@@ -99,6 +101,10 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_poll_room_loading()
+	lod_refresh_elapsed += delta
+	if lod_refresh_elapsed >= 0.25:
+		lod_refresh_elapsed = 0.0
+		_update_high_poly_lods()
 	if paused:
 		return
 	if not round_finished and initial_room_ready:
@@ -598,6 +604,7 @@ func _prepare_furniture(asset: Node3D) -> void:
 		# a trimesh collider makes the player's capsule snag on those edges.
 		bounds = mesh.global_transform * mesh.get_aabb()
 		_apply_imported_lod(asset, mesh, bounds)
+		_add_high_poly_lod_proxy(asset, mesh, bounds)
 		var blocks_door := false
 		var blocking_passage := AABB()
 		for data in doors.values():
@@ -638,6 +645,62 @@ func _apply_imported_lod(asset: Node3D, mesh: MeshInstance3D, bounds: AABB) -> v
 	mesh.visibility_range_end_margin = 2.0
 	mesh.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	mesh.set_meta("distance_lod_applied", true)
+
+
+func _add_high_poly_lod_proxy(asset: Node3D, mesh: MeshInstance3D, bounds: AABB) -> void:
+	if asset.name not in ["LivingRoomRealAsset", "KitchenRealAsset"]:
+		return
+	if _is_door_clearance_shell(mesh):
+		return
+	var triangles := _mesh_triangle_count(mesh.mesh)
+	if triangles < 4000:
+		return
+	var proxy := MeshInstance3D.new()
+	proxy.name = "LODProxy_" + str(mesh.name)
+	var box := BoxMesh.new()
+	box.size = bounds.size
+	proxy.mesh = box
+	proxy.visible = false
+	proxy.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	var source_material := mesh.get_active_material(0)
+	if source_material != null:
+		proxy.material_override = source_material
+	add_child(proxy)
+	proxy.global_position = bounds.get_center()
+	high_poly_lod_entries.append({
+		"source": mesh,
+		"proxy": proxy,
+		"distance": 15.0
+	})
+	mesh.set_meta("high_poly_lod_triangles", triangles)
+
+
+func _mesh_triangle_count(mesh: Mesh) -> int:
+	if mesh == null:
+		return 0
+	var triangles := 0
+	for surface in range(mesh.get_surface_count()):
+		var arrays: Array = mesh.surface_get_arrays(surface)
+		var indices = arrays[Mesh.ARRAY_INDEX]
+		var vertices = arrays[Mesh.ARRAY_VERTEX]
+		if indices is PackedInt32Array and not indices.is_empty():
+			triangles += indices.size() / 3
+		elif vertices is PackedVector3Array:
+			triangles += vertices.size() / 3
+	return triangles
+
+
+func _update_high_poly_lods() -> void:
+	if player == null:
+		return
+	for entry in high_poly_lod_entries:
+		var source := entry["source"] as MeshInstance3D
+		var proxy := entry["proxy"] as MeshInstance3D
+		if not is_instance_valid(source) or not is_instance_valid(proxy):
+			continue
+		var use_proxy := player.global_position.distance_to(source.global_position) > float(entry["distance"])
+		source.visible = not use_proxy
+		proxy.visible = use_proxy
 
 
 func _is_imported_lod_candidate(mesh: MeshInstance3D, bounds: AABB) -> bool:

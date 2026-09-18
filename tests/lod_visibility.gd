@@ -28,7 +28,25 @@ func _run() -> void:
 	if lod_count < 10:
 		printerr("FAIL too few imported decorative LOD meshes: ", lod_count)
 		failures += 1
+	if game.high_poly_lod_entries.is_empty():
+		printerr("FAIL no high-poly proxy LOD entries")
+		failures += 1
+	else:
+		var entry: Dictionary = game.high_poly_lod_entries[0]
+		game.player.position = Vector3(9.0, 1.0, 5.0)
+		game._update_high_poly_lods()
+		var source := entry["source"] as MeshInstance3D
+		var proxy := entry["proxy"] as MeshInstance3D
+		if source.visible or not proxy.visible:
+			printerr("FAIL high-poly proxy was not selected at distance")
+			failures += 1
+		game.player.position = Vector3(-4.45, 1.0, 1.15)
+		game._update_high_poly_lods()
+		if not source.visible or proxy.visible:
+			printerr("FAIL high-poly source was not restored near player")
+			failures += 1
 	print("Imported decorative LOD meshes: ", lod_count)
+	print("High-poly proxy LOD entries: ", game.high_poly_lod_entries.size())
 	print("LOD visibility failures: ", failures)
 	game.queue_free()
 	await process_frame
