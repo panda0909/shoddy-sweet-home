@@ -121,7 +121,7 @@ func _run() -> void:
 		if collision == null or not collision.shape is BoxShape3D:
 			printerr("FAIL missing box-form desk assembly collision: ", id)
 			failures += 1
-	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "CurtainLeft/DrapePanel", "CurtainRight/DrapePanel"]:
+	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "Desk/SidePanelLeft", "Desk/SidePanelRight", "CurtainLeft/DrapePanel", "CurtainRight/DrapePanel"]:
 		var structural_mesh := game.get_node_or_null(id) as MeshInstance3D
 		if structural_mesh == null or not structural_mesh.mesh is ArrayMesh:
 			printerr("FAIL structural detail is still a sharp box: ", id)
@@ -135,7 +135,7 @@ func _run() -> void:
 		if game.get_node_or_null(id) == null:
 			printerr("FAIL missing curtain hem: ", id)
 			failures += 1
-	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "Desk/DrawerBodyLeft", "Desk/DrawerBodyRight", "Desk/DrawerFront"]:
+	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "Desk/SidePanelLeft", "Desk/SidePanelRight", "Desk/DrawerBodyLeft", "Desk/DrawerBodyRight", "Desk/DrawerFront"]:
 		var desk_mesh := game.get_node_or_null(id) as MeshInstance3D
 		var desk_material := desk_mesh.material_override as StandardMaterial3D if desk_mesh != null else null
 		if desk_material == null or desk_material.albedo_texture == null or desk_material.roughness_texture == null:
@@ -159,10 +159,19 @@ func _run() -> void:
 			if not shape_node.shape is BoxShape3D:
 				printerr("FAIL non-box bedroom collision: ", shape_node.get_path())
 				failures += 1
+	var old_desk_mesh := game.get_node_or_null("Desk/Mesh") as MeshInstance3D
+	if old_desk_mesh != null and old_desk_mesh.mesh != null:
+		printerr("FAIL legacy solid desk shell remains in the visible assembly")
+		failures += 1
 	var old_desk_collision := game.get_node_or_null("Desk/CollisionShape3D") as CollisionShape3D
 	if old_desk_collision != null and not old_desk_collision.disabled:
-		printerr("FAIL hidden desk shell collision remains active")
+		printerr("FAIL legacy desk shell collision remains active")
 		failures += 1
+	for id in ["Desk/SidePanelCollisionLeft", "Desk/SidePanelCollisionRight"]:
+		var panel_collision := game.get_node_or_null(id) as CollisionShape3D
+		if panel_collision == null or not panel_collision.shape is BoxShape3D:
+			printerr("FAIL missing box-form desk side-panel collision: ", id)
+			failures += 1
 
 	print("Bedroom PBR cache entries: oak=", game.wood_material_cache.size(), " fabric=", game.fabric_material_cache.size())
 	print("Bedroom detail failures: ", failures)

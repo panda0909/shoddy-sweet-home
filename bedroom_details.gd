@@ -39,7 +39,12 @@ static func apply(room: Node3D) -> void:
 		chair_seat_mesh.scale = Vector3(1.0, 0.18, 1.0)
 	# Replace the solid desk front with four legs and a modesty panel.
 	var desk: Node3D = room.get_node("Desk")
-	desk.get_node("Mesh").hide()
+	# The imported-looking box was only a temporary desk proxy. Remove its
+	# render mesh completely so the visible desk is an authored assembly rather
+	# than a hidden shell with decorative parts pasted over it.
+	var legacy_desk_mesh := desk.get_node_or_null("Mesh") as MeshInstance3D
+	if legacy_desk_mesh != null:
+		legacy_desk_mesh.queue_free()
 	desk.get_node("CollisionShape3D").disabled = true
 	var desk_wood: StandardMaterial3D = room._wood_mat(Color(0.30, 0.17, 0.09))
 	var desk_dark_wood: StandardMaterial3D = room._wood_mat(Color(0.42, 0.24, 0.12))
@@ -55,6 +60,14 @@ static func apply(room: Node3D) -> void:
 	room._add_door_frame_piece(desk, "BackPanel", Vector3(2.2, 0.28, 0.04), Vector3(0, 0.20, -0.31), desk_dark_wood)
 	_add_box_collision(desk, "BackPanelCollision", Vector3(2.2, 0.28, 0.04), Vector3(0, 0.20, -0.31))
 	room._add_door_frame_piece(desk, "FrontApron", Vector3(1.62, 0.10, 0.07), Vector3(0, 0.27, 0.32), desk_dark_wood)
+	# Side panels close the joinery between desktop and pedestals. They are
+	# separate from the legs so the silhouette remains readable in close views
+	# and the collision follows the actual furniture structure.
+	for side_data in [["Left", -1.05], ["Right", 1.05]]:
+		var panel_name: String = side_data[0]
+		var panel_x: float = side_data[1]
+		room._add_door_frame_piece(desk, "SidePanel" + panel_name, Vector3(0.08, 0.70, 0.68), Vector3(panel_x, 0.02, 0.0), desk_dark_wood)
+		_add_box_collision(desk, "SidePanelCollision" + panel_name, Vector3(0.08, 0.70, 0.68), Vector3(panel_x, 0.02, 0.0))
 	# Two shallow drawer pedestals turn the desk from a hidden shell into a
 	# readable piece of joinery. Their bodies and drawer fronts remain separate
 	# so the collision stays a pair of simple boxes instead of a trimesh.

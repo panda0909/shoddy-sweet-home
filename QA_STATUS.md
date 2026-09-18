@@ -539,3 +539,8 @@
 
 - Web 版拖曳視角現在同時讀取 `Input.is_mouse_button_pressed()` 與 `InputEventMouseMotion.button_mask`，避免嵌入式瀏覽器只提供事件按鍵狀態時視角不轉。
 - Pointer Lock 流程不變；桌面版捕捉滑鼠與 ESC 暫停行為也不受影響。
+
+### 追加：臥室書桌正式組件化（2026-09-19）
+
+- 移除 `Desk/Mesh` 的整塊臨時桌體，不再靠隱藏整個桌殼再貼裝飾件；桌面、四腳、左右側板、後擋板、前裙板與抽屜現在是正式可辨識的組合。
+- 左右側板新增獨立 BoxShape3D，並保留桌面、抽屜、桌腳與後擋板的盒型碰撞；`tests/bedroom_details.gd` 會拒絕舊桌殼重新出現。
