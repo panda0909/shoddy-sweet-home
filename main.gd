@@ -564,27 +564,39 @@ func _tune_imported_materials(mesh: MeshInstance3D) -> void:
 	var mesh_name := str(mesh.name).to_lower()
 	var roughness := 0.72
 	var metallic := 0.0
+	var clearcoat := 0.0
+	var clearcoat_roughness := 0.35
 	if "metal" in mesh_name or "steel" in mesh_name or "chrome" in mesh_name:
 		roughness = 0.28
 		metallic = 0.78
 	elif "glass" in mesh_name or "window" in mesh_name or "mirror" in mesh_name:
 		roughness = 0.18
+		clearcoat = 0.35
+		clearcoat_roughness = 0.16
 	elif "wood" in mesh_name or "table" in mesh_name or "cupboard" in mesh_name:
 		roughness = 0.56
+		clearcoat = 0.08
+		clearcoat_roughness = 0.28
 	elif "sofa" in mesh_name or "cushion" in mesh_name or "carpet" in mesh_name:
 		roughness = 0.90
 	elif "ceramic" in mesh_name or "marble" in mesh_name:
 		roughness = 0.34
+		clearcoat = 0.18
+		clearcoat_roughness = 0.22
 	for surface in range(mesh.mesh.get_surface_count()):
 		var source := mesh.get_active_material(surface)
 		if not source is BaseMaterial3D:
 			continue
-		var cache_key := "%d:%.2f:%.2f" % [source.get_instance_id(), roughness, metallic]
+		var cache_key := "%d:%.2f:%.2f:%.2f" % [source.get_instance_id(), roughness, metallic, clearcoat]
 		var tuned := imported_material_cache.get(cache_key) as BaseMaterial3D
 		if tuned == null:
 			tuned = source.duplicate() as BaseMaterial3D
 			tuned.roughness = roughness
 			tuned.metallic = metallic
+			var standard := tuned as StandardMaterial3D
+			if standard != null:
+				standard.clearcoat = clearcoat
+				standard.clearcoat_roughness = clearcoat_roughness
 			imported_material_cache[cache_key] = tuned
 		mesh.set_surface_override_material(surface, tuned)
 
@@ -952,6 +964,9 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		"vent_wrong":
 			pos = Vector3(6.58, 1.48, 3.65)
 			size = Vector3(0.32, 0.35, 0.65)
+		"tv_outlet":
+			pos = Vector3(-9.72, 0.85, 2.6)
+			size = Vector3(0.12, 0.35, 0.4)
 		"cabinet_blocked":
 			pos = Vector3(6.43, 0.40, 2.70)
 			size = Vector3(0.16, 0.65, 0.3)
@@ -978,7 +993,14 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			joke = "門框的歲月痕跡，比房子的屋齡還長。"
 			size = Vector3(0.35, 0.8, 0.12)
 	# Resolve against imported furniture after scale/placement, not guessed room coordinates.
-	var anchor_names := {"sink_leak": "261_CupboardUnits", "cabinet_blocked": "253_CupboardUnits", "vent_wrong": "255_ExtractorHood", "rug_tilt": "141_Carpet"}
+	var anchor_names := {
+		"tv_outlet": "78_Socket",
+		"sink_leak": "261_CupboardUnits",
+		"vent_wrong": "255_ExtractorHood",
+		"cabinet_blocked": "253_CupboardUnits",
+		"kitchen_socket": "195_WallSocket",
+		"rug_tilt": "141_Carpet"
+	}
 	if anchor_names.has(issue_id):
 		var anchor := find_child(anchor_names[issue_id], true, false) as MeshInstance3D
 		if anchor:
@@ -986,6 +1008,14 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			pos = bounds.get_center()
 			if issue_id == "rug_tilt":
 				pos = Vector3(bounds.end.x - 0.25, bounds.end.y + 0.012, bounds.end.z - 0.20)
+			elif issue_id == "tv_outlet":
+				# The socket is a tiny source mesh; enlarge the inspection area
+				# around its actual wall position without moving the visual clue.
+				pos = bounds.get_center() + Vector3(0, 0.58, -0.12)
+				size = Vector3(0.16, 0.35, 0.24)
+			elif issue_id == "kitchen_socket":
+				pos = bounds.get_center() + Vector3(-0.06, 0, 0)
+				size = Vector3(0.16, 0.35, 0.24)
 			else:
 				pos.x = bounds.position.x - 0.035
 				if issue_id == "sink_leak":

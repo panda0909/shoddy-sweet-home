@@ -107,3 +107,9 @@
 - 移除臥室書桌與桌面的 `create_trimesh_collision()`；改用桌腳、背板與桌面的 BoxShape3D。`tests/furniture_collision.gd` 仍確認 27 個家具碰撞皆為盒型、凹面碰撞為 0。
 - 新增 `tests/bedroom_details.gd`，驗證木材質同時有 Albedo／Roughness 貼圖、臥室細節節點存在，且沒有凹面碰撞；本機結果為 0 failures。
 - 門通行回歸 0 failures；14 個缺陷可達、十題互動／結算回歸通過。仍需進行真人近距離美術驗收與 P1 各房間家具比例整理。
+
+### 追加：缺陷錨點與匯入家具表面反應（2026-09-18）
+
+- 電視插座與廚房插座改以匯入模型中的實際 `78_Socket`／`195_WallSocket` 錨點重新定位；水槽、抽油煙機、櫃門與地毯維持使用對應模型 AABB。
+- 客廳、廚房與浴室匯入的木材、玻璃、陶瓷與金屬材質增加低成本 Clearcoat／Clearcoat Roughness 分級，仍沿用材質快取，未增加額外貼圖。
+- `tests/issue_access.gd` 回歸：14 個缺陷皆可達、十題互動與結算通過；仍需要遊戲內逐件近距離目視確認錨點是否符合最終美術構圖。
