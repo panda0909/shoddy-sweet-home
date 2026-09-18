@@ -624,10 +624,10 @@ func _add_furniture_box_collision(asset: Node3D, source_mesh: MeshInstance3D, bo
 	body.collision_mask = 0
 	# Use a world-space AABB so rotation and nested imported transforms cannot
 	# accidentally inherit a decorative mesh's local transform.
-	body.global_position = bounds.get_center()
 	# The room asset is a direct child of the gameplay scene. Keeping the
 	# collider there avoids inheriting the imported asset's scale/rotation.
 	asset.get_parent().add_child(body)
+	body.global_position = bounds.get_center()
 
 	var shape_node := CollisionShape3D.new()
 	shape_node.name = "FurnitureBoxShape"
@@ -1260,7 +1260,7 @@ func _show_hint() -> void:
 
 	var issue_id := str(nearest["id"])
 	var required_tool := int(nearest["tool"])
-	var tool_hint := "目視確認即可" if required_tool < 0 else "建議使用：" + tool_names[required_tool]
+	var tool_hint: String = "目視確認即可" if required_tool < 0 else "建議使用：" + tool_names[required_tool]
 	_show_toast("線索：%s\n%s" % [_issue_hint(issue_id), tool_hint], 5.0)
 	if hint_world_label != null and is_instance_valid(hint_world_label):
 		hint_world_label.queue_free()
