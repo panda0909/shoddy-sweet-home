@@ -116,6 +116,12 @@ func _run() -> void:
 		if towel_bar.global_position.distance_to(Vector3(towel_expected_x, towel_expected_y, towel_expected_z)) > 0.06:
 			printerr("FAIL towel rail is not attached to imported wall mounts: ", towel_bar.global_position)
 			failures += 1
+	var ceiling_bounds: AABB = game._find_bathroom_mesh_bounds("849_Ceiling")
+	var ceiling_vent := game.find_child("ImportedBath_CeilingVent", true, false) as Node3D
+	var vent_expected := Vector3(ceiling_bounds.end.x - 1.35, ceiling_bounds.end.y + 0.17, ceiling_bounds.end.z - 0.064) if ceiling_bounds.has_volume() else Vector3.ZERO
+	if not ceiling_bounds.has_volume() or ceiling_vent == null or ceiling_vent.global_position.distance_to(vent_expected) > 0.06:
+		printerr("FAIL bathroom exhaust vent is not attached to ceiling bounds")
+		failures += 1
 	print("Imported bathroom detail nodes: ", required.size(), "; material batches: ", detail_batches.size())
 	print("Bathroom detail failures: ", failures)
 	game.queue_free()

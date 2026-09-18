@@ -950,7 +950,16 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		for towel_fold in range(3):
 			_add_box("ImportedBath_TowelFold_%d" % towel_fold, Vector3(0.62, 0.018, 0.018), Vector3(3.7, 1.18 - towel_fold * 0.14, -5.665), towel_fold_material, false, detail_root)
 	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(shower_center.x, 0.145, shower_center.z), drain_material, false, detail_root)
-	_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.05, 0.55), Vector3(6.15, 2.96, -3.60), steel, false, detail_root)
+	# Attach the exhaust grille to the imported ceiling bounds. The old fixed
+	# world point was correct only for the original bathroom translation and
+	# could leave both the fixture and bath_vent clue floating after rescaling.
+	var ceiling_bounds := _find_bathroom_mesh_bounds("849_Ceiling")
+	if ceiling_bounds.has_volume():
+		var vent_size := Vector3(minf(0.90, ceiling_bounds.size.x * 0.18), 0.05, minf(0.55, ceiling_bounds.size.z * 0.24))
+		var vent_position := Vector3(ceiling_bounds.end.x - 1.35, ceiling_bounds.end.y + 0.17, ceiling_bounds.end.z - 0.064)
+		_add_box("ImportedBath_CeilingVent", vent_size, vent_position, steel, false, detail_root)
+	else:
+		_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.05, 0.55), Vector3(6.15, 2.96, -3.60), steel, false, detail_root)
 
 
 func _find_bathroom_mesh_bounds(mesh_name: String) -> AABB:

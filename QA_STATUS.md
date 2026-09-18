@@ -354,6 +354,11 @@
 - 缺陷池移除未列入需求的地毯傾斜／電視插座，加入「櫥櫃門板磨損」與「浴室門撞洗手台」；總數仍維持 14 題、每輪隨機找 10 題。
 - 新增兩種缺陷的可視化磨痕／門扇掃掠線索；14 題錨點、1999 個連通站位、10 題實際互動結算均通過。
 
+### 追加：浴室排風扇 ceiling bounds 貼合（2026-09-19）
+
+- `ImportedBath_CeilingVent` 改依匯入 `849_Ceiling` bounds 推導中心、尺寸與高度，`bath_vent` 缺陷會跟隨實際天花板而不再依賴固定世界座標。
+- `tests/bathroom_details.gd` 新增排風扇貼合檢查；浴室 12 材質批次與圖形驗收維持通過。
+
 ### 追加：廚房冰箱把手 bounds 貼合（2026-09-19）
 
 - `KitchenDetail_FridgeHandle` 不再使用舊廚房比例下的固定座標，改依匯入 `253_CupboardUnits` 世界 bounds 生成，與 `cabinet_blocked` 缺陷共用同一個冰箱／高櫃基準。
