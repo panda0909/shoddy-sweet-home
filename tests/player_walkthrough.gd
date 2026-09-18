@@ -49,10 +49,16 @@ func _reset_door(game: Node, door_id: String) -> void:
 		data["is_open"] = false
 		game.doors[id] = data
 		var pivot := data["pivot"] as Node3D
-		pivot.rotation.y = float(data["closed_angle"])
+		if str(data.get("mode", "hinged")) == "sliding":
+			pivot.position = data["closed_position"]
+		else:
+			pivot.rotation.y = float(data["closed_angle"])
 	var target_data: Dictionary = game.doors[door_id]
 	var target_pivot := target_data["pivot"] as Node3D
-	target_pivot.rotation.y = float(target_data["closed_angle"])
+	if str(target_data.get("mode", "hinged")) == "sliding":
+		target_pivot.position = target_data["closed_position"]
+	else:
+		target_pivot.rotation.y = float(target_data["closed_angle"])
 
 
 func _walk_player(game: Node, target: Vector3) -> bool:

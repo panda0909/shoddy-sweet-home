@@ -131,6 +131,15 @@ func _run() -> void:
 		if game.get_node_or_null(sideboard_piece) == null:
 			printerr("FAIL missing sideboard finish: ", sideboard_piece)
 			failures += 1
+	var sideboard_pulls: Array = game.find_children("LivingDetail_SideboardDrawerPull_*", "StaticBody3D", true, false)
+	if sideboard_pulls.size() != 4:
+		printerr("FAIL sideboard drawer pull count: ", sideboard_pulls.size())
+		failures += 1
+	else:
+		for pull in sideboard_pulls:
+			if pull.get_node_or_null("CollisionShape3D") != null or pull.global_position.x <= sideboard_bounds.end.x:
+				printerr("FAIL sideboard drawer pull is not a render-only front detail: ", pull.name)
+				failures += 1
 	var sofa_shelf := game.get_node_or_null("LivingDetail_SofaWallShelf") as Node3D
 	var sofa_shelf_mesh := sofa_shelf.get_node_or_null("Mesh") as MeshInstance3D if sofa_shelf != null else null
 	var sofa_shelf_bounds: AABB = sofa_shelf_mesh.global_transform * sofa_shelf_mesh.get_aabb() if sofa_shelf_mesh != null else AABB()

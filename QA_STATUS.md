@@ -737,3 +737,8 @@
 - `tests/render_acceptance.gd` 由 15 張擴充為 23 張近距離／逆光／手電筒／開門畫面，新增客廳茶几與壁爐、廚房爐具與餐桌、臥室床與窗、浴室馬桶與浴缸等逐件視角。
 - 依實際模型 bounds 重調新增鏡頭，確認目標家具完整入鏡；本機圖形驗收 `23 frames / 0 failures`，所有畫面可寫入 Godot user acceptance 目錄。
 - Web Release 回歸：PCK `103,734,092` bytes、WASM `39,514,754` bytes，合計 `143,248,846` bytes；臥室接地陰影與近距離驗收腳本沒有讓首次下載量超過 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：客廳邊櫃抽屜五金與門走訪測試修正（2026-09-19）
+
+- 依客廳邊櫃匯入 bounds 補上四組金屬抽屜拉手，位置固定在邊櫃正面且維持 render-only；`tests/room_finish_quality.gd` 驗證數量、正面貼合與無碰撞。
+- 修正 `tests/player_walkthrough.gd` 重置滑門時誤讀 `closed_angle` 的 Script Error，現在同時支援 hinged／sliding door；四扇房門 walkthrough `0 failures` 且不再產生測試腳本錯誤。

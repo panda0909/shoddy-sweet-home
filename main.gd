@@ -514,6 +514,15 @@ func _add_living_imported_details() -> void:
 		_add_box("LivingDetail_SideboardTop", Vector3(sideboard_bounds.size.x + 0.06, 0.04, sideboard_bounds.size.z + 0.05), Vector3(sideboard_bounds.get_center().x, sideboard_bounds.end.y + 0.02, sideboard_bounds.get_center().z), sideboard_white, false)
 		_add_box("LivingDetail_SideboardPlinth", Vector3(sideboard_bounds.size.x + 0.035, 0.06, sideboard_bounds.size.z + 0.035), Vector3(sideboard_bounds.get_center().x, sideboard_bounds.position.y + 0.03, sideboard_bounds.get_center().z), sideboard_white, false)
 		_add_box("LivingDetail_SideboardFrontInset", Vector3(0.026, sideboard_bounds.size.y * 0.62, sideboard_bounds.size.z * 0.72), Vector3(sideboard_bounds.position.x - 0.014, sideboard_bounds.get_center().y, sideboard_bounds.get_center().z), sideboard_dark, false)
+		# The source scan's drawer handles are very thin and disappear under the
+		# compatibility renderer. Rebuild four short pulls on the measured front
+		# face so the sideboard reads as usable joinery in the close inspection.
+		var sideboard_pull_material := _mat(Color(0.24, 0.26, 0.25))
+		sideboard_pull_material.metallic = 0.72
+		sideboard_pull_material.roughness = 0.24
+		for pull_index in range(4):
+			var pull_y := sideboard_bounds.position.y + sideboard_bounds.size.y * (0.20 + float(pull_index) * 0.19)
+			_add_box("LivingDetail_SideboardDrawerPull_%d" % pull_index, Vector3(0.035, 0.028, clampf(sideboard_bounds.size.z * 0.24, 0.08, 0.16)), Vector3(sideboard_bounds.end.x + 0.018, pull_y, sideboard_bounds.get_center().z), sideboard_pull_material, false)
 	# The scan has no usable wall-shelf assembly. Add one lightweight, wall-
 	# mounted shelf above the sofa, using the sofa and front-wall bounds as the
 	# placement source so it stays proportional when the room is rescaled.
