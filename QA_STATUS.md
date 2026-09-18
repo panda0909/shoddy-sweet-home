@@ -303,3 +303,8 @@
 
 - 依 `255_ExtractorHood` 實際 bounds 新增抽油煙機底部金屬收邊、上接風管與法蘭，修正原本 hood 與上櫃之間缺少結構連接的問題。
 - `tests/kitchen_details.gd` 現在驗證 hood trim 與真實模型中心／底部對齊；廚房細節與 11 張圖形驗收均為 0 failures。
+
+### 追加：浴室淋浴隔間 bounds 接合（2026-09-19）
+
+- 淋浴玻璃、左右端框、上下框與排水孔改由 `ImportedBath_ShowerTray` 實際 bounds 推導，避免浴室資產移動或縮放後隔間漂移。
+- `tests/bathroom_details.gd` 新增玻璃中心與 tray bounds 的接合檢查；浴室批次維持 13 組，浴室細節與 11 張圖形驗收均為 0 failures。

@@ -827,24 +827,27 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_cylinder("ImportedBath_FlushButtonRing", 0.085, 0.012, Vector3(7.3, 1.405, -4.78), steel, false, detail_root)
 	_add_box("ImportedBath_FlushLever", Vector3(0.035, 0.16, 0.035), Vector3(7.73, 1.18, -4.78), steel, false, detail_root)
 
-	_add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), tray_material, true, detail_root)
-	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), glass_material, false, detail_root)
-	_add_box("ImportedBath_ShowerFrame_Left", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -3.76), steel, false, detail_root)
-	_add_box("ImportedBath_ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -1.24), steel, false, detail_root)
-	_add_box("ImportedBath_ShowerFrame_Top", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 2.34, -2.5), steel, false, detail_root)
-	_add_box("ImportedBath_ShowerFrame_Bottom", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 0.08, -2.5), steel, false, detail_root)
-	# Keep the shower fittings in the wet zone. The old fixed z=-5.18 point
-	# placed the pipe beside the vanity after the imported room was aligned.
+	var shower_tray := _add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), tray_material, true, detail_root)
+	# Keep the entire glass/frame assembly attached to the tray. The old glass
+	# used fixed world coordinates, so a future bathroom scale or translation
+	# could leave the partition floating beside the wet zone.
 	var shower_center := Vector3(7.6, 0.08, -2.25)
 	var shower_size := Vector3(2.8, 0.10, 2.2)
-	var shower_tray_node := detail_root.find_child("ImportedBath_ShowerTray", true, false)
-	if shower_tray_node is StaticBody3D:
-		var tray_mesh := shower_tray_node.find_child("Mesh", true, false) as MeshInstance3D
-		if tray_mesh != null:
-			var tray_bounds := tray_mesh.global_transform * tray_mesh.get_aabb()
-			if tray_bounds.has_volume():
-				shower_center = tray_bounds.get_center()
-				shower_size = tray_bounds.size
+	var tray_mesh := shower_tray.find_child("Mesh", true, false) as MeshInstance3D
+	if tray_mesh != null:
+		var tray_bounds := tray_mesh.global_transform * tray_mesh.get_aabb()
+		if tray_bounds.has_volume():
+			shower_center = tray_bounds.get_center()
+			shower_size = tray_bounds.size
+	var glass_x := shower_center.x + shower_size.x * 0.36
+	var glass_z_size := shower_size.z * 1.08
+	var frame_z_offset := shower_size.z * 0.55
+	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, glass_z_size), Vector3(glass_x, 1.15, shower_center.z), glass_material, false, detail_root)
+	_add_box("ImportedBath_ShowerFrame_Left", Vector3(0.10, 2.35, 0.08), Vector3(glass_x - 0.05, 1.18, shower_center.z - frame_z_offset), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(glass_x - 0.05, 1.18, shower_center.z + frame_z_offset), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerFrame_Top", Vector3(0.10, 0.08, glass_z_size + 0.08), Vector3(glass_x - 0.05, 2.34, shower_center.z), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerFrame_Bottom", Vector3(0.10, 0.08, glass_z_size + 0.08), Vector3(glass_x - 0.05, 0.08, shower_center.z), steel, false, detail_root)
+	# Keep the shower fittings in the wet zone, derived from the same tray.
 	var shower_back_z := shower_center.z - shower_size.z * 0.37
 	var shower_wall_x := shower_center.x - shower_size.x * 0.08
 	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(shower_wall_x, 2.05, shower_back_z), steel, false, detail_root)
@@ -861,7 +864,7 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
 	for towel_fold in range(3):
 		_add_box("ImportedBath_TowelFold_%d" % towel_fold, Vector3(0.62, 0.018, 0.018), Vector3(3.7, 1.18 - towel_fold * 0.14, -5.665), towel_fold_material, false, detail_root)
-	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(7.6, 0.145, -2.25), drain_material, false, detail_root)
+	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(shower_center.x, 0.145, shower_center.z), drain_material, false, detail_root)
 	_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.05, 0.55), Vector3(6.15, 2.96, -3.60), steel, false, detail_root)
 
 

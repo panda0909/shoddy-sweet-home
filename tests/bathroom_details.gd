@@ -81,6 +81,12 @@ func _run() -> void:
 		if fitting == null or not tray_bounds.has_volume() or absf((fitting as Node3D).global_position.x - tray_bounds.get_center().x) > tray_bounds.size.x * 0.75 or absf((fitting as Node3D).global_position.z - tray_bounds.get_center().z) > tray_bounds.size.z * 0.75:
 			printerr("FAIL shower fitting is outside tray alignment: ", fitting_name)
 			failures += 1
+	var glass_node: Node = game.find_child("ImportedBath_ShowerGlass", true, false)
+	var glass_mesh := glass_node.find_child("Mesh", true, false) as MeshInstance3D if glass_node != null else null
+	var glass_bounds: AABB = glass_mesh.global_transform * glass_mesh.get_aabb() if glass_mesh != null else AABB()
+	if not tray_bounds.has_volume() or not glass_bounds.has_volume() or absf(glass_bounds.get_center().x - tray_bounds.get_center().x) > tray_bounds.size.x * 0.5 + 0.35 or absf(glass_bounds.get_center().z - tray_bounds.get_center().z) > 0.10:
+		printerr("FAIL shower glass is not attached to tray bounds")
+		failures += 1
 	print("Imported bathroom detail nodes: ", required.size(), "; material batches: ", detail_batches.size())
 	print("Bathroom detail failures: ", failures)
 	game.queue_free()
