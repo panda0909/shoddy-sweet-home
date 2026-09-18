@@ -192,7 +192,7 @@ func _build_lighting() -> void:
 	env.background_color = Color(0.055, 0.07, 0.11)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.48, 0.50, 0.54)
-	env.ambient_light_energy = 0.65
+	env.ambient_light_energy = 0.52
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	environment.environment = env
 	add_child(environment)
@@ -200,7 +200,7 @@ func _build_lighting() -> void:
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-48.0, -28.0, 0.0)
 	sun.light_color = Color(1.0, 0.94, 0.84)
-	sun.light_energy = 0.16
+	sun.light_energy = 0.22
 	sun.shadow_enabled = true
 	add_child(sun)
 
@@ -219,6 +219,20 @@ func _build_lighting() -> void:
 		# Directional light and the player's spotlight retain contact shadows.
 		omni.shadow_enabled = false
 		add_child(omni)
+
+	# One shadow-casting key light gives the first room readable contact shadows
+	# without making four shadow maps compete with the Web renderer.
+	var living_key := SpotLight3D.new()
+	living_key.name = "LivingRoomKeyLight"
+	living_key.position = Vector3(-5.0, 2.85, 3.0)
+	living_key.rotation_degrees = Vector3(-90.0, 0.0, 0.0)
+	living_key.light_color = Color(1.0, 0.84, 0.68)
+	living_key.light_energy = 0.62
+	living_key.spot_range = 6.5
+	living_key.spot_angle = 105.0
+	living_key.shadow_enabled = true
+	living_key.shadow_bias = 0.035
+	add_child(living_key)
 
 
 func _build_world() -> void:
@@ -506,6 +520,7 @@ func _prepare_furniture(asset: Node3D) -> void:
 	for mesh in asset.find_children("*", "MeshInstance3D"):
 		if not mesh.is_visible_in_tree():
 			continue
+		_tune_imported_materials(mesh)
 		# Old room-wide cornices/skirting no longer have supporting walls.
 		if str(mesh.name) in ["120_WhitePaint", "123_WhitePaint", "124_WhitePaint", "126_WhitePaint", "127_WhitePaint", "128_WhitePaint", "129_WhitePaint", "130_WhitePaint", "131_WhitePaint", "219_Skirting"]:
 			mesh.hide()
@@ -533,6 +548,33 @@ func _prepare_furniture(asset: Node3D) -> void:
 			continue
 		if _should_have_furniture_collision(mesh, bounds):
 			_add_furniture_box_collision(asset, mesh, bounds)
+
+
+func _tune_imported_materials(mesh: MeshInstance3D) -> void:
+	if mesh.mesh == null:
+		return
+	var mesh_name := str(mesh.name).to_lower()
+	var roughness := 0.72
+	var metallic := 0.0
+	if "metal" in mesh_name or "steel" in mesh_name or "chrome" in mesh_name:
+		roughness = 0.28
+		metallic = 0.78
+	elif "glass" in mesh_name or "window" in mesh_name or "mirror" in mesh_name:
+		roughness = 0.18
+	elif "wood" in mesh_name or "table" in mesh_name or "cupboard" in mesh_name:
+		roughness = 0.56
+	elif "sofa" in mesh_name or "cushion" in mesh_name or "carpet" in mesh_name:
+		roughness = 0.90
+	elif "ceramic" in mesh_name or "marble" in mesh_name:
+		roughness = 0.34
+	for surface in range(mesh.mesh.get_surface_count()):
+		var source := mesh.get_active_material(surface)
+		if not source is BaseMaterial3D:
+			continue
+		var tuned := source.duplicate() as BaseMaterial3D
+		tuned.roughness = roughness
+		tuned.metallic = metallic
+		mesh.set_surface_override_material(surface, tuned)
 
 
 func _should_have_furniture_collision(mesh: MeshInstance3D, bounds: AABB) -> bool:
