@@ -77,6 +77,14 @@ func _run() -> void:
 			if sweep_segments < 16 or not is_finite(visual.rotation.y):
 				printerr("FAIL vanity clearance sweep is incomplete or not oriented toward the door: ", sweep_segments)
 				failures += 1
+		elif visual_issue == "cabinet_wear":
+			if visual.get_child_count() < 12:
+				printerr("FAIL cabinet wear detail is too sparse: ", visual.get_child_count())
+				failures += 1
+			var colliders := visual.find_children("*", "CollisionShape3D", true, false)
+			if colliders.size() != 0:
+				printerr("FAIL cabinet wear detail added collision")
+				failures += 1
 	print("Cabinet swing arc segments: ", 15 if failures == 0 else 0)
 	print("Issue visual failures: ", failures)
 	game.queue_free()

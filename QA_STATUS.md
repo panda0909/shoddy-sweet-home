@@ -661,3 +661,10 @@
 - `tests/bathroom_details.gd` 驗證毛巾網格尺寸與 render-only 狀態；浴室細節 58 個、材質批次 12，驗收為 `0 failures`。
 - 圖形截圖回歸：浴室 median `3.547ms`、p95 `4.838ms`、`591` draws；家具碰撞、8 條近距離 walkthrough 與 14 題互動均通過。
 - Web Release 回歸：PCK `103,725,884` bytes、WASM `39,514,754` bytes，合計 `143,240,638` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：櫥櫃門板磨損層次（2026-09-19）
+
+- `cabinet_wear` 缺陷由五條單一擦痕改為貼合門板的露木磨邊、碎漆、深層刮痕與把手接觸磨痕；全部仍是 render-only 視覺元件，不會阻擋玩家或門洞。
+- `tests/issue_visuals.gd` 新增磨損細節數量與無碰撞驗證；14 題缺陷定位、互動與報告均為 `0 failures`。
+- 圖形截圖回歸：客廳 median `4.161ms`、廚房 `5.727ms`、臥室 `5.893ms`、浴室 `3.730ms`；廚房 draw calls `1364`，四房均成功渲染。
+- Web Release 回歸：PCK `103,727,100` bytes、WASM `39,514,754` bytes，合計 `143,241,854` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

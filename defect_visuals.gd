@@ -59,10 +59,37 @@ static func build(parent: Node3D, id: String) -> void:
 				box(parent, Vector3(0.018, 0.055, 0.018), Vector3(0.05, 0.04 - i * 0.07, 0), Color(0.12, 0.33, 0.40))
 				parent.get_child(parent.get_child_count() - 1).set_meta("water_drop", true)
 		"cabinet_wear":
-			# Short irregular abrasions sit on the cabinet face; the hitbox is
-			# generous but this visual remains a small, believable defect.
-			for index in range(5):
-				box(parent, Vector3(0.012, 0.075, 0.006), Vector3(-0.018, -0.16 + index * 0.08, -0.004), Color(0.22, 0.10, 0.045), 0.12 if index % 2 == 0 else -0.18)
+			# The clue is a worn lacquer finish, not a floating debug decal:
+			# expose a darker rubbed edge, a warm wood underlayer, paint chips,
+			# then a loose cluster of shallow scratches around the handle path.
+			var lacquer_shadow := Color(0.12, 0.055, 0.025)
+			var exposed_wood := Color(0.48, 0.24, 0.09)
+			var fresh_chip := Color(0.68, 0.38, 0.14)
+			box(parent, Vector3(0.018, 0.50, 0.008), Vector3(0.105, 0.0, 0.001), lacquer_shadow, 0.015)
+			box(parent, Vector3(0.010, 0.43, 0.009), Vector3(0.094, 0.01, -0.004), exposed_wood, -0.018)
+			for chip in [
+				[Vector3(0.070, 0.22, -0.006), Vector3(0.035, 0.018, 0.008), -0.18],
+				[Vector3(0.080, 0.10, -0.006), Vector3(0.022, 0.014, 0.008), 0.28],
+				[Vector3(0.072, -0.19, -0.006), Vector3(0.028, 0.016, 0.008), -0.35]
+			]:
+				box(parent, chip[1], chip[0], fresh_chip, float(chip[2]))
+			var scratches := [
+				[Vector3(-0.018, -0.22, -0.006), Vector3(0.014, 0.082, 0.008), 0.14],
+				[Vector3(-0.032, -0.13, -0.006), Vector3(0.012, 0.052, 0.008), -0.20],
+				[Vector3(-0.010, -0.04, -0.006), Vector3(0.013, 0.097, 0.008), 0.10],
+				[Vector3(-0.036, 0.065, -0.006), Vector3(0.011, 0.062, 0.008), -0.28],
+				[Vector3(-0.014, 0.16, -0.006), Vector3(0.014, 0.074, 0.008), 0.22]
+			]
+			for scratch in scratches:
+				box(parent, scratch[1], scratch[0], lacquer_shadow, float(scratch[2]))
+			# Pale rub marks make the repeated handle contact readable at a
+			# distance without turning the whole cabinet into a glowing marker.
+			for rub in [
+				[Vector3(0.032, 0.205, -0.007), Vector3(0.010, 0.045, 0.008), 0.06],
+				[Vector3(0.040, 0.14, -0.007), Vector3(0.009, 0.032, 0.008), -0.10],
+				[Vector3(0.036, 0.075, -0.007), Vector3(0.009, 0.040, 0.008), 0.12]
+			]:
+				box(parent, rub[1], rub[0], Color(0.76, 0.56, 0.30), float(rub[2]))
 		"bed_slope":
 			box(parent, Vector3(0.65, 0.035, 0.45), Vector3.ZERO, Color(0.34, 0.29, 0.21), 0.07)
 			for x in [-0.34, 0.34]:
