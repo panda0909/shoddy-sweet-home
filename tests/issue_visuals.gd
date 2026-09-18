@@ -11,6 +11,14 @@ func _run() -> void:
 	game.set_physics_process(false)
 	await physics_frame
 	await physics_frame
+	# This is a visual fixture test, so install the complete issue pool instead
+	# of relying on the round's random ten-issue selection.
+	for body in game.issue_bodies.values():
+		body.queue_free()
+	game.issue_bodies.clear()
+	game.issue_records = game._get_issue_definitions()
+	for issue in game.issue_records:
+		game._add_issue_target(issue)
 
 	var failures := 0
 	var cabinet := game.issue_bodies.get("cabinet_blocked") as StaticBody3D
