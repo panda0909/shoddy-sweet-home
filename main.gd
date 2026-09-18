@@ -512,11 +512,23 @@ func _add_kitchen_imported_details() -> void:
 	var ceramic := _mat(Color(0.78, 0.80, 0.77))
 	var dark := _mat(Color(0.07, 0.08, 0.08))
 	var wood := _wood_mat(Color(0.63, 0.38, 0.18))
-	_add_box("KitchenDetail_SinkBasin", Vector3(0.72, 0.08, 0.48), _kitchen_point(Vector3(6.35, 0.65, 4.55)), dark, false)
-	_add_box("KitchenDetail_SinkRim", Vector3(0.86, 0.045, 0.60), _kitchen_point(Vector3(6.35, 0.70, 4.55)), steel, false)
-	_add_cylinder("KitchenDetail_FaucetStem", 0.035, 0.38, _kitchen_point(Vector3(6.35, 0.91, 4.36)), steel, false)
-	_add_box("KitchenDetail_FaucetSpout", Vector3(0.24, 0.045, 0.045), _kitchen_point(Vector3(6.35, 1.08, 4.45)), steel, false)
-	_add_cylinder("KitchenDetail_FaucetHandle", 0.025, 0.14, _kitchen_point(Vector3(6.50, 0.92, 4.36)), steel, false)
+	# The sink used to be authored from a stale fixed point. Attach the whole
+	# assembly to the real worktop bounds so the basin and the sink_leak anchor
+	# remain coincident when the kitchen hero scale changes.
+	var sink_worktop := _find_kitchen_mesh_bounds("123_Worktops")
+	var sink_center := _kitchen_point(Vector3(6.35, 0.65, 4.55))
+	var sink_surface_y := sink_center.y
+	var sink_size := Vector2(0.72, 0.48)
+	if sink_worktop.has_volume():
+		sink_center = Vector3(sink_worktop.get_center().x, sink_worktop.end.y + 0.006, sink_worktop.get_center().z)
+		sink_surface_y = sink_center.y
+		sink_size = Vector2(minf(0.44, sink_worktop.size.x * 0.72), minf(0.48, sink_worktop.size.z * 0.42))
+	var basin_size := Vector3(sink_size.x, 0.08, sink_size.y)
+	_add_box("KitchenDetail_SinkBasin", basin_size, Vector3(sink_center.x, sink_surface_y - 0.035, sink_center.z), dark, false)
+	_add_box("KitchenDetail_SinkRim", Vector3(sink_size.x + 0.12, 0.045, sink_size.y + 0.12), Vector3(sink_center.x, sink_surface_y + 0.005, sink_center.z), steel, false)
+	_add_cylinder("KitchenDetail_FaucetStem", 0.035, 0.38, Vector3(sink_center.x, sink_surface_y + 0.20, sink_center.z - sink_size.y * 0.40), steel, false)
+	_add_box("KitchenDetail_FaucetSpout", Vector3(0.24, 0.045, 0.045), Vector3(sink_center.x, sink_surface_y + 0.37, sink_center.z - sink_size.y * 0.16), steel, false)
+	_add_cylinder("KitchenDetail_FaucetHandle", 0.025, 0.14, Vector3(sink_center.x + sink_size.x * 0.42, sink_surface_y + 0.20, sink_center.z - sink_size.y * 0.40), steel, false)
 	for knob_index in range(4):
 		_add_cylinder("KitchenDetail_CookerKnob_%d" % knob_index, 0.045, 0.025, _kitchen_point(Vector3(6.25 + knob_index * 0.18, 0.70, 3.62)), steel, false)
 	_add_box("KitchenDetail_CuttingBoard", Vector3(0.48, 0.035, 0.34), _kitchen_point(Vector3(5.25, 0.66, 4.32)), wood, false)
@@ -710,10 +722,19 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		_add_box("ImportedBath_MirrorEdgeTop", Vector3(mirror_bounds.size.x + 0.06, 0.035, 0.035), Vector3(vanity_x, mirror_bounds.end.y + 0.018, mirror_bounds.end.z + 0.018), steel, false, detail_root)
 		_add_box("ImportedBath_MirrorEdgeLeft", Vector3(0.035, mirror_bounds.size.y, 0.035), Vector3(mirror_bounds.position.x - 0.018, mirror_bounds.get_center().y, mirror_bounds.end.z + 0.018), steel, false, detail_root)
 		_add_box("ImportedBath_MirrorEdgeRight", Vector3(0.035, mirror_bounds.size.y, 0.035), Vector3(mirror_bounds.end.x + 0.018, mirror_bounds.get_center().y, mirror_bounds.end.z + 0.018), steel, false, detail_root)
+		# Cabinet pulls sit on the same bounds-derived vanity front as the
+		# basins, so they cannot drift when the imported bathroom is rescaled.
+		var handle_y := vanity_y - 0.26
+		for handle_index in range(4):
+			var handle_x := mirror_bounds.position.x + mirror_bounds.size.x * (0.18 + 0.21 * handle_index)
+			_add_box("ImportedBath_VanityHandle_%d" % handle_index, Vector3(0.20, 0.025, 0.032), Vector3(handle_x, handle_y, vanity_z + 0.035), steel, false, detail_root)
 	_add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, Vector3(7.3, 0.31, -4.5), porcelain, true, detail_root)
 	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), Vector3(7.3, 0.98, -4.78), porcelain, true, detail_root)
 	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, Vector3(7.3, 0.66, -4.5), seat_material, true, detail_root)
+	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, Vector3(7.3, 0.705, -4.5), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
 	_add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), Vector3(7.3, 0.73, -4.70), lid_material, false, detail_root)
+	_add_box("ImportedBath_ToiletHingeLeft", Vector3(0.07, 0.035, 0.045), Vector3(7.13, 0.765, -4.73), button_material, false, detail_root)
+	_add_box("ImportedBath_ToiletHingeRight", Vector3(0.07, 0.035, 0.045), Vector3(7.47, 0.765, -4.73), button_material, false, detail_root)
 	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, Vector3(7.3, 1.39, -4.78), button_material, false, detail_root)
 
 	_add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), tray_material, true, detail_root)
@@ -727,6 +748,9 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_box("ImportedBath_ShowerShelf", Vector3(0.70, 0.06, 0.24), Vector3(8.28, 1.55, -3.25), steel, false, detail_root)
 	_add_cylinder("ImportedBath_Shampoo", 0.08, 0.24, Vector3(8.08, 1.70, -3.25), dark_shampoo, false, detail_root)
 	_add_cylinder("ImportedBath_Shampoo2", 0.08, 0.24, Vector3(8.30, 1.70, -3.25), warm_shampoo, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerControl", 0.07, 0.035, Vector3(7.42, 1.35, -5.16), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerDrainCrossA", Vector3(0.18, 0.024, 0.025), Vector3(7.6, 0.16, -2.25), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerDrainCrossB", Vector3(0.025, 0.024, 0.18), Vector3(7.6, 0.16, -2.25), steel, false, detail_root)
 
 	_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), steel, false, detail_root)
 	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
@@ -935,40 +959,56 @@ func _tune_imported_materials(mesh: MeshInstance3D) -> void:
 	var metallic := 0.0
 	var clearcoat := 0.0
 	var clearcoat_roughness := 0.35
-	if "metal" in mesh_name or "steel" in mesh_name or "chrome" in mesh_name:
-		roughness = 0.28
-		metallic = 0.78
-	elif "glass" in mesh_name or "window" in mesh_name or "mirror" in mesh_name:
-		roughness = 0.18
-		clearcoat = 0.35
-		clearcoat_roughness = 0.16
-	elif "wood" in mesh_name or "table" in mesh_name or "cupboard" in mesh_name:
-		roughness = 0.56
-		clearcoat = 0.08
-		clearcoat_roughness = 0.28
-	elif "sofa" in mesh_name or "cushion" in mesh_name or "carpet" in mesh_name:
-		roughness = 0.90
-	elif "ceramic" in mesh_name or "marble" in mesh_name:
-		roughness = 0.34
-		clearcoat = 0.18
-		clearcoat_roughness = 0.22
 	for surface in range(mesh.mesh.get_surface_count()):
 		var source := mesh.get_active_material(surface)
 		if not source is BaseMaterial3D:
 			continue
-		var cache_key := "%d:%.2f:%.2f:%.2f" % [source.get_instance_id(), roughness, metallic, clearcoat]
+		# glTF node names and material names are not always identical. Use both
+		# so a mesh such as `65_ExtractorHood` still receives the metal finish
+		# from its `ExtractorHood` material instead of inheriting a flat default.
+		var source_name := str((source as BaseMaterial3D).resource_name).to_lower()
+		var semantic_name := mesh_name + " " + source_name
+		var surface_roughness := roughness
+		var surface_metallic := metallic
+		var surface_clearcoat := clearcoat
+		var surface_clearcoat_roughness := clearcoat_roughness
+		if _contains_any(semantic_name, ["metal", "steel", "chrome", "stainless", "iron", "gold", "handle", "burner", "extractor"]):
+			surface_roughness = 0.28
+			surface_metallic = 0.78
+		elif _contains_any(semantic_name, ["glass", "window", "mirror"]):
+			surface_roughness = 0.18
+			surface_clearcoat = 0.35
+			surface_clearcoat_roughness = 0.16
+		elif _contains_any(semantic_name, ["wood", "table", "tabletop", "cupboard", "worktop", "drawer", "whitewood"]):
+			surface_roughness = 0.56
+			surface_clearcoat = 0.08
+			surface_clearcoat_roughness = 0.28
+		elif _contains_any(semantic_name, ["sofa", "cushion", "carpet", "blind", "towel", "foam", "rug"]):
+			surface_roughness = 0.90
+		elif _contains_any(semantic_name, ["ceramic", "porcelain", "marble", "tile", "tiles"]):
+			surface_roughness = 0.34
+			surface_clearcoat = 0.18
+			surface_clearcoat_roughness = 0.22
+		var cache_key := "%d:%.2f:%.2f:%.2f:%.2f" % [source.get_instance_id(), surface_roughness, surface_metallic, surface_clearcoat, surface_clearcoat_roughness]
 		var tuned := imported_material_cache.get(cache_key) as BaseMaterial3D
 		if tuned == null:
 			tuned = source.duplicate() as BaseMaterial3D
-			tuned.roughness = roughness
-			tuned.metallic = metallic
+			tuned.roughness = surface_roughness
+			tuned.metallic = surface_metallic
 			var standard := tuned as StandardMaterial3D
 			if standard != null:
 				standard.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-				standard.clearcoat = clearcoat
-				standard.clearcoat_roughness = clearcoat_roughness
+				standard.clearcoat = surface_clearcoat
+				standard.clearcoat_roughness = surface_clearcoat_roughness
 			imported_material_cache[cache_key] = tuned
 		mesh.set_surface_override_material(surface, tuned)
+
+
+func _contains_any(value: String, tokens: Array[String]) -> bool:
+	for token in tokens:
+		if token in value:
+			return true
+	return false
 
 
 func _should_have_furniture_collision(mesh: MeshInstance3D, bounds: AABB) -> bool:

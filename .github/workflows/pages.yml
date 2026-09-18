@@ -46,6 +46,7 @@ jobs:
           "$godot" --headless --path . --script tests/triangle_budget.gd
           "$godot" --headless --path . --script tests/kitchen_details.gd
           "$godot" --headless --path . --script tests/room_finish_quality.gd
+          "$godot" --headless --path . --script tests/imported_materials.gd
           "$godot" --headless --path . --script tests/issue_anchor_fit.gd
           xvfb-run -a "$godot" --path . --script tests/mouse_look.gd
           xvfb-run -a "$godot" --path . --script tests/render_acceptance.gd

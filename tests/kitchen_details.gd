@@ -32,6 +32,11 @@ func _run() -> void:
 	if dining_pads.is_empty():
 		printerr("FAIL no bounds-attached dining chair pads")
 		failures += 1
+	var sink_worktop: AABB = game._find_kitchen_mesh_bounds("123_Worktops")
+	var sink := game.get_node_or_null("KitchenDetail_SinkBasin") as Node3D
+	if not sink_worktop.has_volume() or sink == null or sink.global_position.distance_to(sink_worktop.get_center()) > 0.40:
+		printerr("FAIL sink is not attached to real worktop bounds")
+		failures += 1
 	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size())
 	print("Kitchen detail failures: ", failures)
 	game.queue_free()

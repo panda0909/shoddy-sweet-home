@@ -214,3 +214,10 @@
 - 書桌不再只靠隱藏整體外殼；新增左右抽屜櫃、抽屜面、拉手、桌面線孔，以及桌面獨立 BoxShape3D 碰撞，視覺組件與可通行碰撞分離。
 - 衣櫃補上上下導軌，並保留門片內嵌板與鉸鏈細節；導軌、線孔與抽屜裝飾均不新增阻擋玩家的碰撞。
 - `tests/bedroom_details.gd`、`tests/furniture_collision.gd`、`tests/issue_access.gd` 通過；圖形化四房驗收輸出 7 張情境圖，0 failures。臥室近景確認床架、床品、床頭櫃、窗簾與材質細節正常顯示。
+
+### 追加：四房逐件近距離驗收與匯入材質語意（2026-09-19）
+
+- `tests/render_acceptance.gd` 增加客廳沙發、廚房水槽、臥室書桌、浴室洗手台四張近拍；完整輸出 11 張情境圖，包含逆光、手電筒與開門狀態，0 failures。
+- 匯入 glTF 材質現在同時讀取 Mesh 節點名與來源材質名，對金屬、玻璃、木材、布料、陶瓷／磁磚套用對應 Metallic、Roughness 與 Clearcoat；新增 `tests/imported_materials.gd` 驗證廚房、客廳、浴室代表材質 5 組，0 failures。
+- 廚房水槽、龍頭與把手改由實際 `123_Worktops` bounds 生成；`tests/kitchen_details.gd` 確認水槽中心與真實檯面距離小於 0.40，漏水缺陷仍對準 `261_CupboardUnits`。
+- 浴室補上洗手台櫃門把手、馬桶水面／鉸鏈、淋浴控制與排水孔十字件；`tests/bathroom_details.gd` 現在驗證 28 個細節節點，0 failures。

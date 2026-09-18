@@ -34,10 +34,14 @@ func _run() -> void:
 
 	var views := [
 		["living_near", Vector3(-5.2, 1.42, 3.05), Vector3(-6.35, 1.05, 3.85), 1],
+		["living_sofa_close", Vector3(-5.10, 1.35, 3.00), Vector3(-6.25, 0.65, 3.22), 1],
 		["living_backlit", Vector3(-8.65, 1.55, 3.10), Vector3(-7.25, 1.35, 4.72), 0],
 		["kitchen_near", Vector3(3.55, 1.45, 2.95), Vector3(6.35, 0.78, 4.22), 1],
+		["kitchen_sink_close", Vector3(6.05, 1.42, 3.18), Vector3(6.99, 0.82, 4.74), 1],
 		["bedroom_near", Vector3(-3.25, 1.45, -2.00), Vector3(-5.60, 1.00, -3.25), 1],
+		["bedroom_desk_close", Vector3(-2.65, 1.42, -0.42), Vector3(-2.60, 0.88, -1.45), 1],
 		["bathroom_near", Vector3(3.15, 1.45, -1.65), Vector3(6.90, 1.00, -3.25), 1],
+		["bathroom_vanity_close", Vector3(4.15, 1.42, -4.15), Vector3(4.60, 1.10, -5.20), 1],
 		["living_flashlight", Vector3(-8.35, 1.45, 4.85), Vector3(-6.55, 1.30, 3.95), 0]
 	]
 	var failures := 0
