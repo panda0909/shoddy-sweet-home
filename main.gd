@@ -59,6 +59,8 @@ var generated_oak_roughness_texture: Texture2D
 var generated_fabric_roughness_texture: Texture2D
 var generated_oak_normal_texture: Texture2D
 var generated_fabric_normal_texture: Texture2D
+var wood_material_cache: Dictionary = {}
+var fabric_material_cache: Dictionary = {}
 var high_poly_lod_entries: Array[Dictionary] = []
 var lod_refresh_elapsed := 0.0
 
@@ -2403,6 +2405,10 @@ func _make_runtime_normal_texture(frequency: float, detail: float, strength: flo
 
 
 func _wood_mat(color: Color) -> StandardMaterial3D:
+	var cache_key := "%.4f:%.4f:%.4f:%.4f" % [color.r, color.g, color.b, color.a]
+	var cached := wood_material_cache.get(cache_key) as StandardMaterial3D
+	if cached != null:
+		return cached
 	var material := _mat(color)
 	if generated_oak_texture != null:
 		material.albedo_texture = generated_oak_texture
@@ -2413,10 +2419,15 @@ func _wood_mat(color: Color) -> StandardMaterial3D:
 		material.normal_texture = generated_oak_normal_texture
 		material.normal_scale = 0.18
 	material.roughness = 0.58
+	wood_material_cache[cache_key] = material
 	return material
 
 
 func _fabric_mat(color: Color) -> StandardMaterial3D:
+	var cache_key := "%.4f:%.4f:%.4f:%.4f" % [color.r, color.g, color.b, color.a]
+	var cached := fabric_material_cache.get(cache_key) as StandardMaterial3D
+	if cached != null:
+		return cached
 	var material := _mat(color)
 	if generated_fabric_texture != null:
 		material.albedo_texture = generated_fabric_texture
@@ -2427,6 +2438,7 @@ func _fabric_mat(color: Color) -> StandardMaterial3D:
 		material.normal_texture = generated_fabric_normal_texture
 		material.normal_scale = 0.12
 	material.roughness = 0.88
+	fabric_material_cache[cache_key] = material
 	return material
 
 

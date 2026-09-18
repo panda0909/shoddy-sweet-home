@@ -47,7 +47,11 @@ void fragment(){
 	var paint := ShaderMaterial.new()
 	paint.shader = plaster
 	for node in room.get_children():
-		if "Wall" in node.name or str(node.name).begins_with("Divider"):
+		# WallArt is a bedroom prop, not an architectural wall surface. The
+		# previous substring match replaced its material with the plaster shader,
+		# which also made the bedroom PBR audit report a false wood-flow override.
+		var is_architecture_wall := ("Wall" in node.name and not "WallArt" in node.name) or str(node.name).begins_with("Divider")
+		if is_architecture_wall:
 			var surface := node.get_node_or_null("Mesh") as MeshInstance3D
 			if surface:
 				surface.material_override = paint

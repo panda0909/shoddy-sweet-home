@@ -13,6 +13,32 @@ func _run() -> void:
 	await physics_frame
 
 	var failures := 0
+	var oak_a := game._wood_mat(Color(0.72, 0.47, 0.25)) as StandardMaterial3D
+	var oak_b := game._wood_mat(Color(0.72, 0.47, 0.25)) as StandardMaterial3D
+	var fabric_a := game._fabric_mat(Color(0.34, 0.48, 0.59)) as StandardMaterial3D
+	var fabric_b := game._fabric_mat(Color(0.34, 0.48, 0.59)) as StandardMaterial3D
+	if oak_a == null or oak_b == null or oak_a.get_instance_id() != oak_b.get_instance_id():
+		printerr("FAIL identical oak tones do not reuse a PBR material")
+		failures += 1
+	if fabric_a == null or fabric_b == null or fabric_a.get_instance_id() != fabric_b.get_instance_id():
+		printerr("FAIL identical fabric tones do not reuse a PBR material")
+		failures += 1
+	var bedroom_roots := [
+		"BedroomRug", "BedBase", "BedHeadboard", "Mattress", "Duvet", "PillowLeft", "PillowRight", "BedThrow",
+		"BedsideTable_Left", "BedsideTable_Right", "BedsideLampShade_Left", "BedsideLampShade_Right",
+		"Closet", "ClosetDoorLeft", "ClosetDoorRight", "Desk", "DeskTop", "Monitor", "MonitorStand",
+		"DeskChairBack", "DeskChairSeat", "Bookcase", "WindowFrame", "WindowGlass", "CurtainLeft", "CurtainRight",
+		"WallArtFrame", "WallArt", "BedroomPlantPot", "BedroomPlant"
+	]
+	for root_id in bedroom_roots:
+		var bedroom_root := game.get_node_or_null(root_id) as Node
+		if bedroom_root == null:
+			continue
+		for mesh_node in bedroom_root.find_children("*", "MeshInstance3D", true, false):
+			var mesh := mesh_node as MeshInstance3D
+			if mesh != null and mesh.material_override is ShaderMaterial:
+				printerr("FAIL ShaderMaterial overrides bedroom PBR flow: ", mesh.get_path())
+				failures += 1
 	var wood_parts := [
 		"BedBase", "BedHeadboard", "Closet", "ClosetDoorLeft", "ClosetDoorRight",
 		"DeskTop", "Bookcase", "BedsideTable_Left", "BedsideTable_Right"
@@ -102,6 +128,7 @@ func _run() -> void:
 		printerr("FAIL hidden desk shell collision remains active")
 		failures += 1
 
+	print("Bedroom PBR cache entries: oak=", game.wood_material_cache.size(), " fabric=", game.fabric_material_cache.size())
 	print("Bedroom detail failures: ", failures)
 	game.queue_free()
 	await process_frame

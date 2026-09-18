@@ -378,3 +378,10 @@
 
 - `tile_hollow` 的水平位置改由 `849_Ceiling` 房體右界推導，牆面深度仍由實際 `BackWall` bounds 決定；浴室資產縮放或平移時，空鼓線索會和牆面同步。
 - `tests/issue_anchor_fit.gd` 改驗證房體推導位置，不再把 `7.3` 固定世界座標當成正確答案。
+
+### 追加：臥室 PBR 材質共用（2026-09-19）
+
+- 臥室相同色調的木材／織物現在共用 StandardMaterial3D，仍保留 Albedo、Roughness 與執行期 Normal 貼圖；不再為每個細節建立重複材質資源。
+- `tests/bedroom_details.gd` 新增材質快取與 ShaderMaterial 防回歸檢查，避免木紋統一後又被程序 shader 覆蓋。
+- 修正 `room_finishes.gd` 的牆面名稱匹配，`WallArt` 不再被誤判為建築牆面而套用灰泥 shader。
+- 四房圖形量測：客廳 `2.821/3.581ms`、廚房 `4.514/5.107ms`、臥室 `4.624/5.407ms`、浴室 `2.862/4.140ms`（median/p95）；近景畫面無材質回歸。
