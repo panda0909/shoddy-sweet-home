@@ -288,3 +288,8 @@
 
 - 馬桶可見底座由低細節 CylinderMesh 改為 32 徑向段、16 環的橢圓陶瓷 SphereMesh；原本的 CylinderShape3D 碰撞保留，避免高模外形影響玩家通行。
 - `tests/bathroom_details.gd` 新增 bowl 網格品質檢查；浴室細節批次維持 13 組，11 張圖形驗收與浴室門／洗手台掃掠仍為 0 failures。
+
+### 追加：四房家具實際玩家繞行（2026-09-19）
+
+- 新增 `tests/player_furniture_walkthrough.gd`，以實際 `CharacterBody3D.move_and_collide()` 沿客廳沙發、廚房櫃體／餐桌、臥室床／書櫃／書桌、浴室衛具與淋浴區的可通行路線行走。
+- 四房路線、既有四扇門穿越與 14 題可達性均通過；測試已加入 GitHub Pages CI，避免家具碰撞回歸成只能靠 teleport 的假通行。
