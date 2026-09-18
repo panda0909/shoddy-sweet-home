@@ -30,12 +30,20 @@ static func apply(room: Node3D) -> void:
 	var desk: Node3D = room.get_node("Desk")
 	desk.get_node("Mesh").hide()
 	desk.get_node("CollisionShape3D").disabled = true
+	var desk_wood: StandardMaterial3D = room._wood_mat(Color(0.30, 0.17, 0.09))
+	var desk_dark_wood: StandardMaterial3D = room._wood_mat(Color(0.42, 0.24, 0.12))
+	var desk_edge_wood: StandardMaterial3D = room._wood_mat(Color(0.68, 0.43, 0.22))
+	var leg_index := 0
 	for x in [-1.05, 1.05]:
 		for z in [-0.27, 0.27]:
-			room._add_door_frame_piece(desk, "Leg", Vector3(0.065, 0.85, 0.065), Vector3(x, 0, z), room._mat(Color(0.15, 0.13, 0.10)))
-			_add_box_collision(desk, "LegCollision", Vector3(0.13, 0.85, 0.13), Vector3(x, 0, z))
-	room._add_door_frame_piece(desk, "BackPanel", Vector3(2.2, 0.28, 0.04), Vector3(0, 0.20, -0.31), room._mat(Color(0.3, 0.19, 0.11)))
+			room._add_door_frame_piece(desk, "Leg_%d" % leg_index, Vector3(0.065, 0.85, 0.065), Vector3(x, 0, z), desk_wood)
+			_add_box_collision(desk, "LegCollision_%d" % leg_index, Vector3(0.13, 0.85, 0.13), Vector3(x, 0, z))
+			leg_index += 1
+	# A shallow rear modesty panel and a front apron make the desk read as a
+	# joined piece of furniture instead of four freestanding posts.
+	room._add_door_frame_piece(desk, "BackPanel", Vector3(2.2, 0.28, 0.04), Vector3(0, 0.20, -0.31), desk_dark_wood)
 	_add_box_collision(desk, "BackPanelCollision", Vector3(2.2, 0.28, 0.04), Vector3(0, 0.20, -0.31))
+	room._add_door_frame_piece(desk, "FrontApron", Vector3(1.62, 0.10, 0.07), Vector3(0, 0.27, 0.32), desk_dark_wood)
 	# Two shallow drawer pedestals turn the desk from a hidden shell into a
 	# readable piece of joinery. Their bodies and drawer fronts remain separate
 	# so the collision stays a pair of simple boxes instead of a trimesh.
@@ -100,9 +108,33 @@ static func apply(room: Node3D) -> void:
 	_add_detail_box(closet, "ClosetHandleMountLeft", Vector3(0.10, 0.10, 0.03), Vector3(-0.49, 0, 0.38), room._mat(Color(0.32, 0.25, 0.18)))
 	_add_detail_box(closet, "ClosetHandleMountRight", Vector3(0.10, 0.10, 0.03), Vector3(0.49, 0, 0.38), room._mat(Color(0.32, 0.25, 0.18)))
 	# Desk details: a recessed drawer, monitor foot, keyboard and chair arms/base.
-	_add_detail_box(desk, "DrawerFront", Vector3(1.05, 0.18, 0.025), Vector3(0, 0.30, 0.38), room._wood_mat(Color(0.72, 0.47, 0.25)))
+	_add_detail_box(desk, "DrawerFront", Vector3(1.05, 0.18, 0.025), Vector3(0, 0.30, 0.38), desk_edge_wood)
 	_add_detail_box(desk, "DrawerPull", Vector3(0.20, 0.025, 0.035), Vector3(0, 0.30, 0.40), room._mat(Color(0.56, 0.42, 0.24)))
-	_add_detail_box(room.get_node("DeskTop"), "Keyboard", Vector3(0.65, 0.025, 0.22), Vector3(0.20, 0.08, 0.18), room._mat(Color(0.06, 0.07, 0.08)))
+	# The desktop gets a thin front nosing and side return so its thickness is
+	# readable in a close inspection without changing the walkable collision.
+	_add_detail_box(desk_top, "DesktopFrontNosing", Vector3(2.46, 0.035, 0.045), Vector3(0, 0.012, 0.405), desk_edge_wood)
+	_add_detail_box(desk_top, "DesktopLeftReturn", Vector3(0.045, 0.035, 0.76), Vector3(-1.235, 0.012, 0.0), desk_edge_wood)
+	_add_detail_box(desk_top, "DesktopRightReturn", Vector3(0.045, 0.035, 0.76), Vector3(1.235, 0.012, 0.0), desk_edge_wood)
+	var keyboard_material: StandardMaterial3D = room._mat(Color(0.06, 0.07, 0.08))
+	_add_detail_box(desk_top, "Keyboard", Vector3(0.65, 0.025, 0.22), Vector3(0.20, 0.08, 0.18), keyboard_material)
+	# Keycaps are intentionally shallow and visual-only; they provide scale and
+	# a readable work surface without turning the keyboard into a collision grid.
+	for key_index in range(12):
+		var key_row := key_index / 6
+		var key_column := key_index % 6
+		_add_detail_box(desk_top, "KeyboardKey_%02d" % key_index, Vector3(0.075, 0.012, 0.034), Vector3(0.20 - 0.22 + key_column * 0.082, 0.101, 0.135 + key_row * 0.055), keyboard_material)
+	# Add a real bezel, screen inset and monitor foot around the existing monitor
+	# proxy. These details remain separate so they do not add physics shapes.
+	var monitor := room.get_node("Monitor")
+	var monitor_bezel: StandardMaterial3D = room._mat(Color(0.015, 0.020, 0.026))
+	var screen_material: StandardMaterial3D = room._emissive_mat(Color(0.055, 0.13, 0.20), 0.22)
+	_add_detail_box(monitor, "MonitorScreen", Vector3(0.76, 0.40, 0.012), Vector3(0, 0, 0.038), screen_material)
+	_add_detail_box(monitor, "MonitorBezelTop", Vector3(0.88, 0.035, 0.018), Vector3(0, 0.272, 0.045), monitor_bezel)
+	_add_detail_box(monitor, "MonitorBezelBottom", Vector3(0.88, 0.045, 0.018), Vector3(0, -0.272, 0.045), monitor_bezel)
+	_add_detail_box(monitor, "MonitorBezelLeft", Vector3(0.035, 0.50, 0.018), Vector3(-0.422, 0, 0.045), monitor_bezel)
+	_add_detail_box(monitor, "MonitorBezelRight", Vector3(0.035, 0.50, 0.018), Vector3(0.422, 0, 0.045), monitor_bezel)
+	var monitor_stand := room.get_node("MonitorStand")
+	_add_detail_box(monitor_stand, "MonitorFoot", Vector3(0.34, 0.035, 0.16), Vector3(0, -0.18, 0.025), room._mat(Color(0.16, 0.18, 0.20)))
 	var chair: Node3D = room.get_node("DeskChairSeat")
 	_add_detail_box(chair, "ArmLeft", Vector3(0.07, 0.22, 0.42), Vector3(-0.34, 0.15, 0), room._fabric_mat(Color(0.42, 0.56, 0.66)))
 	_add_detail_box(chair, "ArmRight", Vector3(0.07, 0.22, 0.42), Vector3(0.34, 0.15, 0), room._fabric_mat(Color(0.42, 0.56, 0.66)))

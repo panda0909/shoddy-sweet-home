@@ -73,6 +73,9 @@ func _run() -> void:
 		"BedroomRug/RugTuft_0", "BedroomRug/RugTuft_6",
 		"Mattress/SideBandFront", "Duvet/DuvetFold_0", "Duvet/DuvetFold_2",
 		"DeskChairSeat/BackCushion", "DeskChairSeat/BaseArm_0",
+		"Desk/FrontApron", "DeskTop/DesktopFrontNosing", "DeskTop/DesktopLeftReturn",
+		"DeskTop/KeyboardKey_00", "DeskTop/KeyboardKey_11", "Monitor/MonitorScreen",
+		"Monitor/MonitorBezelTop", "Monitor/MonitorBezelBottom", "MonitorStand/MonitorFoot",
 		"BedroomPlant/Stem_0", "BedroomPlant/Stem_15",
 		"CurtainLeft/CurtainRod", "CurtainRight/CurtainRod"
 	]:
@@ -104,11 +107,21 @@ func _run() -> void:
 		if collision == null or not collision.shape is BoxShape3D:
 			printerr("FAIL missing box-form desk assembly collision: ", id)
 			failures += 1
-	for id in ["Desk/Leg", "Desk/BackPanel", "CurtainLeft/Pleat", "CurtainRight/Pleat"]:
+	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "CurtainLeft/Pleat", "CurtainRight/Pleat"]:
 		var structural_mesh := game.get_node_or_null(id) as MeshInstance3D
 		if structural_mesh == null or not structural_mesh.mesh is ArrayMesh:
 			printerr("FAIL structural detail is still a sharp box: ", id)
 			failures += 1
+	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "Desk/DrawerBodyLeft", "Desk/DrawerBodyRight", "Desk/DrawerFront"]:
+		var desk_mesh := game.get_node_or_null(id) as MeshInstance3D
+		var desk_material := desk_mesh.material_override as StandardMaterial3D if desk_mesh != null else null
+		if desk_material == null or desk_material.albedo_texture == null or desk_material.roughness_texture == null:
+			printerr("FAIL desk wood detail is outside the shared PBR path: ", id)
+			failures += 1
+	var key_count := game.get_node("DeskTop").find_children("KeyboardKey_*", "MeshInstance3D", true, false).size()
+	if key_count != 12:
+		printerr("FAIL keyboard keycap count: ", key_count)
+		failures += 1
 	if game.get_node_or_null("DeskTop/CableGrommet") == null:
 		printerr("FAIL missing desk cable grommet")
 		failures += 1
