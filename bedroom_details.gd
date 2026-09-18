@@ -147,6 +147,8 @@ static func apply(room: Node3D) -> void:
 	_add_detail_box(closet, "ClosetInteriorShadow", Vector3(2.05, 1.96, 0.025), Vector3(0, 0, -0.31), room._mat(Color(0.055, 0.038, 0.026)))
 	_add_detail_box(closet, "ClosetBottomRail", Vector3(2.12, 0.055, 0.045), Vector3(0, -1.06, 0.335), room._wood_mat(Color(0.55, 0.33, 0.18)))
 	_add_detail_box(closet, "ClosetTopRail", Vector3(2.12, 0.055, 0.045), Vector3(0, 1.06, 0.335), room._wood_mat(Color(0.55, 0.33, 0.18)))
+	_add_detail_box(closet, "ClosetSlidingTrackTop", Vector3(2.16, 0.035, 0.075), Vector3(0, 1.105, 0.355), room._mat(Color(0.30, 0.25, 0.18)))
+	_add_detail_box(closet, "ClosetSlidingTrackBottom", Vector3(2.16, 0.035, 0.075), Vector3(0, -1.105, 0.355), room._mat(Color(0.30, 0.25, 0.18)))
 	_add_detail_box(closet, "ClosetCenterSeam", Vector3(0.025, 1.95, 0.03), Vector3(0, 0, 0.35), room._mat(Color(0.20, 0.12, 0.07)))
 	_add_detail_box(closet, "ClosetHandleMountLeft", Vector3(0.10, 0.10, 0.03), Vector3(-0.49, 0, 0.38), room._mat(Color(0.32, 0.25, 0.18)))
 	_add_detail_box(closet, "ClosetHandleMountRight", Vector3(0.10, 0.10, 0.03), Vector3(0.49, 0, 0.38), room._mat(Color(0.32, 0.25, 0.18)))

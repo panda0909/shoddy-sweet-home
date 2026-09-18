@@ -703,3 +703,11 @@
 - `tests/bathroom_details.gd` 驗證 backsplash 貼合後緣且沒有碰撞；浴室細節維持 58 個、12 個材質批次，`Static batching 78 -> 12`，結果為 `0 failures`。
 - 圖形回歸：浴室 median `3.461ms`、p95 `4.827ms`、`571` draws；`tests/render_acceptance.gd` 15 張驗收畫面全部成功，`0 failures`。
 - Web Release 回歸：PCK `103,728,924` bytes、WASM `39,514,754` bytes，合計 `143,243,678` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：臥室衣櫃滑門與近距離檢查射線（2026-09-19）
+
+- `ClosetDoorLeft`／`ClosetDoorRight` 改為可互動滑門：左右門各自使用 BoxShape3D，門把掛在門片節點下，開關時門片、把手與碰撞同步平移；衣櫃上下滑軌也補上視覺收口。
+- `tests/closet_door_interaction.gd` 驗證兩扇門的滑動距離、開關位置與門片碰撞；`tests/door_passage.gd` 驗證房門與衣櫃滑門，均為 `0 failures`。
+- 檢查射線排除玩家自身膠囊，修正衣櫃缺陷在近距離被玩家碰撞體遮住的問題；14 題缺陷定位、互動與十題驗屋報告均為 `0 failures`。
+- 圖形回歸：15 張近距離／逆光／手電筒／開門驗收畫面全部成功；四房 median／p95／draws 為客廳 `4.927/6.953ms/782`、廚房 `7.390/8.795ms/1394`、臥室 `7.749/8.770ms/1145`、浴室 `5.048/6.554ms/603`。
+- Web Release 回歸：PCK `103,730,444` bytes、WASM `39,514,754` bytes，合計 `143,245,198` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

@@ -92,7 +92,17 @@ func _run() -> void:
 						game.raycast.force_raycast_update()
 						var required: int = target.get_meta("required_tool")
 						game._select_tool(maxi(0, required))
+						var first_collider: Object = game.raycast.get_collider() if game.raycast.is_colliding() else null
 						game._inspect_target()
+						# A closet defect is painted on the sliding door itself. The
+						# first inspection legitimately opens the door; settle the
+						# moving collision, then inspect the exposed defect surface.
+						if not game.found_issues.has(id) and first_collider != null and first_collider.has_meta("door_id"):
+							for settle_frame in range(3):
+								game._animate_doors(1.0)
+								await physics_frame
+							game.raycast.force_raycast_update()
+							game._inspect_target()
 						if not game.found_issues.has(id):
 							printerr("FAIL interaction ", id)
 							failures += 1

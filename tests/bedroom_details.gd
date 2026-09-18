@@ -67,6 +67,7 @@ func _run() -> void:
 		"BedsideLampShade_Left/LampBulb", "BedsideLampShade_Right/LampBulb",
 		"BedsideLampShade_Left/LampShadeRim", "BedsideLampShade_Right/LampSocket",
 		"Closet/ClosetInteriorShadow", "Closet/ClosetBottomRail", "Closet/ClosetTopRail",
+		"Closet/ClosetSlidingTrackTop", "Closet/ClosetSlidingTrackBottom",
 		"Closet/ClosetCenterSeam", "Closet/ClosetHandleMountLeft",
 		"Closet/ClosetHangingRail", "Closet/ClosetHanger_0", "Closet/ClosetClothing_3",
 		"Bookcase/Shelf_0", "Bookcase/Shelf_1",
@@ -201,6 +202,16 @@ func _run() -> void:
 		var panel_collision := game.get_node_or_null(id) as CollisionShape3D
 		if panel_collision == null or not panel_collision.shape is BoxShape3D:
 			printerr("FAIL missing box-form desk side-panel collision: ", id)
+			failures += 1
+	for id in ["ClosetDoorLeft", "ClosetDoorRight"]:
+		var closet_door := game.get_node_or_null(id) as StaticBody3D
+		var door_data: Dictionary = game.doors.get(id, {})
+		var door_collision := closet_door.get_node_or_null("CollisionShape3D") as CollisionShape3D if closet_door != null else null
+		if closet_door == null or door_collision == null or not door_collision.shape is BoxShape3D:
+			printerr("FAIL closet sliding door lacks box collision: ", id)
+			failures += 1
+		if str(door_data.get("mode", "")) != "sliding" or not door_data.has("open_offset"):
+			printerr("FAIL closet door is not registered as a sliding interaction: ", id)
 			failures += 1
 
 	print("Bedroom PBR cache entries: oak=", game.wood_material_cache.size(), " fabric=", game.fabric_material_cache.size())

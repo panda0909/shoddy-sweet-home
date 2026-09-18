@@ -14,6 +14,22 @@ func _run() -> void:
 	for id in game.doors:
 		var d: Dictionary = game.doors[id]
 		var pivot: Node3D = d["pivot"]
+		if str(d.get("mode", "hinged")) == "sliding":
+			var closed_position: Vector3 = d["closed_position"]
+			var open_offset: Vector3 = d["open_offset"]
+			for opened in [false, true]:
+				game.doors[id]["is_open"] = opened
+				game._animate_doors(1.0)
+				await physics_frame
+				var expected_position := closed_position + (open_offset if opened else Vector3.ZERO)
+				if pivot.position.distance_to(expected_position) > 0.01:
+					printerr("FAIL sliding ", id, " open=", opened, " position=", pivot.position)
+					failures += 1
+				else:
+					print("PASS sliding ", id, " open=", opened)
+			game.doors[id]["is_open"] = false
+			game._animate_doors(1.0)
+			continue
 		var angle: float = d["closed_angle"]
 		var basis := Basis(Vector3.UP, angle)
 		var center: Vector3 = pivot.position + basis * Vector3(float(d["width"]) / 2.0, 0, 0)

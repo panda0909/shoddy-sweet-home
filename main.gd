@@ -987,10 +987,14 @@ func _build_bedroom() -> void:
 		_add_cylinder("BedsideLampBase_" + bedside_side, 0.10, 0.30, Vector3(bedside_x, 0.82, -4.25), _mat(palette["metal"]), false)
 		_add_cylinder("BedsideLampShade_" + bedside_side, 0.24, 0.30, Vector3(bedside_x, 1.10, -4.25), _mat(Color(0.70, 0.54, 0.32)), false)
 	_add_box("Closet", Vector3(2.3, 2.4, 0.65), Vector3(-1.9, 1.2, -4.8), _wood_mat(Color(0.88, 0.66, 0.42)), true)
-	_add_box("ClosetDoorLeft", Vector3(1.06, 2.18, 0.04), Vector3(-2.47, 1.2, -4.44), _wood_mat(Color(0.74, 0.50, 0.30)), false)
-	_add_box("ClosetDoorRight", Vector3(1.06, 2.18, 0.04), Vector3(-1.33, 1.2, -4.44), _wood_mat(Color(0.74, 0.50, 0.30)), false)
-	_add_cylinder("ClosetHandleLeft", 0.035, 0.38, Vector3(-1.98, 1.2, -4.40), _mat(palette["metal"]), false)
-	_add_cylinder("ClosetHandleRight", 0.035, 0.38, Vector3(-1.82, 1.2, -4.40), _mat(palette["metal"]), false)
+	var closet_left_door := _add_box("ClosetDoorLeft", Vector3(1.06, 2.18, 0.04), Vector3(-2.47, 1.2, -4.44), _wood_mat(Color(0.74, 0.50, 0.30)), true)
+	var closet_right_door := _add_box("ClosetDoorRight", Vector3(1.06, 2.18, 0.04), Vector3(-1.33, 1.2, -4.44), _wood_mat(Color(0.74, 0.50, 0.30)), true)
+	# These are real sliding doors rather than decorative panels: the body, its
+	# box collision and the handle all move together when the player inspects it.
+	_add_cylinder("ClosetHandleLeft", 0.035, 0.38, Vector3(0.49, 0.0, 0.04), _mat(palette["metal"]), false, closet_left_door)
+	_add_cylinder("ClosetHandleRight", 0.035, 0.38, Vector3(-0.49, 0.0, 0.04), _mat(palette["metal"]), false, closet_right_door)
+	_register_sliding_door("ClosetDoorLeft", closet_left_door, Vector3(-0.82, 0.0, 0.0), "衣櫃左門")
+	_register_sliding_door("ClosetDoorRight", closet_right_door, Vector3(0.82, 0.0, 0.0), "衣櫃右門")
 	_add_box("Desk", Vector3(2.4, 0.85, 0.75), Vector3(-2.6, 0.45, -1.45), _wood_mat(Color(0.84, 0.60, 0.36)), true)
 	_add_box("DeskTop", Vector3(2.55, 0.10, 0.85), Vector3(-2.6, 0.91, -1.45), _wood_mat(Color(0.94, 0.72, 0.46)), false)
 	_add_box("Monitor", Vector3(0.92, 0.58, 0.06), Vector3(-2.9, 1.32, -1.76), _mat(Color(0.025, 0.035, 0.045)), false)
@@ -1371,6 +1375,8 @@ func _prepare_furniture(asset: Node3D) -> void:
 		var blocks_door := false
 		var blocking_passage := AABB()
 		for data in doors.values():
+			if str(data.get("mode", "hinged")) == "sliding":
+				continue
 			var hinge: Node3D = data["pivot"]
 			var center: Vector3 = hinge.position + Basis(Vector3.UP, float(data["closed_angle"])) * Vector3(float(data["width"]) / 2.0, 1.1, 0)
 			var passage := AABB(center - Vector3(0.85, 1.1, 0.85), Vector3(1.7, 2.2, 1.7))
@@ -1797,6 +1803,10 @@ func _build_player() -> void:
 	raycast.target_position = Vector3(0, 0, -3.8)
 	raycast.collision_mask = 3
 	raycast.enabled = true
+	# The inspection ray starts at the camera inside the player's capsule. Do
+	# not let the avatar become the answer to a close-up inspection, especially
+	# when a door has just moved and the target is near the player's feet.
+	raycast.add_exception(player)
 	camera.add_child(raycast)
 
 	var flashlight := SpotLight3D.new()
@@ -1930,9 +1940,14 @@ func _start_round() -> void:
 		_set_paused(false)
 	_reset_player()
 	for door_id in doors:
-		doors[door_id]["is_open"] = false
-		var pivot: Node3D = doors[door_id]["pivot"]
-		pivot.rotation.y = float(doors[door_id]["closed_angle"])
+		var door_data: Dictionary = doors[door_id]
+		door_data["is_open"] = false
+		var pivot: Node3D = door_data["pivot"]
+		if str(door_data.get("mode", "hinged")) == "sliding":
+			pivot.position = door_data["closed_position"]
+		else:
+			pivot.rotation.y = float(door_data["closed_angle"])
+		doors[door_id] = door_data
 	for body in issue_bodies.values():
 		if is_instance_valid(body):
 			body.queue_free()
@@ -2559,10 +2574,27 @@ func _add_hinged_door(door_id: String, hinge_pos: Vector3, width: float, closed_
 	_add_door_frame_piece(frame, "FrameTop", Vector3(width + 0.12, 0.12, 0.16), Vector3(width * 0.5, 2.38, 0.0), frame_color)
 
 	doors[door_id] = {
+		"mode": "hinged",
 		"pivot": pivot,
 		"width": width,
 		"closed_angle": closed_angle,
 		"open_delta": swing_direction * PI / 2.0,
+		"is_open": false,
+		"name": display_name
+	}
+
+
+func _register_sliding_door(door_id: String, body: StaticBody3D, open_offset: Vector3, display_name: String) -> void:
+	if body == null:
+		return
+	body.set_meta("door_id", door_id)
+	body.set_meta("door_name", display_name)
+	doors[door_id] = {
+		"mode": "sliding",
+		"pivot": body,
+		"leaf": body,
+		"closed_position": body.position,
+		"open_offset": open_offset,
 		"is_open": false,
 		"name": display_name
 	}
@@ -2973,7 +3005,7 @@ func _toggle_door(door_id: String) -> void:
 		return
 	var door_data: Dictionary = doors[door_id]
 	var is_open: bool = not bool(door_data["is_open"])
-	if is_open:
+	if is_open and str(door_data.get("mode", "hinged")) != "sliding":
 		var hinge: Node3D = door_data["pivot"]
 		var relative: Vector3 = Basis(Vector3.UP, -float(door_data["closed_angle"])) * (player.position - hinge.position)
 		door_data["open_delta"] = (1.0 if relative.z >= 0 else -1.0) * PI / 2.0
@@ -2988,6 +3020,18 @@ func _animate_doors(delta: float) -> void:
 		var door_data: Dictionary = doors[door_id]
 		var pivot: Node3D = door_data["pivot"] as Node3D
 		if pivot == null:
+			continue
+		if str(door_data.get("mode", "hinged")) == "sliding":
+			var closed_position: Vector3 = door_data["closed_position"]
+			var open_offset: Vector3 = door_data["open_offset"]
+			var target_position := closed_position + (open_offset if bool(door_data["is_open"]) else Vector3.ZERO)
+			var next_position := pivot.position.lerp(target_position, minf(1.0, delta * 7.0))
+			if player != null and pivot.position.distance_to(next_position) > 0.0001:
+				var slide_delta := next_position - pivot.position
+				var player_transform := Transform3D(player.global_transform.basis, player.global_position)
+				if player.test_move(player_transform, slide_delta):
+					continue
+			pivot.position = next_position
 			continue
 		var target_angle: float = float(door_data["closed_angle"])
 		if bool(door_data["is_open"]):
