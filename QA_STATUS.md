@@ -549,3 +549,8 @@
 
 - 以 `b0febac` 的目前版本重新輸出 Web Release，PCK `103,709,084` bytes、WASM `39,514,754` bytes，合計 `143,223,838` bytes。
 - 相較 150 MB 硬門檻仍保留約 7.8 MB 餘裕；書桌新增的執行期幾何沒有引入額外下載材質。
+
+### 追加：淋浴盤跟隨可玩房屋門牆 bounds（2026-09-19）
+
+- `ImportedBath_ShowerTray` 現在由 `RightWall` 與 `RightInnerDoorFrame/FrameRight` 的實際 bounds 推導位置，保留右牆與門洞的服務距離，不再依賴固定世界座標。
+- 玻璃、門檻、蓮蓬頭、控制器與排水件仍以同一個淋浴盤中心／尺寸生成；`tests/bathroom_details.gd` 新增淋浴盤對門牆 bounds 的跟隨驗收。

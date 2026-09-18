@@ -1109,12 +1109,23 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 			_add_cylinder("ImportedBath_TubHandle_%s" % ("Left" if handle_side < 0 else "Right"), 0.045, 0.035, Vector3(tub_fitting_x + handle_side * 0.16, tub_fitting_y + 0.08, tub_back_z), bath_fitting_material, false, detail_root)
 		_add_cylinder("ImportedBath_TubOverflow", 0.07, 0.018, Vector3(bathtub_bounds.get_center().x, bathtub_bounds.position.y + bathtub_bounds.size.y * 0.78, bathtub_bounds.end.z - 0.035), bath_fitting_material, false, detail_root)
 
-	var shower_tray := _add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), tray_material, true, detail_root)
+	var shower_size := Vector3(2.8, 0.10, 2.2)
+	var shower_center := Vector3(7.6, 0.08, -2.25)
+	# Keep the wet zone tied to the playable shell, not to the imported scan's
+	# partial bounds. The clearances preserve the existing aisle while allowing
+	# the right wall or bathroom door width to change without floating the tray.
+	var playable_right_wall := _find_anchor_bounds("RightWall")
+	var bathroom_frame_right := get_node_or_null("RightInnerDoorFrame/FrameRight") as MeshInstance3D
+	if playable_right_wall.has_volume():
+		shower_center.x = playable_right_wall.position.x - shower_size.x * 0.5 - 0.875
+	if bathroom_frame_right != null:
+		var bathroom_frame_bounds: AABB = bathroom_frame_right.global_transform * bathroom_frame_right.get_aabb()
+		if bathroom_frame_bounds.has_volume():
+			shower_center.z = bathroom_frame_bounds.get_center().z - shower_size.z * 0.5 - 1.15
+	var shower_tray := _add_box("ImportedBath_ShowerTray", shower_size, shower_center, tray_material, true, detail_root)
 	# Keep the entire glass/frame assembly attached to the tray. The old glass
 	# used fixed world coordinates, so a future bathroom scale or translation
 	# could leave the partition floating beside the wet zone.
-	var shower_center := Vector3(7.6, 0.08, -2.25)
-	var shower_size := Vector3(2.8, 0.10, 2.2)
 	var tray_mesh := shower_tray.find_child("Mesh", true, false) as MeshInstance3D
 	if tray_mesh != null:
 		var tray_bounds := tray_mesh.global_transform * tray_mesh.get_aabb()

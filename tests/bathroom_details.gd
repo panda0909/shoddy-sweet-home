@@ -141,6 +141,18 @@ func _run() -> void:
 	var tray_node: Node = game.find_child("ImportedBath_ShowerTray", true, false)
 	var tray_mesh := tray_node.find_child("Mesh", true, false) as MeshInstance3D if tray_node != null else null
 	var tray_bounds: AABB = tray_mesh.global_transform * tray_mesh.get_aabb() if tray_mesh != null else AABB()
+	var playable_right_wall: AABB = game._find_anchor_bounds("RightWall")
+	var bathroom_frame_right := game.get_node_or_null("RightInnerDoorFrame/FrameRight") as MeshInstance3D
+	var expected_shower_center := Vector3(7.6, 0.08, -2.25)
+	if playable_right_wall.has_volume():
+		expected_shower_center.x = playable_right_wall.position.x - 2.8 * 0.5 - 0.875
+	if bathroom_frame_right != null:
+		var frame_bounds: AABB = bathroom_frame_right.global_transform * bathroom_frame_right.get_aabb()
+		if frame_bounds.has_volume():
+			expected_shower_center.z = frame_bounds.get_center().z - 2.2 * 0.5 - 1.15
+	if tray_node == null or tray_node.global_position.distance_to(expected_shower_center) > 0.05:
+		printerr("FAIL shower tray does not follow playable wall/door bounds")
+		failures += 1
 	var right_wall_mesh := game.get_node_or_null("RightWall/Mesh") as MeshInstance3D
 	var back_wall_mesh := game.get_node_or_null("BackWall/Mesh") as MeshInstance3D
 	var right_wall_bounds: AABB = right_wall_mesh.global_transform * right_wall_mesh.get_aabb() if right_wall_mesh != null else AABB()
