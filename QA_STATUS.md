@@ -675,3 +675,10 @@
 - `tests/bedroom_details.gd` 新增玻璃網格、透光材質、窗台與窗扣驗證；木材 PBR、床／衣櫃／書桌／椅子／窗簾細節與盒型碰撞為 `0 failures`。
 - 圖形回歸：15 張近距離／逆光／手電筒／開門狀態驗收畫面全部成功；臥室 median `5.926ms`、p95 `6.597ms`、`1145` draws。
 - Web Release 回歸：PCK `103,727,788` bytes、WASM `39,514,754` bytes，合計 `143,242,542` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：浴室細節批次 LOD（2026-09-19）
+
+- 浴室後加的馬桶、洗手台、浴缸與淋浴細節批次現在只在玩家 7m 內繪製；遠距離保留房間匯入模型與高面數 proxy，避免 12 個材質批次長時間常駐。
+- `tests/bathroom_details.gd` 驗證 58 個細節仍維持 12 批次、每個批次有 7m LOD 且沒有碰撞；`tests/lod_visibility.gd` 驗證 1168 個裝飾 LOD 與 182 個高面數 proxy，均為 `0 failures`。
+- 圖形回歸：浴室 median `3.602ms`、p95 `5.213ms`、`575` draws，近景細節完整可見。
+- Web Release 回歸：PCK `103,728,492` bytes、WASM `39,514,754` bytes，合計 `143,243,246` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

@@ -39,6 +39,14 @@ func _run() -> void:
 	if detail_batches.size() > 12:
 		printerr("FAIL bathroom detail material batches regressed: ", detail_batches.size())
 		failures += 1
+	for detail_batch in detail_batches:
+		var batch_mesh := detail_batch as MeshInstance3D
+		if batch_mesh == null or not batch_mesh.has_meta("bathroom_detail_lod") or not is_equal_approx(batch_mesh.visibility_range_end, 7.0):
+			printerr("FAIL bathroom detail batch has no 7m inspection LOD: ", detail_batch.name)
+			failures += 1
+		if batch_mesh != null and batch_mesh.find_child("CollisionShape3D", true, false) != null:
+			printerr("FAIL bathroom detail LOD batch blocks movement: ", detail_batch.name)
+			failures += 1
 	for node_name in required:
 		if game.find_child(node_name, true, false) == null:
 			printerr("FAIL missing imported bathroom detail: ", node_name)

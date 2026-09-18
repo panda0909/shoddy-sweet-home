@@ -1046,6 +1046,19 @@ func _build_bathroom(scene_override: PackedScene = null) -> void:
 func _batch_bathroom_details(detail_root: Node3D) -> void:
 	if is_instance_valid(detail_root):
 		preload("res://static_batch.gd").build(detail_root)
+		# The generated sanitaryware is essential in the inspection aisle, but it
+		# should not remain twelve material batches while the player is still in
+		# the entrance or another room. The imported bathroom asset and its proxy
+		# continue to provide the far silhouette; restore these high-detail
+		# surfaces inside the 7m inspection distance.
+		for batch in detail_root.find_children("StaticBatch_*", "MeshInstance3D", true, false):
+			var detail_batch := batch as MeshInstance3D
+			if detail_batch == null:
+				continue
+			detail_batch.visibility_range_end = 7.0
+			detail_batch.visibility_range_end_margin = 0.75
+			detail_batch.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+			detail_batch.set_meta("bathroom_detail_lod", true)
 
 
 func _add_bathroom_imported_details(detail_root: Node3D) -> void:
