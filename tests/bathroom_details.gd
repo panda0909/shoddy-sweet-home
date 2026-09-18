@@ -31,6 +31,9 @@ func _run() -> void:
 	if detail_root == null or detail_batches.size() < 3:
 		printerr("FAIL bathroom details were not batched: ", detail_batches.size())
 		failures += 1
+	if detail_batches.size() > 13:
+		printerr("FAIL bathroom detail material batches regressed: ", detail_batches.size())
+		failures += 1
 	for node_name in required:
 		if game.find_child(node_name, true, false) == null:
 			printerr("FAIL missing imported bathroom detail: ", node_name)
@@ -69,7 +72,7 @@ func _run() -> void:
 		if fitting == null or not tray_bounds.has_volume() or absf((fitting as Node3D).global_position.x - tray_bounds.get_center().x) > tray_bounds.size.x * 0.75 or absf((fitting as Node3D).global_position.z - tray_bounds.get_center().z) > tray_bounds.size.z * 0.75:
 			printerr("FAIL shower fitting is outside tray alignment: ", fitting_name)
 			failures += 1
-	print("Imported bathroom detail nodes: ", required.size())
+	print("Imported bathroom detail nodes: ", required.size(), "; material batches: ", detail_batches.size())
 	print("Bathroom detail failures: ", failures)
 	game.queue_free()
 	await process_frame
