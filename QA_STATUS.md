@@ -593,3 +593,10 @@
 - `tests/kitchen_details.gd` 現在驗證水槽是中空幾何、排水件存在且不阻擋玩家；廚房細節 `33` 個、餐椅包邊／五金與水槽貼合驗收均為 `0 failures`。
 - 圖形截圖回歸：廚房 median `5.646ms`、p95 `6.326ms`、`1343` draws；14 題互動與家具碰撞仍為 `0 failures`。
 - Web Release 回歸：PCK `103,718,204` bytes、WASM `39,514,754` bytes，合計 `143,232,958` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：客廳沙發後牆層架組件（2026-09-19）
+
+- 依沙發群與 `FrontWallLeft` bounds 新增 `LivingDetail_SofaWallShelf`、前緣、兩個金屬支架與三本裝飾書，補足原匯入場景缺少的牆面收納家具；全部為 render-only，不改變門洞碰撞。
+- `tests/room_finish_quality.gd` 現在驗證層架位於沙發上方、貼近前牆、具有完整支架且沒有碰撞；客廳門洞家具衝突仍為 `0`。
+- 圖形截圖回歸：客廳 median `3.930ms`、p95 `4.800ms`、`734` draws；四房仍能正常渲染。
+- Web Release 回歸：PCK `103,719,420` bytes、WASM `39,514,754` bytes，合計 `143,234,174` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

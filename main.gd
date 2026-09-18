@@ -493,6 +493,26 @@ func _add_living_imported_details() -> void:
 		_add_box("LivingDetail_SideboardTop", Vector3(sideboard_bounds.size.x + 0.06, 0.04, sideboard_bounds.size.z + 0.05), Vector3(sideboard_bounds.get_center().x, sideboard_bounds.end.y + 0.02, sideboard_bounds.get_center().z), sideboard_white, false)
 		_add_box("LivingDetail_SideboardPlinth", Vector3(sideboard_bounds.size.x + 0.035, 0.06, sideboard_bounds.size.z + 0.035), Vector3(sideboard_bounds.get_center().x, sideboard_bounds.position.y + 0.03, sideboard_bounds.get_center().z), sideboard_white, false)
 		_add_box("LivingDetail_SideboardFrontInset", Vector3(0.026, sideboard_bounds.size.y * 0.62, sideboard_bounds.size.z * 0.72), Vector3(sideboard_bounds.position.x - 0.014, sideboard_bounds.get_center().y, sideboard_bounds.get_center().z), sideboard_dark, false)
+	# The scan has no usable wall-shelf assembly. Add one lightweight, wall-
+	# mounted shelf above the sofa, using the sofa and front-wall bounds as the
+	# placement source so it stays proportional when the room is rescaled.
+	var sofa_bounds := _find_anchor_group_bounds(["63_SofaLeather", "65_SofaLeather", "134_SofaLeather", "136_SofaLeather", "137_SofaLeather", "138_SofaLeather", "139_SofaLeather"])
+	var front_wall_bounds := _find_anchor_bounds("FrontWallLeft")
+	if sofa_bounds.has_volume() and front_wall_bounds.has_volume():
+		var shelf_width := clampf(sofa_bounds.size.x * 0.46, 1.20, 2.40)
+		var shelf_y := clampf(sofa_bounds.end.y + 0.62, 1.75, 2.30)
+		var shelf_z := front_wall_bounds.position.z - 0.16
+		var shelf_wood := _wood_mat(Color(0.34, 0.18, 0.08))
+		var shelf_metal := _mat(Color(0.16, 0.18, 0.18))
+		_add_box("LivingDetail_SofaWallShelf", Vector3(shelf_width, 0.075, 0.28), Vector3(sofa_bounds.get_center().x, shelf_y, shelf_z), shelf_wood, false)
+		_add_box("LivingDetail_SofaWallShelfFront", Vector3(shelf_width + 0.025, 0.045, 0.035), Vector3(sofa_bounds.get_center().x, shelf_y + 0.015, shelf_z - 0.145), shelf_wood, false)
+		for bracket_index in range(2):
+			var bracket_x := sofa_bounds.get_center().x + (-1.0 if bracket_index == 0 else 1.0) * shelf_width * 0.34
+			_add_box("LivingDetail_SofaWallShelfBracket_%d" % bracket_index, Vector3(0.045, 0.20, 0.045), Vector3(bracket_x, shelf_y - 0.12, shelf_z + 0.03), shelf_metal, false)
+		for prop_index in range(3):
+			var prop_height := 0.16 + float(prop_index % 2) * 0.07
+			var prop_x := sofa_bounds.get_center().x - shelf_width * 0.26 + float(prop_index) * shelf_width * 0.18
+			_add_box("LivingDetail_SofaWallShelfBook_%d" % prop_index, Vector3(0.075, prop_height, 0.18), Vector3(prop_x, shelf_y + 0.12 + prop_height * 0.5, shelf_z), _mat(Color(0.24 + prop_index * 0.08, 0.30, 0.34)), false)
 
 	var cushion_index := 0
 	var living_asset := get_node_or_null("LivingRoomRealAsset") as Node3D

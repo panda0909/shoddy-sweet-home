@@ -115,6 +115,20 @@ func _run() -> void:
 		if game.get_node_or_null(sideboard_piece) == null:
 			printerr("FAIL missing sideboard finish: ", sideboard_piece)
 			failures += 1
+	var sofa_shelf := game.get_node_or_null("LivingDetail_SofaWallShelf") as Node3D
+	var sofa_shelf_mesh := sofa_shelf.get_node_or_null("Mesh") as MeshInstance3D if sofa_shelf != null else null
+	var sofa_shelf_bounds: AABB = sofa_shelf_mesh.global_transform * sofa_shelf_mesh.get_aabb() if sofa_shelf_mesh != null else AABB()
+	var front_wall_for_shelf: AABB = game._find_anchor_bounds("FrontWallLeft")
+	var sofa_for_shelf: AABB = game._find_anchor_group_bounds(["63_SofaLeather", "65_SofaLeather", "134_SofaLeather", "136_SofaLeather", "137_SofaLeather", "138_SofaLeather", "139_SofaLeather"])
+	if sofa_shelf == null or sofa_shelf_mesh == null or sofa_shelf.find_child("CollisionShape3D", true, false) != null:
+		printerr("FAIL missing or collidable sofa wall shelf")
+		failures += 1
+	elif not front_wall_for_shelf.has_volume() or not sofa_for_shelf.has_volume() or absf(sofa_shelf.global_position.x - sofa_for_shelf.get_center().x) > 0.05 or sofa_shelf.global_position.y < sofa_for_shelf.end.y + 0.50 or sofa_shelf.global_position.y > 2.35 or sofa_shelf.global_position.z >= front_wall_for_shelf.position.z:
+		printerr("FAIL sofa wall shelf is not attached to sofa/front-wall bounds: ", sofa_shelf.global_position)
+		failures += 1
+	if game.get_node_or_null("LivingDetail_SofaWallShelfBracket_0") == null or game.get_node_or_null("LivingDetail_SofaWallShelfBracket_1") == null:
+		printerr("FAIL sofa wall shelf brackets are incomplete")
+		failures += 1
 
 	print("Furniture contact shadows: ", shadow_count)
 	print("Kitchen hero scale: ", kitchen.scale.x if kitchen != null else -1.0)
