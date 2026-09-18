@@ -743,10 +743,14 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), Vector3(7.3, 0.98, -4.78), porcelain, true, detail_root)
 	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, Vector3(7.3, 0.66, -4.5), seat_material, true, detail_root)
 	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, Vector3(7.3, 0.705, -4.5), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
+	_add_cylinder("ImportedBath_ToiletBowlRim", 0.46, 0.025, Vector3(7.3, 0.645, -4.5), porcelain, false, detail_root)
+	_add_cylinder("ImportedBath_ToiletBowlInset", 0.31, 0.012, Vector3(7.3, 0.686, -4.5), _mat(Color(0.34, 0.43, 0.43)), false, detail_root)
 	_add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), Vector3(7.3, 0.73, -4.70), lid_material, false, detail_root)
 	_add_box("ImportedBath_ToiletHingeLeft", Vector3(0.07, 0.035, 0.045), Vector3(7.13, 0.765, -4.73), button_material, false, detail_root)
 	_add_box("ImportedBath_ToiletHingeRight", Vector3(0.07, 0.035, 0.045), Vector3(7.47, 0.765, -4.73), button_material, false, detail_root)
 	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, Vector3(7.3, 1.39, -4.78), button_material, false, detail_root)
+	_add_cylinder("ImportedBath_FlushButtonRing", 0.085, 0.012, Vector3(7.3, 1.405, -4.78), steel, false, detail_root)
+	_add_box("ImportedBath_FlushLever", Vector3(0.035, 0.16, 0.035), Vector3(7.73, 1.18, -4.78), steel, false, detail_root)
 
 	_add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), tray_material, true, detail_root)
 	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), glass_material, false, detail_root)
@@ -780,6 +784,8 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 
 	_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), steel, false, detail_root)
 	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
+	for towel_fold in range(3):
+		_add_box("ImportedBath_TowelFold_%d" % towel_fold, Vector3(0.62, 0.018, 0.018), Vector3(3.7, 1.18 - towel_fold * 0.14, -5.665), _mat(Color(0.54, 0.33, 0.25)), false, detail_root)
 	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(7.6, 0.145, -2.25), drain_material, false, detail_root)
 	_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.05, 0.55), Vector3(6.15, 2.96, -3.60), steel, false, detail_root)
 

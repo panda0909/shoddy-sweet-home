@@ -14,11 +14,12 @@ func _run() -> void:
 
 	var required := [
 		"ImportedBath_ToiletBase", "ImportedBath_ToiletTank", "ImportedBath_ToiletSeat",
-		"ImportedBath_ToiletWater", "ImportedBath_ToiletHingeLeft", "ImportedBath_ToiletHingeRight",
+		"ImportedBath_ToiletWater", "ImportedBath_ToiletBowlRim", "ImportedBath_ToiletBowlInset",
+		"ImportedBath_ToiletHingeLeft", "ImportedBath_ToiletHingeRight", "ImportedBath_FlushButtonRing", "ImportedBath_FlushLever",
 		"ImportedBath_ShowerTray", "ImportedBath_ShowerGlass", "ImportedBath_ShowerPipe",
 		"ImportedBath_ShowerHead", "ImportedBath_ShowerFrame_Left", "ImportedBath_ShowerFrame_Top",
 		"ImportedBath_ShowerShelf", "ImportedBath_ShowerControl", "ImportedBath_ShowerDrainCrossA", "ImportedBath_ShowerDrainCrossB", "ImportedBath_TowelBar",
-		"ImportedBath_DrainCover", "ImportedBath_VanityCounterEdge",
+		"ImportedBath_DrainCover", "ImportedBath_VanityCounterEdge", "ImportedBath_TowelFold_0", "ImportedBath_TowelFold_2",
 		"ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight",
 		"ImportedBath_VanityFaucetLeft", "ImportedBath_VanityFaucetRight",
 		"ImportedBath_VanityHandle_0", "ImportedBath_VanityHandle_3",
