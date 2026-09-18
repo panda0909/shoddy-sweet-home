@@ -51,6 +51,8 @@ var initial_room_ready := false
 var progressive_loading := false
 var hint_world_label: Label3D
 var hint_until := 0.0
+var geometry_debug := false
+var fridge_sweep_visual: MeshInstance3D
 var imported_material_cache: Dictionary = {}
 var contact_shadow_material: StandardMaterial3D
 var generated_oak_texture: Texture2D
@@ -185,6 +187,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("hint"):
 		_show_hint()
+		return
+	if event.is_action_pressed("toggle_geometry_debug"):
+		_toggle_geometry_debug()
 		return
 	if event.is_action_pressed("toggle_mouse"):
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -646,6 +651,7 @@ func _add_kitchen_imported_details() -> void:
 		_add_cylinder("KitchenDetail_FridgeHingeTop", 0.028, 0.10, Vector3(fridge_front_x - 0.020, fridge_bounds.end.y - 0.075, fridge_bounds.position.z + 0.075), steel, false)
 		_add_cylinder("KitchenDetail_FridgeHingeBottom", 0.028, 0.10, Vector3(fridge_front_x - 0.020, fridge_bounds.position.y + 0.075, fridge_bounds.position.z + 0.075), steel, false)
 		_add_box("KitchenDetail_FridgeDisplay", Vector3(0.026, 0.095, 0.30), Vector3(fridge_front_x - 0.020, fridge_bounds.end.y - 0.13, fridge_bounds.get_center().z), dark, false)
+		_add_fridge_door_sweep_visual(fridge_bounds)
 	else:
 		_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.60, 0.045), _kitchen_point(Vector3(6.27, 1.04, 2.72)), steel, false)
 	# The cooker has a separate glass front and a handle on the same imported
@@ -683,6 +689,66 @@ func _add_kitchen_imported_details() -> void:
 	else:
 		_add_box("KitchenDetail_UnderCabinetLight", Vector3(0.20, 0.025, 0.80), _kitchen_point(Vector3(6.25, 1.08, 4.00)), _emissive_mat(Color(1.0, 0.72, 0.38), 0.75), false)
 	_add_kitchen_dining_details()
+
+
+func _add_fridge_door_sweep_visual(fridge_bounds: AABB) -> void:
+	# The imported refrigerator opens around its minimum-Z vertical hinge. Keep a
+	# transparent, render-only outline available for proportion QA; it is hidden
+	# during normal play and can be toggled with G.
+	if fridge_sweep_visual != null and is_instance_valid(fridge_sweep_visual):
+		fridge_sweep_visual.queue_free()
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(1.0, 0.34, 0.06, 0.82)
+	material.emission_enabled = true
+	material.emission = Color(1.0, 0.16, 0.02)
+	material.emission_energy_multiplier = 0.35
+	var immediate := ImmediateMesh.new()
+	immediate.surface_begin(Mesh.PRIMITIVE_LINES, material)
+	var front_x := fridge_bounds.position.x - 0.035
+	var y_min := fridge_bounds.position.y + 0.045
+	var y_max := fridge_bounds.end.y - 0.045
+	var z_min := fridge_bounds.position.z + 0.045
+	var z_span := maxf(0.20, fridge_bounds.size.z - 0.09)
+	var hinge_bottom := Vector3(front_x, y_min, z_min)
+	var hinge_top := Vector3(front_x, y_max, z_min)
+	var closed_bottom := hinge_bottom + Vector3(0, 0, z_span)
+	var closed_top := hinge_top + Vector3(0, 0, z_span)
+	_add_debug_line(immediate, hinge_bottom, closed_bottom)
+	_add_debug_line(immediate, closed_bottom, closed_top)
+	_add_debug_line(immediate, closed_top, hinge_top)
+	_add_debug_line(immediate, hinge_top, hinge_bottom)
+	var open_angle := -PI * 0.5
+	var open_bottom := hinge_bottom + Basis(Vector3.UP, open_angle) * Vector3(0, 0, z_span)
+	var open_top := hinge_top + Basis(Vector3.UP, open_angle) * Vector3(0, 0, z_span)
+	_add_debug_line(immediate, hinge_bottom, open_bottom)
+	_add_debug_line(immediate, open_bottom, open_top)
+	_add_debug_line(immediate, open_top, hinge_top)
+	for sample in range(1, 6):
+		var sample_angle := open_angle * float(sample) / 6.0
+		var sample_bottom := hinge_bottom + Basis(Vector3.UP, sample_angle) * Vector3(0, 0, z_span)
+		_add_debug_line(immediate, hinge_bottom, sample_bottom)
+	immediate.surface_end()
+	fridge_sweep_visual = MeshInstance3D.new()
+	fridge_sweep_visual.name = "KitchenDetail_FridgeDoorSweep"
+	fridge_sweep_visual.mesh = immediate
+	fridge_sweep_visual.visible = geometry_debug
+	fridge_sweep_visual.set_meta("geometry_debug", true)
+	fridge_sweep_visual.set_meta("no_collision", true)
+	add_child(fridge_sweep_visual)
+
+
+func _add_debug_line(mesh: ImmediateMesh, start: Vector3, finish: Vector3) -> void:
+	mesh.surface_add_vertex(start)
+	mesh.surface_add_vertex(finish)
+
+
+func _toggle_geometry_debug() -> void:
+	geometry_debug = not geometry_debug
+	if fridge_sweep_visual != null and is_instance_valid(fridge_sweep_visual):
+		fridge_sweep_visual.visible = geometry_debug
+	_show_toast("冰箱門掃掠檢查：" + ("顯示" if geometry_debug else "隱藏"), 2.0)
 
 
 func _add_kitchen_dining_details() -> void:
@@ -2522,6 +2588,7 @@ func _ensure_input_actions() -> void:
 	_add_key_action("tool_3", KEY_3)
 	_add_key_action("tool_4", KEY_4)
 	_add_key_action("hint", KEY_H)
+	_add_key_action("toggle_geometry_debug", KEY_G)
 	if not InputMap.has_action("use_tool"):
 		InputMap.add_action("use_tool")
 		var mouse_event := InputEventMouseButton.new()

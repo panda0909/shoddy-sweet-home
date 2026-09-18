@@ -20,7 +20,7 @@ func _run() -> void:
 		"KitchenDetail_FridgeHingeTop", "KitchenDetail_FridgeHingeBottom", "KitchenDetail_FridgeDisplay",
 		"KitchenDetail_OvenGlass", "KitchenDetail_OvenHandle", "KitchenDetail_OvenFrameTop",
 		"KitchenDetail_ExtractorHood_Rim", "KitchenDetail_ExtractorHood_Duct", "KitchenDetail_ExtractorHood_Flange",
-		"KitchenDetail_TableEdge_Front", "KitchenDetail_TableEdge_Back",
+		"KitchenDetail_TableEdge_Front", "KitchenDetail_TableEdge_Back", "KitchenDetail_FridgeDoorSweep",
 		"KitchenDetail_TableEdge_Left", "KitchenDetail_TableEdge_Right"
 	]
 	var failures := 0
@@ -81,6 +81,22 @@ func _run() -> void:
 	if not fridge_bounds.has_volume() or fridge_panel == null or fridge_panel.global_position.distance_to(fridge_panel_expected) > 0.06:
 		printerr("FAIL refrigerator door panel is not attached to the imported front bounds")
 		failures += 1
+	var fridge_sweep := game.get_node_or_null("KitchenDetail_FridgeDoorSweep") as MeshInstance3D
+	if fridge_sweep == null or not fridge_sweep.mesh is ImmediateMesh or fridge_sweep.visible:
+		printerr("FAIL refrigerator sweep visual is not a hidden render-only debug mesh")
+		failures += 1
+	else:
+		if fridge_sweep.get_node_or_null("CollisionShape3D") != null or not fridge_sweep.has_meta("no_collision"):
+			printerr("FAIL refrigerator sweep visual can affect movement")
+			failures += 1
+		game._toggle_geometry_debug()
+		if not fridge_sweep.visible:
+			printerr("FAIL refrigerator sweep visual did not enable")
+			failures += 1
+		game._toggle_geometry_debug()
+		if fridge_sweep.visible:
+			printerr("FAIL refrigerator sweep visual did not disable")
+			failures += 1
 	var cooker_bounds: AABB = game._find_kitchen_mesh_bounds("251_CookerBlack")
 	var oven_glass := game.get_node_or_null("KitchenDetail_OvenGlass") as Node3D
 	var oven_expected_x := cooker_bounds.position.x - 0.015 if cooker_bounds.has_volume() else 0.0
