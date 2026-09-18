@@ -150,6 +150,14 @@ static func apply(room: Node3D) -> void:
 	_add_detail_box(closet, "ClosetCenterSeam", Vector3(0.025, 1.95, 0.03), Vector3(0, 0, 0.35), room._mat(Color(0.20, 0.12, 0.07)))
 	_add_detail_box(closet, "ClosetHandleMountLeft", Vector3(0.10, 0.10, 0.03), Vector3(-0.49, 0, 0.38), room._mat(Color(0.32, 0.25, 0.18)))
 	_add_detail_box(closet, "ClosetHandleMountRight", Vector3(0.10, 0.10, 0.03), Vector3(0.49, 0, 0.38), room._mat(Color(0.32, 0.25, 0.18)))
+	var closet_rail := _add_detail_cylinder(closet, "ClosetHangingRail", 0.026, 1.72, Vector3(0, 0.72, 0.12), room._mat(Color(0.34, 0.29, 0.23)))
+	closet_rail.rotation.z = PI / 2.0
+	var clothing_colors := [Color(0.18, 0.25, 0.34), Color(0.52, 0.20, 0.16), Color(0.76, 0.62, 0.35), Color(0.24, 0.40, 0.29)]
+	for clothing_index in range(clothing_colors.size()):
+		var clothing_x := -0.60 + float(clothing_index) * 0.38
+		var hanger := _add_detail_cylinder(closet, "ClosetHanger_%d" % clothing_index, 0.012, 0.16, Vector3(clothing_x, 0.60, 0.12), room._mat(Color(0.52, 0.45, 0.33)))
+		hanger.rotation.z = PI / 2.0
+		_add_detail_box(closet, "ClosetClothing_%d" % clothing_index, Vector3(0.28, 0.70, 0.035), Vector3(clothing_x, 0.28, 0.12), room._fabric_mat(clothing_colors[clothing_index]))
 	# Desk details: a recessed drawer, monitor foot, keyboard and chair arms/base.
 	_add_detail_box(desk, "DrawerFront", Vector3(1.05, 0.18, 0.025), Vector3(0, 0.30, 0.38), desk_edge_wood)
 	_add_detail_box(desk, "DrawerPull", Vector3(0.20, 0.025, 0.035), Vector3(0, 0.30, 0.40), room._mat(Color(0.56, 0.42, 0.24)))

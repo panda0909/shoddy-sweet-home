@@ -68,6 +68,7 @@ func _run() -> void:
 		"BedsideLampShade_Left/LampShadeRim", "BedsideLampShade_Right/LampSocket",
 		"Closet/ClosetInteriorShadow", "Closet/ClosetBottomRail", "Closet/ClosetTopRail",
 		"Closet/ClosetCenterSeam", "Closet/ClosetHandleMountLeft",
+		"Closet/ClosetHangingRail", "Closet/ClosetHanger_0", "Closet/ClosetClothing_3",
 		"Bookcase/Shelf_0", "Bookcase/Shelf_1",
 		"Bookcase/Shelf_2", "BedroomBook_0/Binding", "BedroomRug/RugFringe_0", "BedroomRug/RugFringe_11",
 		"BedroomRug/RugTuft_0", "BedroomRug/RugTuft_6",
@@ -104,6 +105,14 @@ func _run() -> void:
 	var leaf_mesh := game.get_node_or_null("BedroomPlant/Leaf_0") as MeshInstance3D
 	if leaf_mesh == null or not leaf_mesh.mesh is ArrayMesh or leaf_mesh.mesh.get_aabb().size.x < 0.12 or leaf_mesh.mesh.get_aabb().size.z < 0.35:
 		printerr("FAIL bedroom plant still uses a low-detail blob leaf")
+		failures += 1
+	var closet_rail := game.get_node_or_null("Closet/ClosetHangingRail") as MeshInstance3D
+	if closet_rail == null or absf(closet_rail.rotation.z - PI / 2.0) > 0.01:
+		printerr("FAIL closet hanging rail is not horizontal")
+		failures += 1
+	var clothing_count := game.find_children("ClosetClothing_*", "MeshInstance3D", true, false).size()
+	if clothing_count < 4:
+		printerr("FAIL closet interior clothing details: ", clothing_count)
 		failures += 1
 	var left_rod := game.get_node_or_null("CurtainLeft/CurtainRod") as MeshInstance3D
 	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:
