@@ -36,24 +36,37 @@ func _run() -> void:
 		game._add_issue_target(issue)
 
 	var anchored := [
-		["sink_leak", "261_CupboardUnits", 0.90],
-		["vent_wrong", "255_ExtractorHood", 0.90],
-		["kitchen_socket", "195_WallSocket", 0.85],
-		["cabinet_blocked", "253_CupboardUnits", 0.90],
-		["cabinet_wear", "74_CupboardUnits", 0.90],
-		["bed_slope", "BedBase", 0.90],
-		["window_sealed", "WindowGlass", 0.65],
-		["drain_missing", "ImportedBath_DrainCover", 0.55],
-		["bath_vent", "ImportedBath_CeilingVent", 0.55]
+		["sink_leak", "261_CupboardUnits", 0.08],
+		["vent_wrong", "255_ExtractorHood", 0.08],
+		["kitchen_socket", "195_WallSocket", 0.08],
+		["cabinet_blocked", "253_CupboardUnits", 0.08],
+		["cabinet_wear", "74_CupboardUnits", 0.08],
+		["bed_slope", "BedBase", 0.08],
+		["window_sealed", "WindowGlass", 0.08],
+		["drain_missing", "ImportedBath_DrainCover", 0.08],
+		["bath_vent", "ImportedBath_CeilingVent", 0.08]
 	]
 	for entry in anchored:
 		var body := game.issue_bodies.get(entry[0]) as Node3D
 		var bounds: AABB = game._find_anchor_bounds(entry[1])
 		var expected := bounds.get_center()
-		if entry[0] == "bed_slope":
+		if entry[0] == "sink_leak":
+			var sink_worktop: AABB = game._find_kitchen_mesh_bounds("123_Worktops")
+			expected = Vector3(sink_worktop.get_center().x - sink_worktop.size.x * 0.12, bounds.position.y + bounds.size.y * 0.42, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
+		elif entry[0] in ["vent_wrong", "cabinet_blocked"]:
+			expected = Vector3(bounds.position.x - 0.035, bounds.get_center().y, bounds.get_center().z)
+		elif entry[0] == "kitchen_socket":
+			expected = bounds.get_center() + Vector3(-0.06, 0, 0)
+		elif entry[0] == "bed_slope":
 			expected = Vector3(bounds.end.x - 0.10, bounds.position.y + 0.02, bounds.get_center().z)
 		elif entry[0] == "cabinet_wear":
 			expected = Vector3(bounds.position.x - 0.045, bounds.get_center().y, bounds.get_center().z)
+		elif entry[0] == "window_sealed":
+			expected = bounds.get_center() + Vector3(0, 0.18, 0.04)
+		elif entry[0] == "drain_missing":
+			expected = bounds.get_center() + Vector3(0, 0.018, 0)
+		elif entry[0] == "bath_vent":
+			expected = bounds.get_center() + Vector3(0, 0.02, 0.02)
 		if body == null or bounds.size.length() <= 0.0:
 			printerr("FAIL missing issue anchor: ", entry[0], " -> ", entry[1])
 			failures += 1
