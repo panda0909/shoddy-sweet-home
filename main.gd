@@ -568,6 +568,7 @@ func _prepare_furniture(asset: Node3D) -> void:
 		# Imported furniture has many tiny bevels, legs and decorative triangles;
 		# a trimesh collider makes the player's capsule snag on those edges.
 		bounds = mesh.global_transform * mesh.get_aabb()
+		_apply_imported_lod(asset, mesh, bounds)
 		var blocks_door := false
 		for data in doors.values():
 			var hinge: Node3D = data["pivot"]
@@ -589,6 +590,35 @@ func _prepare_furniture(asset: Node3D) -> void:
 			continue
 		if _should_have_furniture_collision(mesh, bounds):
 			_add_furniture_box_collision(asset, mesh, bounds)
+
+
+func _apply_imported_lod(asset: Node3D, mesh: MeshInstance3D, bounds: AABB) -> void:
+	# Keep the high-detail hero furniture intact. Only small, non-colliding
+	# decorations in the large imported living/kitchen scenes are culled after
+	# the player is far enough away to make them sub-pixel on Web.
+	if asset.name not in ["LivingRoomRealAsset", "KitchenRealAsset"]:
+		return
+	if not _is_imported_lod_candidate(mesh, bounds):
+		return
+	mesh.visibility_range_end = 18.0
+	mesh.visibility_range_end_margin = 2.0
+	mesh.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+	mesh.set_meta("distance_lod_applied", true)
+
+
+func _is_imported_lod_candidate(mesh: MeshInstance3D, bounds: AABB) -> bool:
+	if _should_have_furniture_collision(mesh, bounds):
+		return false
+	if bounds.size.length() > 1.15 or bounds.size.y > 0.95:
+		return false
+	var mesh_name := str(mesh.name).to_lower()
+	for token in [
+		"wall", "floor", "ceiling", "window", "picture", "painting", "mirror",
+		"skirting", "frame", "door", "socket", "blind", "carpet", "rug"
+	]:
+		if token in mesh_name:
+			return false
+	return true
 
 
 func _is_door_clearance_shell(mesh: MeshInstance3D) -> bool:
