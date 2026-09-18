@@ -467,10 +467,12 @@ func _build_bedroom() -> void:
 	_add_box("PillowLeft", Vector3(1.2, 0.18, 0.65), Vector3(-6.92, 1.15, -4.12), _fabric_mat(Color(0.88, 0.90, 0.88)), false)
 	_add_box("PillowRight", Vector3(1.2, 0.18, 0.65), Vector3(-5.48, 1.15, -4.12), _fabric_mat(Color(0.88, 0.90, 0.88)), false)
 	_add_box("BedThrow", Vector3(3.15, 0.09, 0.42), Vector3(-6.2, 1.22, -2.15), _fabric_mat(Color(0.82, 0.52, 0.32)), false)
-	for bedside_x in [-8.25, -4.15]:
-		_add_box("BedsideTable_" + str(bedside_x), Vector3(0.72, 0.62, 0.62), Vector3(bedside_x, 0.31, -4.25), _wood_mat(Color(0.86, 0.62, 0.38)), true)
-		_add_cylinder("BedsideLampBase_" + str(bedside_x), 0.10, 0.30, Vector3(bedside_x, 0.82, -4.25), _mat(palette["metal"]), false)
-		_add_cylinder("BedsideLampShade_" + str(bedside_x), 0.24, 0.30, Vector3(bedside_x, 1.10, -4.25), _mat(Color(0.70, 0.54, 0.32)), false)
+	for bedside_index in range(2):
+		var bedside_x: float = -8.25 if bedside_index == 0 else -4.15
+		var bedside_side := "Left" if bedside_index == 0 else "Right"
+		_add_box("BedsideTable_" + bedside_side, Vector3(0.72, 0.62, 0.62), Vector3(bedside_x, 0.31, -4.25), _wood_mat(Color(0.86, 0.62, 0.38)), true)
+		_add_cylinder("BedsideLampBase_" + bedside_side, 0.10, 0.30, Vector3(bedside_x, 0.82, -4.25), _mat(palette["metal"]), false)
+		_add_cylinder("BedsideLampShade_" + bedside_side, 0.24, 0.30, Vector3(bedside_x, 1.10, -4.25), _mat(Color(0.70, 0.54, 0.32)), false)
 	_add_box("Closet", Vector3(2.3, 2.4, 0.65), Vector3(-1.9, 1.2, -4.8), _wood_mat(Color(0.88, 0.66, 0.42)), true)
 	_add_box("ClosetDoorLeft", Vector3(1.06, 2.18, 0.04), Vector3(-2.47, 1.2, -4.44), _wood_mat(Color(0.74, 0.50, 0.30)), false)
 	_add_box("ClosetDoorRight", Vector3(1.06, 2.18, 0.04), Vector3(-1.33, 1.2, -4.44), _wood_mat(Color(0.74, 0.50, 0.30)), false)

@@ -99,3 +99,11 @@
 - 新增木頭與織物各一張 512×512 粗糙度貼圖，合計約 0.9 MB；維持 Web 貼圖尺寸上限。
 - 臥室程序化材質現在同時使用 Albedo 與 Roughness，讓木紋細節在主光下呈現不均勻反射，織物則維持較寬、較柔和的高光。
 - 粗糙度貼圖是低成本 PBR 第二階段；尚未加入 Normal／AO，避免在 Compatibility Web renderer 上過早增加額外採樣與首載量。
+
+### 追加：臥室家具 P0 整理（2026-09-18）
+
+- 移除 `bedroom_details.gd` 會覆蓋木紋材質的程序化 ShaderMaterial；床架、床頭板、衣櫃、衣櫃門、書桌、書櫃與床頭櫃現在共用 StandardMaterial3D 的木紋 Albedo＋Roughness 流程。
+- 臥室補上床墊四邊滾邊、被子縫線、床頭櫃抽屜／拉手、衣櫃內嵌板／鉸鏈、書桌抽屜／鍵盤、工作椅扶手／椅柱／五個輪子、地毯邊緣／翹角、花盆土壤／盆緣與窗簾桿。
+- 移除臥室書桌與桌面的 `create_trimesh_collision()`；改用桌腳、背板與桌面的 BoxShape3D。`tests/furniture_collision.gd` 仍確認 27 個家具碰撞皆為盒型、凹面碰撞為 0。
+- 新增 `tests/bedroom_details.gd`，驗證木材質同時有 Albedo／Roughness 貼圖、臥室細節節點存在，且沒有凹面碰撞；本機結果為 0 failures。
+- 門通行回歸 0 failures；14 個缺陷可達、十題互動／結算回歸通過。仍需進行真人近距離美術驗收與 P1 各房間家具比例整理。
