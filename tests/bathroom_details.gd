@@ -56,14 +56,9 @@ func _run() -> void:
 		printerr("FAIL toilet tank still uses a sharp box silhouette")
 		failures += 1
 	var seat_mesh := game.find_child("ImportedBath_ToiletSeat", true, false).find_child("Mesh", true, false) as MeshInstance3D
-	if seat_mesh == null or not seat_mesh.mesh is SphereMesh:
-		printerr("FAIL toilet seat still uses a low-detail cylinder silhouette")
+	if seat_mesh == null or not seat_mesh.mesh is ArrayMesh or seat_mesh.mesh.get_surface_count() == 0 or seat_mesh.mesh.get_aabb().size.x < 0.60:
+		printerr("FAIL toilet seat still uses a low-detail or solid silhouette")
 		failures += 1
-	else:
-		var seat := seat_mesh.mesh as SphereMesh
-		if seat.radial_segments < 24 or seat.rings < 12:
-			printerr("FAIL toilet seat segment quality: ", seat.radial_segments, "x", seat.rings)
-			failures += 1
 	var lid_mesh := game.find_child("ImportedBath_ToiletLid", true, false).find_child("Mesh", true, false) as MeshInstance3D
 	if lid_mesh == null or not lid_mesh.mesh is ArrayMesh:
 		printerr("FAIL toilet lid still uses a sharp box silhouette")

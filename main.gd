@@ -1086,13 +1086,8 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	var toilet_seat := _add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, toilet_anchor + Vector3(0, 0.66, 0), seat_material, true, detail_root)
 	var seat_mesh := toilet_seat.get_node("Mesh") as MeshInstance3D
 	if seat_mesh != null:
-		var seat_shape := SphereMesh.new()
-		seat_shape.radius = 0.40
-		seat_shape.height = 0.80
-		seat_shape.radial_segments = 32
-		seat_shape.rings = 16
-		seat_mesh.mesh = seat_shape
-		seat_mesh.scale = Vector3(1.0, 0.11, 1.08)
+		seat_mesh.mesh = _toilet_seat_mesh()
+		seat_mesh.scale = Vector3.ONE
 	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, toilet_anchor + Vector3(0, 0.535, 0), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
 	_add_cylinder("ImportedBath_ToiletBowlRim", 0.46, 0.025, toilet_anchor + Vector3(0, 0.625, 0), porcelain, false, detail_root)
 	_add_cylinder("ImportedBath_ToiletBowlInset", 0.31, 0.012, toilet_anchor + Vector3(0, 0.555, 0), bowl_shadow_material, false, detail_root)
@@ -2571,6 +2566,66 @@ func _toilet_bowl_mesh() -> ArrayMesh:
 	var bowl := ArrayMesh.new()
 	bowl.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return bowl
+
+
+func _toilet_seat_mesh() -> ArrayMesh:
+	var segments := 32
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	var outer_radius := 0.40
+	var inner_radius := 0.255
+	var half_height := 0.028
+	for y in [-half_height, half_height]:
+		for radius in [outer_radius, inner_radius]:
+			for segment in range(segments):
+				var angle := TAU * float(segment) / float(segments)
+				var radial := Vector3(cos(angle), 0.0, sin(angle))
+				vertices.append(Vector3(radial.x * radius, y, radial.z * radius * 1.08))
+				normals.append(Vector3(0, 1 if y > 0.0 else -1, 0))
+				uvs.append(Vector2(float(segment) / float(segments), radius / outer_radius))
+	var bottom_outer := 0
+	var bottom_inner := segments
+	var top_outer := segments * 2
+	var top_inner := segments * 3
+	for segment in range(segments):
+		var next_segment := (segment + 1) % segments
+		# Top and bottom annuli.
+		indices.append(top_outer + segment)
+		indices.append(top_inner + segment)
+		indices.append(top_outer + next_segment)
+		indices.append(top_outer + next_segment)
+		indices.append(top_inner + segment)
+		indices.append(top_inner + next_segment)
+		indices.append(bottom_outer + segment)
+		indices.append(bottom_outer + next_segment)
+		indices.append(bottom_inner + segment)
+		indices.append(bottom_outer + next_segment)
+		indices.append(bottom_inner + next_segment)
+		indices.append(bottom_inner + segment)
+		# Outer and inner rounded side walls.
+		indices.append(bottom_outer + segment)
+		indices.append(top_outer + segment)
+		indices.append(bottom_outer + next_segment)
+		indices.append(bottom_outer + next_segment)
+		indices.append(top_outer + segment)
+		indices.append(top_outer + next_segment)
+		indices.append(bottom_inner + segment)
+		indices.append(bottom_inner + next_segment)
+		indices.append(top_inner + segment)
+		indices.append(bottom_inner + next_segment)
+		indices.append(top_inner + next_segment)
+		indices.append(top_inner + segment)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var seat := ArrayMesh.new()
+	seat.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return seat
 
 
 func _plain_box_mesh(size: Vector3) -> BoxMesh:
