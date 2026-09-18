@@ -742,3 +742,8 @@
 
 - 依客廳邊櫃匯入 bounds 補上四組金屬抽屜拉手，位置固定在邊櫃正面且維持 render-only；`tests/room_finish_quality.gd` 驗證數量、正面貼合與無碰撞。
 - 修正 `tests/player_walkthrough.gd` 重置滑門時誤讀 `closed_angle` 的 Script Error，現在同時支援 hinged／sliding door；四扇房門 walkthrough `0 failures` 且不再產生測試腳本錯誤。
+
+### 追加：客廳五金更新後全房回歸（2026-09-19）
+
+- 四房圖形渲染最新數據：客廳 median／p95／draws `5.075/7.186ms/798`，廚房 `7.290/8.508ms/1433`，臥室 `7.731/8.787ms/1175`，浴室 `4.934/6.624ms/571`；四房截圖與 23 張逐家具近景均成功。
+- Web Release 最新測量：PCK `103,734,332` bytes、WASM `39,514,754` bytes，合計 `143,249,086` bytes，仍低於 150 MB 門檻。
