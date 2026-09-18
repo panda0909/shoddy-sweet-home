@@ -427,6 +427,7 @@ func _build_living_room(scene_override: PackedScene = null) -> void:
 	add_child(living_asset)
 	_remove_asset_shell(living_asset)
 	_prepare_furniture(living_asset)
+	_add_living_imported_details()
 
 
 func _build_living_room_procedural() -> void:
@@ -437,6 +438,50 @@ func _build_living_room_procedural() -> void:
 	_add_box("TV", Vector3(2.6, 1.45, 0.12), Vector3(-7.9, 1.45, 4.82), _mat(Color(0.025, 0.03, 0.04)), true)
 	_add_box("PlantPot", Vector3(0.6, 0.5, 0.6), Vector3(-2.3, 0.25, 5.0), _mat(palette["yellow"]), true)
 	_add_cylinder("Plant", 0.45, 1.5, Vector3(-2.3, 1.15, 5.0), _mat(palette["green"]), true)
+
+
+func _add_living_imported_details() -> void:
+	# Preserve the imported sofa silhouettes but add the close-up seams and table
+	# edge from their actual bounds. This keeps the details attached if the hero
+	# asset scale or room offset changes later.
+	var seam_material := _mat(Color(0.18, 0.13, 0.18))
+	var wood_material := _wood_mat(Color(0.42, 0.24, 0.12))
+	var table_bounds := _find_living_mesh_bounds("73_Table")
+	if table_bounds.has_volume():
+		var table_center := table_bounds.get_center()
+		var edge_y := table_bounds.end.y + 0.014
+		_add_box("LivingDetail_CoffeeTableEdge_Front", Vector3(table_bounds.size.x + 0.035, 0.032, 0.032), Vector3(table_center.x, edge_y, table_bounds.position.z - 0.010), wood_material, false)
+		_add_box("LivingDetail_CoffeeTableEdge_Back", Vector3(table_bounds.size.x + 0.035, 0.032, 0.032), Vector3(table_center.x, edge_y, table_bounds.end.z + 0.010), wood_material, false)
+		_add_box("LivingDetail_CoffeeTableInset", Vector3(table_bounds.size.x * 0.72, 0.018, table_bounds.size.z * 0.58), Vector3(table_center.x, edge_y + 0.010, table_center.z), _mat(Color(0.16, 0.19, 0.20)), false)
+
+	var cushion_index := 0
+	var living_asset := get_node_or_null("LivingRoomRealAsset") as Node3D
+	if living_asset == null:
+		return
+	for cushion in living_asset.find_children("*", "MeshInstance3D", true, false):
+		var mesh := cushion as MeshInstance3D
+		var mesh_name := str(mesh.name).to_lower() if mesh != null else ""
+		if mesh == null or "cushion" not in mesh_name:
+			continue
+		var cushion_bounds := mesh.global_transform * mesh.get_aabb()
+		if cushion_bounds.size.x < 0.12 or cushion_bounds.size.y < 0.08:
+			continue
+		var seam_size := Vector3(cushion_bounds.size.x * 0.78, 0.014, 0.018)
+		var seam_position := Vector3(cushion_bounds.get_center().x, cushion_bounds.end.y + 0.002, cushion_bounds.get_center().z)
+		_add_box("LivingDetail_CushionSeam_%02d" % cushion_index, seam_size, seam_position, seam_material, false)
+		cushion_index += 1
+	if cushion_index == 0:
+		return
+
+
+func _find_living_mesh_bounds(mesh_name: String) -> AABB:
+	var living_asset := get_node_or_null("LivingRoomRealAsset") as Node3D
+	if living_asset == null:
+		return AABB()
+	var mesh := living_asset.find_child(mesh_name, true, false) as MeshInstance3D
+	if mesh == null:
+		return AABB()
+	return mesh.global_transform * mesh.get_aabb()
 
 
 func _build_kitchen(scene_override: PackedScene = null) -> void:
@@ -648,6 +693,23 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	var warm_shampoo := _mat(Color(0.75, 0.38, 0.28))
 	var towel_material := _mat(Color(0.72, 0.48, 0.35))
 	var drain_material := _mat(Color(0.30, 0.33, 0.34))
+	var mirror_bounds := _find_bathroom_mesh_bounds("44_Mirror")
+	if mirror_bounds.has_volume():
+		var vanity_x := mirror_bounds.get_center().x
+		var vanity_y := mirror_bounds.position.y - 0.12
+		var vanity_z := mirror_bounds.end.z + 0.18
+		var left_sink_x := vanity_x - mirror_bounds.size.x * 0.27
+		var right_sink_x := vanity_x + mirror_bounds.size.x * 0.27
+		_add_box("ImportedBath_VanityCounterEdge", Vector3(mirror_bounds.size.x + 0.16, 0.05, 0.56), Vector3(vanity_x, vanity_y, vanity_z), tray_material, false, detail_root)
+		for sink_data in [["Left", left_sink_x], ["Right", right_sink_x]]:
+			var sink_name: String = sink_data[0]
+			var sink_x: float = sink_data[1]
+			_add_cylinder("ImportedBath_VanityBasin" + sink_name, 0.18, 0.07, Vector3(sink_x, vanity_y + 0.055, vanity_z + 0.04), porcelain, false, detail_root)
+			_add_cylinder("ImportedBath_VanityFaucet" + sink_name, 0.025, 0.20, Vector3(sink_x, vanity_y + 0.19, vanity_z - 0.08), steel, false, detail_root)
+			_add_box("ImportedBath_VanitySpout" + sink_name, Vector3(0.16, 0.025, 0.025), Vector3(sink_x, vanity_y + 0.29, vanity_z + 0.02), steel, false, detail_root)
+		_add_box("ImportedBath_MirrorEdgeTop", Vector3(mirror_bounds.size.x + 0.06, 0.035, 0.035), Vector3(vanity_x, mirror_bounds.end.y + 0.018, mirror_bounds.end.z + 0.018), steel, false, detail_root)
+		_add_box("ImportedBath_MirrorEdgeLeft", Vector3(0.035, mirror_bounds.size.y, 0.035), Vector3(mirror_bounds.position.x - 0.018, mirror_bounds.get_center().y, mirror_bounds.end.z + 0.018), steel, false, detail_root)
+		_add_box("ImportedBath_MirrorEdgeRight", Vector3(0.035, mirror_bounds.size.y, 0.035), Vector3(mirror_bounds.end.x + 0.018, mirror_bounds.get_center().y, mirror_bounds.end.z + 0.018), steel, false, detail_root)
 	_add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, Vector3(7.3, 0.31, -4.5), porcelain, true, detail_root)
 	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), Vector3(7.3, 0.98, -4.78), porcelain, true, detail_root)
 	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, Vector3(7.3, 0.66, -4.5), seat_material, true, detail_root)
@@ -670,6 +732,16 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
 	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(7.6, 0.145, -2.25), drain_material, false, detail_root)
 	_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.05, 0.55), Vector3(6.15, 2.96, -3.60), steel, false, detail_root)
+
+
+func _find_bathroom_mesh_bounds(mesh_name: String) -> AABB:
+	var bathroom_asset := get_node_or_null("BathroomRealAsset") as Node3D
+	if bathroom_asset == null:
+		return AABB()
+	var mesh := bathroom_asset.find_child(mesh_name, true, false) as MeshInstance3D
+	if mesh == null:
+		return AABB()
+	return mesh.global_transform * mesh.get_aabb()
 
 
 func _prepare_furniture(asset: Node3D) -> void:

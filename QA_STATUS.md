@@ -180,3 +180,15 @@
 - 新增 13 個驗收用廚房細節節點與 8 個 bounds-attached 椅墊，全部為無碰撞裝飾，避免近距離細節讓玩家卡住。
 - `tests/kitchen_details.gd`、`tests/furniture_collision.gd`、`tests/room_finish_quality.gd`、`tests/issue_access.gd` 通過；圖形化四房截圖與 7 張近距離情境驗收皆為 0 failures。
 - 最新圖形測試：廚房 frame median 7.372ms / p95 11.916ms / 1188 draws；臥室 7.029ms / 12.290ms；浴室 6.413ms / 12.023ms。滑鼠視角測試 0 failures。
+
+### 追加：客廳沙發與咖啡桌近距離細節（2026-09-18）
+
+- 客廳匯入模型現在依 `73_Table` bounds 補咖啡桌前後收邊與桌面內嵌面；真正的 `Cushion*` 節點補嵌入式布料接縫，避免把整片沙發皮革誤當成裝飾。
+- 新增 7 個客廳 bounds-attached 細節節點，全部無碰撞；`tests/room_finish_quality.gd` 驗證接觸陰影、廚房比例、客廳細節與無碰撞條件。
+- 圖形四房截圖重新驗收 0 failures；最新客廳 frame median 6.774ms / p95 12.231ms / 819 draws。
+
+### 追加：浴室洗手台與鏡面接合（2026-09-18）
+
+- 洗手台檯面、左右盆、雙龍頭與鏡框改以匯入模型 `44_Mirror` 的世界 bounds 對齊，讓配件隨浴室資產位置與比例同步，不再散落於固定座標。
+- 新增 8 個無碰撞浴室 finish detail；原有馬桶、淋浴盤、排水孔與玻璃框仍保留碰撞與缺陷錨點。
+- `tests/bathroom_details.gd`、四房渲染與 7 張近距離情境驗收均通過 0 failures；新增配件後浴室約 498 draws，frame median 7.194ms / p95 13.218ms。

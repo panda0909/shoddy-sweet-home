@@ -28,9 +28,18 @@ func _run() -> void:
 		if detail.find_child("CollisionShape3D", true, false) != null:
 			printerr("FAIL kitchen detail blocks movement: ", detail.name)
 			failures += 1
+	var living_details: Array = game.find_children("LivingDetail_*", "StaticBody3D", true, false)
+	if living_details.size() < 5:
+		printerr("FAIL too few bounds-attached living details: ", living_details.size())
+		failures += 1
+	for detail in living_details:
+		if detail.get_node_or_null("CollisionShape3D") != null:
+			printerr("FAIL living detail blocks movement: ", detail.name)
+			failures += 1
 
 	print("Furniture contact shadows: ", shadow_count)
 	print("Kitchen hero scale: ", kitchen.scale.x if kitchen != null else -1.0)
+	print("Living bounds details: ", living_details.size())
 	print("Room finish quality failures: ", failures)
 	game.queue_free()
 	await process_frame

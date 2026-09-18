@@ -17,7 +17,10 @@ func _run() -> void:
 		"ImportedBath_ShowerTray", "ImportedBath_ShowerGlass", "ImportedBath_ShowerPipe",
 		"ImportedBath_ShowerHead", "ImportedBath_ShowerFrame_Left", "ImportedBath_ShowerFrame_Top",
 		"ImportedBath_ShowerShelf", "ImportedBath_TowelBar",
-		"ImportedBath_DrainCover"
+		"ImportedBath_DrainCover", "ImportedBath_VanityCounterEdge",
+		"ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight",
+		"ImportedBath_VanityFaucetLeft", "ImportedBath_VanityFaucetRight",
+		"ImportedBath_MirrorEdgeTop", "ImportedBath_MirrorEdgeLeft", "ImportedBath_MirrorEdgeRight"
 	]
 	var failures := 0
 	var detail_root: Node = game.get_node_or_null("BathroomDetailBatch")
@@ -33,6 +36,11 @@ func _run() -> void:
 		var node: Node = game.find_child(node_name, true, false)
 		if node == null or node.find_child("CollisionShape3D", true, false) == null:
 			printerr("FAIL missing bathroom collision: ", node_name)
+			failures += 1
+	for node_name in required:
+		var detail: Node = game.find_child(node_name, true, false)
+		if detail != null and detail.find_child("CollisionShape3D", true, false) != null and ("Vanity" in node_name or "MirrorEdge" in node_name):
+			printerr("FAIL bathroom finish detail blocks movement: ", node_name)
 			failures += 1
 	print("Imported bathroom detail nodes: ", required.size())
 	print("Bathroom detail failures: ", failures)
