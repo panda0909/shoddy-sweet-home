@@ -654,3 +654,10 @@
 
 - `tests/player_furniture_walkthrough.gd` 從每房一條主路線擴充為 8 條：客廳茶几、廚房餐桌、臥室衣櫃／書桌與浴室淋浴區外緣均納入實際移動路徑。
 - 路線刻意沿家具外側與可維修側行走，不穿過家具或淋浴盤；8 條路線全部通過，家具碰撞仍維持 28 個 BoxShape3D、凹面碰撞 0。
+
+### 追加：浴室毛巾布料網格（2026-09-19）
+
+- `ImportedBath_Towel` 由平坦 BoxMesh 改為雙面微垂墜 ArrayMesh，底部有自然中央下垂與橫向布料起伏；原有毛巾桿和三道折痕保留。
+- `tests/bathroom_details.gd` 驗證毛巾網格尺寸與 render-only 狀態；浴室細節 58 個、材質批次 12，驗收為 `0 failures`。
+- 圖形截圖回歸：浴室 median `3.547ms`、p95 `4.838ms`、`591` draws；家具碰撞、8 條近距離 walkthrough 與 14 題互動均通過。
+- Web Release 回歸：PCK `103,725,884` bytes、WASM `39,514,754` bytes，合計 `143,240,638` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

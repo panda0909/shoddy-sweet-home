@@ -20,7 +20,7 @@ func _run() -> void:
 		"ImportedBath_ShowerHead", "ImportedBath_ShowerFrame_Left", "ImportedBath_ShowerFrame_Top",
 		"ImportedBath_ShowerHeadRose", "ImportedBath_ShowerNozzle_0", "ImportedBath_ShowerNozzle_7",
 		"ImportedBath_ShowerShelf", "ImportedBath_ShowerControl", "ImportedBath_ShowerControlRing", "ImportedBath_ShowerDrainCover", "ImportedBath_ShowerDrainCrossA", "ImportedBath_ShowerDrainCrossB", "ImportedBath_ShowerDrainGrate_0", "ImportedBath_ShowerDrainGrate_2", "ImportedBath_ShowerThreshold", "ImportedBath_ShowerGlassSeal", "ImportedBath_ShowerGlassHandle", "ImportedBath_TowelBar",
-		"ImportedBath_DrainCover", "ImportedBath_VanityCounterEdge", "ImportedBath_VanityFrontLip", "ImportedBath_TowelFold_0", "ImportedBath_TowelFold_2",
+		"ImportedBath_DrainCover", "ImportedBath_VanityCounterEdge", "ImportedBath_VanityFrontLip", "ImportedBath_Towel", "ImportedBath_TowelFold_0", "ImportedBath_TowelFold_2",
 		"ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight",
 		"ImportedBath_VanityDrainLeft", "ImportedBath_VanityDrainRight",
 		"ImportedBath_VanityFaucetLeft", "ImportedBath_VanityFaucetRight",
@@ -215,6 +215,10 @@ func _run() -> void:
 	var shower_drain := game.find_child("ImportedBath_ShowerDrainCover", true, false) as Node3D
 	if shower_drain == null or shower_drain.find_child("CollisionShape3D", true, false) != null:
 		printerr("FAIL shower drain cover is missing or blocks movement")
+		failures += 1
+	var towel_mesh := game.find_child("ImportedBath_Towel", true, false).find_child("Mesh", true, false) as MeshInstance3D
+	if towel_mesh == null or not towel_mesh.mesh is ArrayMesh or towel_mesh.mesh.get_aabb().size.y < 0.45:
+		printerr("FAIL bathroom towel still uses a flat box silhouette")
 		failures += 1
 	var towel_left_bounds: AABB = game._find_bathroom_mesh_bounds("835_StainlessSmooth")
 	var towel_right_bounds: AABB = game._find_bathroom_mesh_bounds("834_StainlessSmooth")

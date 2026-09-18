@@ -1275,12 +1275,20 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		var towel_bar_y := towel_mount_y + 0.22
 		var towel_wall_z := maxf(towel_left_bounds.end.z, towel_right_bounds.end.z) + 0.025
 		_add_box("ImportedBath_TowelBar", Vector3(towel_width, 0.08, 0.08), Vector3(towel_x, towel_bar_y, towel_wall_z), steel, false, detail_root)
-		_add_box("ImportedBath_Towel", Vector3(towel_width * 0.78, 0.58, 0.05), Vector3(towel_x, towel_bar_y - 0.30, towel_wall_z + 0.055), towel_material, false, detail_root)
+		var towel_size := Vector3(towel_width * 0.78, 0.58, 0.05)
+		var towel := _add_box("ImportedBath_Towel", towel_size, Vector3(towel_x, towel_bar_y - 0.30, towel_wall_z + 0.055), towel_material, false, detail_root)
+		var towel_mesh := towel.get_node("Mesh") as MeshInstance3D
+		if towel_mesh != null:
+			towel_mesh.mesh = _bathroom_towel_mesh(towel_size.x, towel_size.y, towel_size.z)
 		for towel_fold in range(3):
 			_add_box("ImportedBath_TowelFold_%d" % towel_fold, Vector3(towel_width * 0.64, 0.018, 0.018), Vector3(towel_x, towel_bar_y - 0.22 - towel_fold * 0.14, towel_wall_z + 0.083), towel_fold_material, false, detail_root)
 	else:
 		_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), steel, false, detail_root)
-		_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
+		var fallback_towel_size := Vector3(0.75, 0.58, 0.05)
+		var fallback_towel := _add_box("ImportedBath_Towel", fallback_towel_size, Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
+		var fallback_towel_mesh := fallback_towel.get_node("Mesh") as MeshInstance3D
+		if fallback_towel_mesh != null:
+			fallback_towel_mesh.mesh = _bathroom_towel_mesh(fallback_towel_size.x, fallback_towel_size.y, fallback_towel_size.z)
 		for towel_fold in range(3):
 			_add_box("ImportedBath_TowelFold_%d" % towel_fold, Vector3(0.62, 0.018, 0.018), Vector3(3.7, 1.18 - towel_fold * 0.14, -5.665), towel_fold_material, false, detail_root)
 	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(shower_center.x, 0.145, shower_center.z), drain_material, false, detail_root)
@@ -2783,6 +2791,47 @@ func _vanity_basin_mesh() -> ArrayMesh:
 	var basin := ArrayMesh.new()
 	basin.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return basin
+
+
+func _bathroom_towel_mesh(width: float, height: float, depth: float) -> ArrayMesh:
+	var columns := 11
+	var rows := 9
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	for side in [1.0, -1.0]:
+		var base := vertices.size()
+		for row in range(rows):
+			var v := float(row) / float(rows - 1)
+			for column in range(columns):
+				var u := float(column) / float(columns - 1)
+				var x := (u - 0.5) * width
+				var sag := 0.032 * pow(v, 3.0) * (1.0 - pow(absf(u * 2.0 - 1.0), 2.0))
+				var y := height * (0.5 - v) - sag
+				var z: float = side * (depth * 0.5 + 0.008 * sin(u * TAU * 3.0) * (1.0 - v * 0.35))
+				vertices.append(Vector3(x, y, z))
+				normals.append(Vector3(0, 0, side))
+				uvs.append(Vector2(u, v))
+		for row in range(rows - 1):
+			for column in range(columns - 1):
+				var a := base + row * columns + column
+				var b := a + 1
+				var c := a + columns
+				var d := c + 1
+				if side > 0.0:
+					indices.append_array([a, c, b, b, c, d])
+				else:
+					indices.append_array([a, b, c, b, d, c])
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var towel := ArrayMesh.new()
+	towel.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return towel
 
 
 func _kitchen_sink_basin_mesh(size: Vector2) -> ArrayMesh:
