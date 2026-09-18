@@ -41,6 +41,25 @@ func _run() -> void:
 		if visual != null and visual.find_children("*", "CollisionShape3D", true, false).size() != 0:
 			printerr("FAIL defect visual added collision")
 			failures += 1
+		var sweep_shape := BoxShape3D.new()
+		sweep_shape.size = Vector3(0.16, 1.80, 0.72)
+		var sweep_query := PhysicsShapeQueryParameters3D.new()
+		sweep_query.shape = sweep_shape
+		sweep_query.collision_mask = 1
+		sweep_query.exclude = [cabinet.get_rid()]
+		var sweep_hits := 0
+		var space: PhysicsDirectSpaceState3D = game.get_world_3d().direct_space_state
+		for sample in range(15):
+			var angle := deg_to_rad(lerpf(-72.0, 72.0, float(sample) / 14.0))
+			var sweep_center := cabinet.global_position + Vector3(cos(angle) * 0.58, 0.90, sin(angle) * 0.58)
+			sweep_query.transform = Transform3D(Basis(Vector3.UP, angle), sweep_center)
+			if not space.intersect_shape(sweep_query, 8).is_empty():
+				sweep_hits += 1
+		if sweep_hits == 0:
+			printerr("FAIL cabinet sweep does not intersect any real furniture BoxShape3D")
+			failures += 1
+		else:
+			print("Cabinet sweep physics hits: ", sweep_hits, "/15")
 	print("Cabinet swing arc segments: ", 15 if failures == 0 else 0)
 	print("Issue visual failures: ", failures)
 	game.queue_free()
