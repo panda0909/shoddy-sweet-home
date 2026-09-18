@@ -141,6 +141,17 @@ func _run() -> void:
 	var tray_node: Node = game.find_child("ImportedBath_ShowerTray", true, false)
 	var tray_mesh := tray_node.find_child("Mesh", true, false) as MeshInstance3D if tray_node != null else null
 	var tray_bounds: AABB = tray_mesh.global_transform * tray_mesh.get_aabb() if tray_mesh != null else AABB()
+	var right_wall_mesh := game.get_node_or_null("RightWall/Mesh") as MeshInstance3D
+	var back_wall_mesh := game.get_node_or_null("BackWall/Mesh") as MeshInstance3D
+	var right_wall_bounds: AABB = right_wall_mesh.global_transform * right_wall_mesh.get_aabb() if right_wall_mesh != null else AABB()
+	var back_wall_bounds: AABB = back_wall_mesh.global_transform * back_wall_mesh.get_aabb() if back_wall_mesh != null else AABB()
+	# The imported bathroom scan covers the rear sanitary wall, while the
+	# playable shower sits in the front-right extension of the house plan. Keep
+	# the generated wet zone inside the actual shell and away from the door
+	# plane, rather than incorrectly forcing it into the scan's partial bounds.
+	if not tray_bounds.has_volume() or not right_wall_bounds.has_volume() or not back_wall_bounds.has_volume() or tray_bounds.end.x > right_wall_bounds.position.x - 0.20 or tray_bounds.position.z < back_wall_bounds.end.z + 0.20 or tray_bounds.end.z > -0.25:
+		printerr("FAIL shower tray is not integrated with playable bathroom walls/door opening")
+		failures += 1
 	for fitting_name in ["ImportedBath_ShowerPipe", "ImportedBath_ShowerHead", "ImportedBath_ShowerControl"]:
 		var fitting: Node = game.find_child(fitting_name, true, false)
 		if fitting == null or not tray_bounds.has_volume() or absf((fitting as Node3D).global_position.x - tray_bounds.get_center().x) > tray_bounds.size.x * 0.75 or absf((fitting as Node3D).global_position.z - tray_bounds.get_center().z) > tray_bounds.size.z * 0.75:
