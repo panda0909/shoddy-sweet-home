@@ -48,6 +48,7 @@ var initial_room_ready := false
 var progressive_loading := false
 var hint_world_label: Label3D
 var hint_until := 0.0
+var imported_material_cache: Dictionary = {}
 
 var tool_names := ["手電筒", "水平儀", "空鼓槌", "驗電筆"]
 var tool_descriptions := [
@@ -571,9 +572,13 @@ func _tune_imported_materials(mesh: MeshInstance3D) -> void:
 		var source := mesh.get_active_material(surface)
 		if not source is BaseMaterial3D:
 			continue
-		var tuned := source.duplicate() as BaseMaterial3D
-		tuned.roughness = roughness
-		tuned.metallic = metallic
+		var cache_key := "%d:%.2f:%.2f" % [source.get_instance_id(), roughness, metallic]
+		var tuned := imported_material_cache.get(cache_key) as BaseMaterial3D
+		if tuned == null:
+			tuned = source.duplicate() as BaseMaterial3D
+			tuned.roughness = roughness
+			tuned.metallic = metallic
+			imported_material_cache[cache_key] = tuned
 		mesh.set_surface_override_material(surface, tuned)
 
 
