@@ -53,6 +53,23 @@ func _run() -> void:
 		if bowl.radial_segments < 24 or bowl.rings < 12:
 			printerr("FAIL toilet bowl segment quality: ", bowl.radial_segments, "x", bowl.rings)
 			failures += 1
+	var tank_mesh := game.find_child("ImportedBath_ToiletTank", true, false).find_child("Mesh", true, false) as MeshInstance3D
+	if tank_mesh == null or not tank_mesh.mesh is ArrayMesh:
+		printerr("FAIL toilet tank still uses a sharp box silhouette")
+		failures += 1
+	var seat_mesh := game.find_child("ImportedBath_ToiletSeat", true, false).find_child("Mesh", true, false) as MeshInstance3D
+	if seat_mesh == null or not seat_mesh.mesh is SphereMesh:
+		printerr("FAIL toilet seat still uses a low-detail cylinder silhouette")
+		failures += 1
+	else:
+		var seat := seat_mesh.mesh as SphereMesh
+		if seat.radial_segments < 24 or seat.rings < 12:
+			printerr("FAIL toilet seat segment quality: ", seat.radial_segments, "x", seat.rings)
+			failures += 1
+	var lid_mesh := game.find_child("ImportedBath_ToiletLid", true, false).find_child("Mesh", true, false) as MeshInstance3D
+	if lid_mesh == null or not lid_mesh.mesh is ArrayMesh:
+		printerr("FAIL toilet lid still uses a sharp box silhouette")
+		failures += 1
 	for basin_name in ["ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight"]:
 		var basin_mesh := game.find_child(basin_name, true, false).find_child("Mesh", true, false) as MeshInstance3D
 		if basin_mesh == null or not basin_mesh.mesh is SphereMesh:

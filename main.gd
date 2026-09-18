@@ -1009,12 +1009,29 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	toilet_mesh.mesh = bowl_mesh
 	toilet_mesh.scale = Vector3(1.0, 0.70, 1.10)
 	toilet_mesh.position.y = 0.05
-	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), toilet_anchor + Vector3(0, 0.98, -0.28), porcelain, true, detail_root)
-	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, toilet_anchor + Vector3(0, 0.66, 0), seat_material, true, detail_root)
+	var toilet_tank := _add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), toilet_anchor + Vector3(0, 0.98, -0.28), porcelain, true, detail_root)
+	var tank_mesh := toilet_tank.get_node("Mesh") as MeshInstance3D
+	# Keep the tank collision box stable, but give the visible ceramic shell a
+	# small manufactured radius so it no longer reads as a sharp placeholder.
+	if tank_mesh != null:
+		tank_mesh.mesh = bedroom_details_rounded(Vector3(0.82, 0.80, 0.36), 0.055)
+	var toilet_seat := _add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, toilet_anchor + Vector3(0, 0.66, 0), seat_material, true, detail_root)
+	var seat_mesh := toilet_seat.get_node("Mesh") as MeshInstance3D
+	if seat_mesh != null:
+		var seat_shape := SphereMesh.new()
+		seat_shape.radius = 0.40
+		seat_shape.height = 0.80
+		seat_shape.radial_segments = 32
+		seat_shape.rings = 16
+		seat_mesh.mesh = seat_shape
+		seat_mesh.scale = Vector3(1.0, 0.11, 1.08)
 	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, toilet_anchor + Vector3(0, 0.705, 0), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
 	_add_cylinder("ImportedBath_ToiletBowlRim", 0.46, 0.025, toilet_anchor + Vector3(0, 0.645, 0), porcelain, false, detail_root)
 	_add_cylinder("ImportedBath_ToiletBowlInset", 0.31, 0.012, toilet_anchor + Vector3(0, 0.686, 0), bowl_shadow_material, false, detail_root)
-	_add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), toilet_anchor + Vector3(0, 0.73, -0.20), lid_material, false, detail_root)
+	var toilet_lid := _add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), toilet_anchor + Vector3(0, 0.73, -0.20), lid_material, false, detail_root)
+	var lid_mesh := toilet_lid.get_node("Mesh") as MeshInstance3D
+	if lid_mesh != null:
+		lid_mesh.mesh = bedroom_details_rounded(Vector3(0.68, 0.045, 0.54), 0.018)
 	_add_box("ImportedBath_ToiletHingeLeft", Vector3(0.07, 0.035, 0.045), toilet_anchor + Vector3(-0.17, 0.765, -0.23), button_material, false, detail_root)
 	_add_box("ImportedBath_ToiletHingeRight", Vector3(0.07, 0.035, 0.045), toilet_anchor + Vector3(0.17, 0.765, -0.23), button_material, false, detail_root)
 	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, toilet_anchor + Vector3(0, 1.39, -0.28), button_material, false, detail_root)

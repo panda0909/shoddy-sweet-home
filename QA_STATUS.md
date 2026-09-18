@@ -442,3 +442,8 @@
 
 - 在原有圓角被褥體上加入 17×9 細分 `QuiltSurface`，以多段縫線方向起伏建立真實高光變化；原有床品碰撞設定不變。
 - `tests/bedroom_details.gd` 確認被褥表面為完整 ArrayMesh；臥室 PBR 測試與 15 張圖形驗收均為 `0 failures`。
+
+### 追加：浴室馬桶陶瓷細節（2026-09-19）
+
+- 馬桶水箱與蓋板改用圓角 ArrayMesh，座圈改為 32×16 段數的扁橢圓 SphereMesh；原有水箱／座圈碰撞仍維持盒型與圓柱型。
+- `tests/bathroom_details.gd` 驗證三個可見部件的網格品質、碰撞與批次數；浴室細節 0 failures，四房 15 張圖形驗收 0 failures。
