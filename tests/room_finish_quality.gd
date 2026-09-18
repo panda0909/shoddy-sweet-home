@@ -55,6 +55,12 @@ func _run() -> void:
 		if game.get_node_or_null(fireplace_piece) == null:
 			printerr("FAIL missing bounds-attached fireplace detail: ", fireplace_piece)
 			failures += 1
+	var tv_bounds: AABB = game._find_living_mesh_bounds("60_TvBevel")
+	var tv_console := game.get_node_or_null("LivingDetail_TvConsole") as Node3D
+	var tv_expected := Vector3(tv_bounds.end.x + 0.24 * 0.50 + 0.025, tv_bounds.position.y - 0.10, tv_bounds.get_center().z) if tv_bounds.has_volume() else Vector3.ZERO
+	if not tv_bounds.has_volume() or tv_console == null or tv_console.global_position.distance_to(tv_expected) > 0.05:
+		printerr("FAIL TV console is not attached to imported TV bounds")
+		failures += 1
 
 	print("Furniture contact shadows: ", shadow_count)
 	print("Kitchen hero scale: ", kitchen.scale.x if kitchen != null else -1.0)

@@ -458,6 +458,19 @@ func _add_living_imported_details() -> void:
 		_add_box("LivingDetail_CoffeeTableEdge_Front", Vector3(table_bounds.size.x + 0.035, 0.032, 0.032), Vector3(table_center.x, edge_y, table_bounds.position.z - 0.010), wood_material, false)
 		_add_box("LivingDetail_CoffeeTableEdge_Back", Vector3(table_bounds.size.x + 0.035, 0.032, 0.032), Vector3(table_center.x, edge_y, table_bounds.end.z + 0.010), wood_material, false)
 		_add_box("LivingDetail_CoffeeTableInset", Vector3(table_bounds.size.x * 0.72, 0.018, table_bounds.size.z * 0.58), Vector3(table_center.x, edge_y + 0.010, table_center.z), _mat(Color(0.16, 0.19, 0.20)), false)
+	# The imported TV is mounted on the left wall with almost no visible
+	# furniture below it. Build a shallow console and cable channel from the
+	# actual TV bevel bounds so the wall assembly keeps its scale and orientation
+	# when the living hero asset is moved.
+	var tv_bounds := _find_living_mesh_bounds("60_TvBevel")
+	if tv_bounds.has_volume():
+		var tv_center := tv_bounds.get_center()
+		var console_depth := 0.24
+		var console_width := clampf(tv_bounds.size.z + 0.24, 0.72, 1.20)
+		var console_x := tv_bounds.end.x + console_depth * 0.50 + 0.025
+		_add_box("LivingDetail_TvConsole", Vector3(console_depth, 0.10, console_width), Vector3(console_x, tv_bounds.position.y - 0.10, tv_center.z), wood_material, false)
+		_add_box("LivingDetail_TvConsoleInset", Vector3(console_depth + 0.012, 0.018, console_width * 0.72), Vector3(console_x + 0.008, tv_bounds.position.y - 0.038, tv_center.z), _mat(Color(0.12, 0.075, 0.045)), false)
+		_add_box("LivingDetail_TvCableChannel", Vector3(0.035, tv_bounds.size.y * 0.62, 0.035), Vector3(tv_bounds.end.x + 0.035, tv_bounds.position.y - tv_bounds.size.y * 0.30, tv_center.z), _mat(Color(0.08, 0.09, 0.10)), false)
 
 	var cushion_index := 0
 	var living_asset := get_node_or_null("LivingRoomRealAsset") as Node3D
