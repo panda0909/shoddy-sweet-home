@@ -293,3 +293,8 @@
 
 - 新增 `tests/player_furniture_walkthrough.gd`，以實際 `CharacterBody3D.move_and_collide()` 沿客廳沙發、廚房櫃體／餐桌、臥室床／書櫃／書桌、浴室衛具與淋浴區的可通行路線行走。
 - 四房路線、既有四扇門穿越與 14 題可達性均通過；測試已加入 GitHub Pages CI，避免家具碰撞回歸成只能靠 teleport 的假通行。
+
+### 追加：四房圖形效能量測（2026-09-19）
+
+- Compatibility renderer 實測 120 frame：客廳 median/p95 `2.456/3.092ms`、廚房 `3.229/4.067ms`、臥室 `3.416/6.022ms`、浴室 `2.251/2.721ms`。
+- 同一輪量測 draw calls：客廳 `742`、廚房 `1155`、臥室 `1048`、浴室 `561`；LOD 與浴室 13 材質批次沒有造成長幀回歸。
