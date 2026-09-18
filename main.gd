@@ -1025,6 +1025,15 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		_add_box("ImportedBath_MirrorEdgeTop", Vector3(mirror_bounds.size.x + 0.06, 0.035, 0.035), Vector3(vanity_x, mirror_bounds.end.y + 0.018, mirror_bounds.end.z + 0.018), steel, false, detail_root)
 		_add_box("ImportedBath_MirrorEdgeLeft", Vector3(0.035, mirror_bounds.size.y, 0.035), Vector3(mirror_bounds.position.x - 0.018, mirror_bounds.get_center().y, mirror_bounds.end.z + 0.018), steel, false, detail_root)
 		_add_box("ImportedBath_MirrorEdgeRight", Vector3(0.035, mirror_bounds.size.y, 0.035), Vector3(mirror_bounds.end.x + 0.018, mirror_bounds.get_center().y, mirror_bounds.end.z + 0.018), steel, false, detail_root)
+		# The scan mirror sits a few centimetres in front of the playable
+		# BackWall. Fill that measured gap with a render-only backing seal so the
+		# close view reads as a mounted cabinet, not a floating glass card.
+		var playable_back_wall := _find_anchor_bounds("BackWall")
+		var mirror_wall_gap := mirror_bounds.position.z - playable_back_wall.end.z if playable_back_wall.has_volume() else 0.0
+		if mirror_wall_gap > 0.01:
+			var mirror_spacer_size := Vector3(mirror_bounds.size.x * 0.90, mirror_bounds.size.y * 0.90, mirror_wall_gap)
+			var mirror_spacer_pos := Vector3(mirror_bounds.get_center().x, mirror_bounds.get_center().y, playable_back_wall.end.z + mirror_wall_gap * 0.50)
+			_add_box("ImportedBath_MirrorWallSpacer", mirror_spacer_size, mirror_spacer_pos, steel, false, detail_root)
 		_add_box("ImportedBath_VanityFrontLip", Vector3(mirror_bounds.size.x + 0.16, 0.045, 0.035), Vector3(vanity_x, vanity_y - 0.025, vanity_z + 0.285), tray_material, false, detail_root)
 		# Cabinet pulls sit on the same bounds-derived vanity front as the
 		# basins, so they cannot drift when the imported bathroom is rescaled.

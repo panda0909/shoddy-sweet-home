@@ -554,3 +554,8 @@
 
 - `ImportedBath_ShowerTray` 現在由 `RightWall` 與 `RightInnerDoorFrame/FrameRight` 的實際 bounds 推導位置，保留右牆與門洞的服務距離，不再依賴固定世界座標。
 - 玻璃、門檻、蓮蓬頭、控制器與排水件仍以同一個淋浴盤中心／尺寸生成；`tests/bathroom_details.gd` 新增淋浴盤對門牆 bounds 的跟隨驗收。
+
+### 追加：浴室鏡面後牆接合（2026-09-19）
+
+- 依 `44_Mirror` 與可玩 `BackWall` 的實際深度差新增 `ImportedBath_MirrorWallSpacer`，補上近距離視角可見的鏡面浮縫。
+- Spacer 為 render-only，並由 `tests/bathroom_details.gd` 驗證位置與無碰撞；浴室材質批次沿用既有鋼材，不增加下載貼圖。

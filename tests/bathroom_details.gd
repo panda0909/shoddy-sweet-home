@@ -25,6 +25,7 @@ func _run() -> void:
 		"ImportedBath_VanityFaucetLeft", "ImportedBath_VanityFaucetRight",
 		"ImportedBath_VanityHandle_0", "ImportedBath_VanityHandle_3",
 		"ImportedBath_MirrorEdgeTop", "ImportedBath_MirrorEdgeLeft", "ImportedBath_MirrorEdgeRight",
+		"ImportedBath_MirrorWallSpacer",
 		"ImportedBath_TubWater", "ImportedBath_TubDrain", "ImportedBath_TubRim", "ImportedBath_TubFaucetStem", "ImportedBath_TubSpout",
 		"ImportedBath_TubHandle_Left", "ImportedBath_TubHandle_Right", "ImportedBath_TubOverflow"
 	]
@@ -88,6 +89,18 @@ func _run() -> void:
 	if not vanity_source_bounds.has_volume() or vanity_counter == null or vanity_counter.global_position.distance_to(vanity_expected) > 0.06:
 		printerr("FAIL vanity counter is not attached to imported marble bounds")
 		failures += 1
+	var mirror_bounds: AABB = game._find_bathroom_mesh_bounds("44_Mirror")
+	var mirror_back_wall_bounds: AABB = game._find_anchor_bounds("BackWall")
+	var mirror_spacer := game.find_child("ImportedBath_MirrorWallSpacer", true, false) as Node3D
+	if mirror_bounds.has_volume() and mirror_back_wall_bounds.has_volume() and mirror_bounds.position.z - mirror_back_wall_bounds.end.z > 0.01:
+		var mirror_gap := mirror_bounds.position.z - mirror_back_wall_bounds.end.z
+		var spacer_expected := Vector3(mirror_bounds.get_center().x, mirror_bounds.get_center().y, mirror_back_wall_bounds.end.z + mirror_gap * 0.50)
+		if mirror_spacer == null or mirror_spacer.global_position.distance_to(spacer_expected) > 0.05:
+			printerr("FAIL bathroom mirror does not bridge the measured wall gap")
+			failures += 1
+		elif mirror_spacer.find_child("CollisionShape3D", true, false) != null:
+			printerr("FAIL bathroom mirror wall spacer blocks movement")
+			failures += 1
 	var bathroom_reference_bounds: AABB = game._find_bathroom_mesh_bounds("849_Ceiling")
 	var bathtub_bounds: AABB = game._find_anchor_group_bounds(["843_Bathtube", "844_Bathtube"])
 	var tub_faucet := game.find_child("ImportedBath_TubFaucetStem", true, false) as Node3D
