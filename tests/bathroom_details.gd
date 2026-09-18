@@ -97,6 +97,19 @@ func _run() -> void:
 	if not tray_bounds.has_volume() or not glass_bounds.has_volume() or absf(glass_bounds.get_center().x - tray_bounds.get_center().x) > tray_bounds.size.x * 0.5 + 0.35 or absf(glass_bounds.get_center().z - tray_bounds.get_center().z) > 0.10:
 		printerr("FAIL shower glass is not attached to tray bounds")
 		failures += 1
+	var towel_left_bounds: AABB = game._find_bathroom_mesh_bounds("835_StainlessSmooth")
+	var towel_right_bounds: AABB = game._find_bathroom_mesh_bounds("834_StainlessSmooth")
+	var towel_bar := game.find_child("ImportedBath_TowelBar", true, false) as Node3D
+	if not towel_left_bounds.has_volume() or not towel_right_bounds.has_volume() or towel_bar == null:
+		printerr("FAIL towel rail anchors are missing from the imported wall")
+		failures += 1
+	else:
+		var towel_expected_x := (towel_left_bounds.get_center().x + towel_right_bounds.get_center().x) * 0.5
+		var towel_expected_y := (towel_left_bounds.get_center().y + towel_right_bounds.get_center().y) * 0.5 + 0.22
+		var towel_expected_z := maxf(towel_left_bounds.end.z, towel_right_bounds.end.z) + 0.025
+		if towel_bar.global_position.distance_to(Vector3(towel_expected_x, towel_expected_y, towel_expected_z)) > 0.06:
+			printerr("FAIL towel rail is not attached to imported wall mounts: ", towel_bar.global_position)
+			failures += 1
 	print("Imported bathroom detail nodes: ", required.size(), "; material batches: ", detail_batches.size())
 	print("Bathroom detail failures: ", failures)
 	game.queue_free()

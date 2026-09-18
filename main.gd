@@ -900,10 +900,27 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_box("ImportedBath_ShowerDrainCrossA", Vector3(0.18, 0.024, 0.025), Vector3(shower_center.x, 0.16, shower_center.z), steel, false, detail_root)
 	_add_box("ImportedBath_ShowerDrainCrossB", Vector3(0.025, 0.024, 0.18), Vector3(shower_center.x, 0.16, shower_center.z), steel, false, detail_root)
 
-	_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), steel, false, detail_root)
-	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
-	for towel_fold in range(3):
-		_add_box("ImportedBath_TowelFold_%d" % towel_fold, Vector3(0.62, 0.018, 0.018), Vector3(3.7, 1.18 - towel_fold * 0.14, -5.665), towel_fold_material, false, detail_root)
+	# The imported scene contains two stainless towel-rail mounts. Use their
+	# world bounds as the source of truth instead of the old fixed wall point;
+	# this keeps the rail and hanging towel on the same wall when the bathroom
+	# asset is translated or rescaled.
+	var towel_left_bounds := _find_bathroom_mesh_bounds("835_StainlessSmooth")
+	var towel_right_bounds := _find_bathroom_mesh_bounds("834_StainlessSmooth")
+	if towel_left_bounds.has_volume() and towel_right_bounds.has_volume():
+		var towel_x := (towel_left_bounds.get_center().x + towel_right_bounds.get_center().x) * 0.5
+		var towel_width := clampf(absf(towel_right_bounds.get_center().x - towel_left_bounds.get_center().x) + 0.12, 0.32, 0.95)
+		var towel_mount_y := (towel_left_bounds.get_center().y + towel_right_bounds.get_center().y) * 0.5
+		var towel_bar_y := towel_mount_y + 0.22
+		var towel_wall_z := maxf(towel_left_bounds.end.z, towel_right_bounds.end.z) + 0.025
+		_add_box("ImportedBath_TowelBar", Vector3(towel_width, 0.08, 0.08), Vector3(towel_x, towel_bar_y, towel_wall_z), steel, false, detail_root)
+		_add_box("ImportedBath_Towel", Vector3(towel_width * 0.78, 0.58, 0.05), Vector3(towel_x, towel_bar_y - 0.30, towel_wall_z + 0.055), towel_material, false, detail_root)
+		for towel_fold in range(3):
+			_add_box("ImportedBath_TowelFold_%d" % towel_fold, Vector3(towel_width * 0.64, 0.018, 0.018), Vector3(towel_x, towel_bar_y - 0.22 - towel_fold * 0.14, towel_wall_z + 0.083), towel_fold_material, false, detail_root)
+	else:
+		_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), steel, false, detail_root)
+		_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)
+		for towel_fold in range(3):
+			_add_box("ImportedBath_TowelFold_%d" % towel_fold, Vector3(0.62, 0.018, 0.018), Vector3(3.7, 1.18 - towel_fold * 0.14, -5.665), towel_fold_material, false, detail_root)
 	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(shower_center.x, 0.145, shower_center.z), drain_material, false, detail_root)
 	_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.05, 0.55), Vector3(6.15, 2.96, -3.60), steel, false, detail_root)
 

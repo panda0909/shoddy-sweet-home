@@ -319,6 +319,11 @@
 - 雙洗手盆由低細節 CylinderMesh 改為 24 徑向段、12 環的橢圓陶瓷 basin，並加入 bounds 內的深色內凹件；視覺件不新增碰撞。
 - `tests/bathroom_details.gd` 新增左右 basin 網格品質檢查；浴室材質批次仍為 13 組，11 張圖形驗收 0 failures。
 
+### 追加：浴室毛巾架牆面貼合（2026-09-19）
+
+- 毛巾桿與掛巾改由匯入場景的 `834/835_StainlessSmooth` 固定件推導寬度、高度與牆面深度，不再依賴舊浴室固定座標。
+- `tests/bathroom_details.gd` 新增毛巾架對兩個實際牆面固定件的距離驗收；所有浴室細節仍維持無玩家碰撞。
+
 ### 追加：廚房冰箱把手 bounds 貼合（2026-09-19）
 
 - `KitchenDetail_FridgeHandle` 不再使用舊廚房比例下的固定座標，改依匯入 `253_CupboardUnits` 世界 bounds 生成，與 `cabinet_blocked` 缺陷共用同一個冰箱／高櫃基準。
