@@ -43,6 +43,15 @@ func _run() -> void:
 		if node == null or node.find_child("CollisionShape3D", true, false) == null:
 			printerr("FAIL missing bathroom collision: ", node_name)
 			failures += 1
+	var toilet_mesh := game.find_child("ImportedBath_ToiletBase", true, false).find_child("Mesh", true, false) as MeshInstance3D
+	if toilet_mesh == null or not toilet_mesh.mesh is SphereMesh:
+		printerr("FAIL toilet base still uses a low-detail cylinder silhouette")
+		failures += 1
+	else:
+		var bowl := toilet_mesh.mesh as SphereMesh
+		if bowl.radial_segments < 24 or bowl.rings < 12:
+			printerr("FAIL toilet bowl segment quality: ", bowl.radial_segments, "x", bowl.rings)
+			failures += 1
 	for node_name in required:
 		var detail: Node = game.find_child(node_name, true, false)
 		if detail != null and detail.find_child("CollisionShape3D", true, false) != null and ("Vanity" in node_name or "MirrorEdge" in node_name):

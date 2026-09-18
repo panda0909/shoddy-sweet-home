@@ -791,7 +791,18 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		for handle_index in range(4):
 			var handle_x := mirror_bounds.position.x + mirror_bounds.size.x * (0.18 + 0.21 * handle_index)
 			_add_box("ImportedBath_VanityHandle_%d" % handle_index, Vector3(0.20, 0.025, 0.032), Vector3(handle_x, handle_y, vanity_z + 0.035), steel, false, detail_root)
-	_add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, Vector3(7.3, 0.31, -4.5), porcelain, true, detail_root)
+	var toilet_base := _add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, Vector3(7.3, 0.31, -4.5), porcelain, true, detail_root)
+	# Keep the box/cylinder collision predictable, but replace the visible
+	# placeholder cylinder with a high-segment ceramic bowl silhouette.
+	var toilet_mesh := toilet_base.get_node("Mesh") as MeshInstance3D
+	var bowl_mesh := SphereMesh.new()
+	bowl_mesh.radius = 0.50
+	bowl_mesh.height = 1.0
+	bowl_mesh.radial_segments = 32
+	bowl_mesh.rings = 16
+	toilet_mesh.mesh = bowl_mesh
+	toilet_mesh.scale = Vector3(1.0, 0.70, 1.10)
+	toilet_mesh.position.y = 0.05
 	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), Vector3(7.3, 0.98, -4.78), porcelain, true, detail_root)
 	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, Vector3(7.3, 0.66, -4.5), seat_material, true, detail_root)
 	_add_cylinder("ImportedBath_ToiletWater", 0.24, 0.018, Vector3(7.3, 0.705, -4.5), _mat(Color(0.20, 0.47, 0.55)), false, detail_root)
