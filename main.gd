@@ -592,6 +592,7 @@ func _add_bathroom_imported_details() -> void:
 	_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), _mat(palette["metal"]), false)
 	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), _mat(Color(0.72, 0.48, 0.35)), false)
 	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(7.6, 0.145, -2.25), _mat(Color(0.30, 0.33, 0.34)), false)
+	_add_box("ImportedBath_CeilingVent", Vector3(0.90, 0.12, 0.55), Vector3(3.1, 2.5, -5.78), _mat(palette["metal"]), false)
 
 
 func _prepare_furniture(asset: Node3D) -> void:
@@ -1207,8 +1208,10 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			pos = Vector3(-9.72, 0.85, 2.6)
 			size = Vector3(0.12, 0.35, 0.4)
 		"sofa_gap":
-			pos = Vector3(-9.72, 0.65, 3.8)
-			size = Vector3(0.12, 0.7, 0.9)
+			# The repair opening belongs on the wall immediately behind the sofa,
+			# not on the unrelated side wall used by the old placeholder.
+			pos = Vector3(-6.55, 1.05, 5.84)
+			size = Vector3(1.45, 0.90, 0.10)
 			title = "檢修孔被木條封死"
 		"sink_leak":
 			pos = Vector3(6.39, 0.43, 4.6)
@@ -1217,9 +1220,6 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		"vent_wrong":
 			pos = Vector3(6.58, 1.48, 3.65)
 			size = Vector3(0.32, 0.35, 0.65)
-		"tv_outlet":
-			pos = Vector3(-9.72, 0.85, 2.6)
-			size = Vector3(0.12, 0.35, 0.4)
 		"cabinet_blocked":
 			pos = Vector3(6.43, 0.40, 2.70)
 			size = Vector3(0.16, 0.65, 0.3)
@@ -1254,12 +1254,14 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		"kitchen_socket": "195_WallSocket",
 		"bed_slope": "BedBase",
 		"window_sealed": "WindowGlass",
-		"rug_tilt": "141_Carpet"
+		"rug_tilt": "141_Carpet",
+		"drain_missing": "ImportedBath_DrainCover",
+		"tile_hollow": "BackWall",
+		"bath_vent": "ImportedBath_CeilingVent"
 	}
 	if anchor_names.has(issue_id):
-		var anchor := find_child(anchor_names[issue_id], true, false) as MeshInstance3D
-		if anchor:
-			var bounds: AABB = anchor.global_transform * anchor.get_aabb()
+		var bounds := _find_anchor_bounds(str(anchor_names[issue_id]))
+		if bounds.size.length() > 0.0:
 			pos = bounds.get_center()
 			if issue_id == "rug_tilt":
 				pos = Vector3(bounds.end.x - 0.25, bounds.end.y + 0.012, bounds.end.z - 0.20)
@@ -1277,6 +1279,16 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			elif issue_id == "window_sealed":
 				pos = bounds.get_center() + Vector3(0, 0.18, 0.04)
 				size = Vector3(minf(2.0, bounds.size.x), 0.60, 0.10)
+			elif issue_id == "drain_missing":
+				pos = bounds.get_center() + Vector3(0, 0.018, 0)
+				size = Vector3(0.48, 0.04, 0.48)
+			elif issue_id == "tile_hollow":
+				# BackWall is the room's actual wall plane; keep the clue on
+				# its bathroom-side surface instead of floating in the room.
+				pos = Vector3(7.3, 1.45, bounds.end.z + 0.035)
+				size = Vector3(0.80, 1.0, 0.07)
+			elif issue_id == "bath_vent":
+				pos = bounds.get_center() + Vector3(0, 0.02, 0.02)
 			else:
 				pos.x = bounds.position.x - 0.035
 				if issue_id == "sink_leak":
@@ -1298,6 +1310,18 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		"size": size,
 		"joke": joke
 	}
+
+
+func _find_anchor_bounds(anchor_name: String) -> AABB:
+	var anchor := find_child(anchor_name, true, false)
+	if anchor is MeshInstance3D:
+		var mesh_anchor := anchor as MeshInstance3D
+		return mesh_anchor.global_transform * mesh_anchor.get_aabb()
+	if anchor is Node3D:
+		var child_mesh := anchor.find_child("Mesh", true, false) as MeshInstance3D
+		if child_mesh != null:
+			return child_mesh.global_transform * child_mesh.get_aabb()
+	return AABB()
 
 
 func _add_issue_target(issue: Dictionary) -> void:
@@ -1328,7 +1352,7 @@ func _add_issue_target(issue: Dictionary) -> void:
 	var visual := Node3D.new()
 	visual.name = "DefectVisual"
 	body.add_child(visual)
-	if issue["id"] in ["tv_outlet", "sofa_gap"]:
+	if issue["id"] == "tv_outlet":
 		visual.rotation.y = -PI / 2.0
 	if issue["id"] in ["sink_leak", "vent_wrong", "cabinet_blocked"]:
 		visual.rotation.y = PI / 2.0
