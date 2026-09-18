@@ -559,8 +559,11 @@ func _add_bathroom_imported_details() -> void:
 	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, Vector3(7.3, 1.39, -4.78), _mat(Color(0.42, 0.44, 0.42)), false)
 
 	_add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), _mat(Color(0.68, 0.70, 0.68)), true)
-	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), _mat(Color(0.42, 0.63, 0.68)), false)
-	_add_box("ImportedBath_ShowerFrame", Vector3(0.10, 2.35, 2.65), Vector3(8.55, 1.18, -2.5), _mat(palette["metal"]), false)
+	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), _glass_mat(Color(0.35, 0.62, 0.70), 0.12), false)
+	_add_box("ImportedBath_ShowerFrame_Left", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -3.76), _mat(palette["metal"]), false)
+	_add_box("ImportedBath_ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -1.24), _mat(palette["metal"]), false)
+	_add_box("ImportedBath_ShowerFrame_Top", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 2.34, -2.5), _mat(palette["metal"]), false)
+	_add_box("ImportedBath_ShowerFrame_Bottom", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 0.08, -2.5), _mat(palette["metal"]), false)
 	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(7.35, 2.05, -5.18), _mat(palette["metal"]), false)
 	_add_cylinder("ImportedBath_ShowerHead", 0.18, 0.10, Vector3(7.35, 2.68, -5.18), _mat(palette["metal"]), false)
 	_add_box("ImportedBath_ShowerShelf", Vector3(0.70, 0.06, 0.24), Vector3(8.28, 1.55, -3.25), _mat(palette["metal"]), false)
@@ -839,8 +842,11 @@ func _build_bathroom_procedural() -> void:
 
 	# 淋浴區與玻璃隔間。
 	_add_box("ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), _mat(Color(0.68, 0.70, 0.68)), true)
-	_add_box("ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), _mat(Color(0.42, 0.63, 0.68)), true)
-	_add_box("ShowerFrame", Vector3(0.10, 2.35, 2.65), Vector3(8.55, 1.18, -2.5), _mat(palette["metal"]), true)
+	_add_box("ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), _glass_mat(Color(0.35, 0.62, 0.70), 0.12), true)
+	_add_box("ShowerFrame_Left", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -3.76), _mat(palette["metal"]), false)
+	_add_box("ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -1.24), _mat(palette["metal"]), false)
+	_add_box("ShowerFrame_Top", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 2.34, -2.5), _mat(palette["metal"]), false)
+	_add_box("ShowerFrame_Bottom", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 0.08, -2.5), _mat(palette["metal"]), false)
 	_add_cylinder("ShowerPipe", 0.045, 1.30, Vector3(7.35, 2.05, -5.18), _mat(palette["metal"]), true)
 	_add_cylinder("ShowerHead", 0.18, 0.10, Vector3(7.35, 2.68, -5.18), _mat(palette["metal"]), true)
 
@@ -1709,6 +1715,18 @@ func _emissive_mat(color: Color, energy: float) -> StandardMaterial3D:
 	material.emission_enabled = true
 	material.emission = color
 	material.emission_energy_multiplier = energy
+	return material
+
+
+func _glass_mat(color: Color, alpha: float) -> StandardMaterial3D:
+	var material := _mat(Color(color.r, color.g, color.b, alpha))
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.roughness = 0.12
+	material.metallic = 0.05
+	material.cull_mode = BaseMaterial3D.CULL_BACK
+	material.emission_enabled = true
+	material.emission = color.lightened(0.15)
+	material.emission_energy_multiplier = 0.10
 	return material
 
 

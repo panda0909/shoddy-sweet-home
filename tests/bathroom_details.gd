@@ -15,7 +15,8 @@ func _run() -> void:
 	var required := [
 		"ImportedBath_ToiletBase", "ImportedBath_ToiletTank", "ImportedBath_ToiletSeat",
 		"ImportedBath_ShowerTray", "ImportedBath_ShowerGlass", "ImportedBath_ShowerPipe",
-		"ImportedBath_ShowerHead", "ImportedBath_ShowerShelf", "ImportedBath_TowelBar",
+		"ImportedBath_ShowerHead", "ImportedBath_ShowerFrame_Left", "ImportedBath_ShowerFrame_Top",
+		"ImportedBath_ShowerShelf", "ImportedBath_TowelBar",
 		"ImportedBath_DrainCover"
 	]
 	var failures := 0

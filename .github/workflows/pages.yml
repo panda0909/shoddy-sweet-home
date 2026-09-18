@@ -45,6 +45,7 @@ jobs:
           "$godot" --headless --path . --script tests/lod_visibility.gd
           "$godot" --headless --path . --script tests/kitchen_details.gd
           xvfb-run -a "$godot" --path . --script tests/mouse_look.gd
+          xvfb-run -a "$godot" --path . --script tests/render_acceptance.gd
           "$godot" --headless --path . --script tests/issue_access.gd --quit-after 1800
           mkdir -p build/web
           "$godot" --headless --path . --export-release Web "build/web/game-${GITHUB_SHA}.html"
