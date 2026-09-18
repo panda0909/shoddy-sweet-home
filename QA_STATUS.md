@@ -421,3 +421,9 @@
 
 - `255_ExtractorHood` 上方的櫃體在來源資產中由 `70/74_CupboardUnits` 分段組成；新增依兩者最高面與油煙機 bounds 計算的 `UpperJoint` collar，補上排風管與上櫃之間的接合。
 - `tests/kitchen_details.gd` 新增 collar 的中心、高度與無碰撞驗收，避免廚房比例或資產縮放變更後再次出現浮空接縫。
+
+### 追加：啟動載入順序回歸測試（2026-09-19）
+
+- 新增 `tests/progressive_startup.gd`，以圖形模式驗證入口與客廳先進入可玩狀態，當下只載入客廳，背景佇列下一個請求為廚房。
+- 同一測試等待廚房、臥室與浴室依序完成，確認最終四房全部載入且 `progressive_loading` 正確結束；本機結果為初始房間 `1`、最終房間 `4`、`0 failures`。
+- GitHub Pages CI 已加入此啟動回歸測試，避免後續材質或資產調整造成「啟動卡住／第一房間未先出現」的回歸。

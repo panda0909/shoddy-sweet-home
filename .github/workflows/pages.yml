@@ -50,6 +50,7 @@ jobs:
           "$godot" --headless --path . --script tests/issue_anchor_fit.gd
           "$godot" --headless --path . --script tests/player_walkthrough.gd
           "$godot" --headless --path . --script tests/player_furniture_walkthrough.gd
+          xvfb-run -a "$godot" --path . --script tests/progressive_startup.gd
           xvfb-run -a "$godot" --path . --script tests/mouse_look.gd
           xvfb-run -a "$godot" --path . --script tests/render_acceptance.gd
           "$godot" --headless --path . --script tests/issue_access.gd --quit-after 1800
