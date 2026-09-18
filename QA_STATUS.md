@@ -696,3 +696,10 @@
 - `tests/imported_materials.gd` 新增沙發色調 probe；客廳門洞、沙發 1.10m 維修間距、窗框與家具比例驗收均為 `0 failures`。
 - 圖形回歸：客廳 median `4.192ms`、p95 `4.961ms`、`782` draws；完整 15 張近距離／逆光／手電筒／開門驗收畫面全部成功。
 - Web Release 回歸：PCK `103,728,540` bytes、WASM `39,514,754` bytes，合計 `143,243,294` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：浴室洗手台 backsplash 貼牆收口（2026-09-19）
+
+- 依匯入大理石後緣的實際 bounds 新增 `ImportedBath_VanityBacksplash` 陶瓷收口，覆蓋檯面與牆面的視覺縫隙；維持 render-only，不侵入浴室走道。
+- `tests/bathroom_details.gd` 驗證 backsplash 貼合後緣且沒有碰撞；浴室細節維持 58 個、12 個材質批次，`Static batching 78 -> 12`，結果為 `0 failures`。
+- 圖形回歸：浴室 median `3.461ms`、p95 `4.827ms`、`571` draws；`tests/render_acceptance.gd` 15 張驗收畫面全部成功，`0 failures`。
+- Web Release 回歸：PCK `103,728,924` bytes、WASM `39,514,754` bytes，合計 `143,243,678` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

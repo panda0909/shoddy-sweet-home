@@ -51,6 +51,14 @@ func _run() -> void:
 		if game.find_child(node_name, true, false) == null:
 			printerr("FAIL missing imported bathroom detail: ", node_name)
 			failures += 1
+	var vanity_backsplash := game.find_child("ImportedBath_VanityBacksplash", true, false) as Node3D
+	var vanity_source_for_backsplash: AABB = game._find_anchor_group_bounds(["43_Marble", "838_Marble"])
+	if vanity_backsplash == null or not vanity_source_for_backsplash.has_volume() or absf(vanity_backsplash.global_position.z - (vanity_source_for_backsplash.position.z - 0.018)) > 0.06:
+		printerr("FAIL vanity backsplash is not attached to imported marble rear edge")
+		failures += 1
+	elif vanity_backsplash.find_child("CollisionShape3D", true, false) != null:
+		printerr("FAIL vanity backsplash blocks movement")
+		failures += 1
 	for node_name in ["ImportedBath_ToiletBase", "ImportedBath_ToiletTank", "ImportedBath_ToiletSeat", "ImportedBath_ShowerTray"]:
 		var node: Node = game.find_child(node_name, true, false)
 		if node == null or node.find_child("CollisionShape3D", true, false) == null:

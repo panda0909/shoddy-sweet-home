@@ -1105,6 +1105,12 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 			var vanity_seal_size := Vector3(mirror_bounds.size.x + 0.14, 0.18, vanity_wall_gap)
 			var vanity_seal_pos := Vector3(vanity_x, vanity_y - 0.10, vanity_back_wall.end.z + vanity_wall_gap * 0.50)
 			_add_box("ImportedBath_VanityWallSeal", vanity_seal_size, vanity_seal_pos, tray_material, false, detail_root)
+		# Add a visible ceramic backsplash over the measured rear edge. The seal
+		# closes the deep gap, while this narrow cap makes the counter read as a
+		# finished wall-mounted vanity instead of a slab hovering in front of the
+		# wall. It remains render-only so the narrow bathroom aisle is unchanged.
+		var backsplash_z := vanity_source_bounds.position.z - 0.018 if vanity_source_bounds.has_volume() else vanity_z - 0.28
+		_add_box("ImportedBath_VanityBacksplash", Vector3(mirror_bounds.size.x + 0.14, 0.12, 0.035), Vector3(vanity_x, vanity_y + 0.055, backsplash_z), porcelain, false, detail_root)
 		for sink_data in [["Left", left_sink_x], ["Right", right_sink_x]]:
 			var sink_name: String = sink_data[0]
 			var sink_x: float = sink_data[1]
