@@ -594,12 +594,14 @@ func _prepare_furniture(asset: Node3D) -> void:
 		bounds = mesh.global_transform * mesh.get_aabb()
 		_apply_imported_lod(asset, mesh, bounds)
 		var blocks_door := false
+		var blocking_passage := AABB()
 		for data in doors.values():
 			var hinge: Node3D = data["pivot"]
 			var center: Vector3 = hinge.position + Basis(Vector3.UP, float(data["closed_angle"])) * Vector3(float(data["width"]) / 2.0, 1.1, 0)
 			var passage := AABB(center - Vector3(0.85, 1.1, 0.85), Vector3(1.7, 2.2, 1.7))
 			if bounds.intersects(passage):
 				blocks_door = true
+				blocking_passage = passage
 				break
 		if blocks_door:
 			# Do not remove a whole piece of furniture just because an imported
@@ -609,6 +611,9 @@ func _prepare_furniture(asset: Node3D) -> void:
 			if _is_door_clearance_shell(mesh):
 				mesh.set_meta("hidden_for_door_clearance", true)
 				mesh.hide()
+			elif _can_reposition_door_clearance(mesh, bounds):
+				mesh.global_position += _door_clearance_delta(bounds, blocking_passage)
+				mesh.set_meta("repositioned_for_door_clearance", true)
 			else:
 				mesh.set_meta("door_clearance_visual_only", true)
 			continue
@@ -657,6 +662,31 @@ func _is_door_clearance_shell(mesh: MeshInstance3D) -> bool:
 		if token in mesh_name:
 			return true
 	return false
+
+
+func _can_reposition_door_clearance(mesh: MeshInstance3D, bounds: AABB) -> bool:
+	if bounds.size.length() > 1.25 or _should_have_furniture_collision(mesh, bounds):
+		return false
+	var mesh_name := str(mesh.name).to_lower()
+	for token in [
+		"lamp", "light", "picture", "painting", "plant", "book", "handle",
+		"cable", "wire", "blind", "curtain", "decor", "tablemat", "plate"
+	]:
+		if token in mesh_name:
+			return true
+	return false
+
+
+func _door_clearance_delta(bounds: AABB, passage: AABB) -> Vector3:
+	var push_left := passage.position.x - bounds.end.x - 0.04
+	var push_right := passage.end.x - bounds.position.x + 0.04
+	var push_back := passage.position.z - bounds.end.z - 0.04
+	var push_front := passage.end.z - bounds.position.z + 0.04
+	var x_push := push_left if bounds.get_center().x < passage.get_center().x else push_right
+	var z_push := push_back if bounds.get_center().z < passage.get_center().z else push_front
+	if absf(x_push) < absf(z_push):
+		return Vector3(x_push, 0, 0)
+	return Vector3(0, 0, z_push)
 
 
 func _tune_imported_materials(mesh: MeshInstance3D) -> void:

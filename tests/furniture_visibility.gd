@@ -14,6 +14,7 @@ func _run() -> void:
 
 	var failures := 0
 	var preserved := 0
+	var repositioned := 0
 	var shell_hidden := 0
 	for node in game.find_children("*", "MeshInstance3D", true, false):
 		var mesh := node as MeshInstance3D
@@ -27,8 +28,11 @@ func _run() -> void:
 			if not _is_architectural_shell(mesh):
 				printerr("FAIL non-shell mesh hidden for door clearance: ", mesh.name)
 				failures += 1
+		if mesh.has_meta("repositioned_for_door_clearance"):
+			repositioned += 1
 
 	print("Door-clearance furniture preserved: ", preserved)
+	print("Door-clearance decorative pieces repositioned: ", repositioned)
 	print("Door-clearance shell pieces hidden: ", shell_hidden)
 	print("Furniture visibility failures: ", failures)
 	game.queue_free()
