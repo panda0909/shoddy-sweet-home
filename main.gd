@@ -963,6 +963,7 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		_add_box("ImportedBath_MirrorEdgeTop", Vector3(mirror_bounds.size.x + 0.06, 0.035, 0.035), Vector3(vanity_x, mirror_bounds.end.y + 0.018, mirror_bounds.end.z + 0.018), steel, false, detail_root)
 		_add_box("ImportedBath_MirrorEdgeLeft", Vector3(0.035, mirror_bounds.size.y, 0.035), Vector3(mirror_bounds.position.x - 0.018, mirror_bounds.get_center().y, mirror_bounds.end.z + 0.018), steel, false, detail_root)
 		_add_box("ImportedBath_MirrorEdgeRight", Vector3(0.035, mirror_bounds.size.y, 0.035), Vector3(mirror_bounds.end.x + 0.018, mirror_bounds.get_center().y, mirror_bounds.end.z + 0.018), steel, false, detail_root)
+		_add_box("ImportedBath_VanityFrontLip", Vector3(mirror_bounds.size.x + 0.16, 0.045, 0.035), Vector3(vanity_x, vanity_y - 0.025, vanity_z + 0.285), tray_material, false, detail_root)
 		# Cabinet pulls sit on the same bounds-derived vanity front as the
 		# basins, so they cannot drift when the imported bathroom is rescaled.
 		var handle_y := vanity_y - 0.26
@@ -1020,6 +1021,9 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_box("ImportedBath_ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(glass_x - 0.05, 1.18, shower_center.z + frame_z_offset), steel, false, detail_root)
 	_add_box("ImportedBath_ShowerFrame_Top", Vector3(0.10, 0.08, glass_z_size + 0.08), Vector3(glass_x - 0.05, 2.34, shower_center.z), steel, false, detail_root)
 	_add_box("ImportedBath_ShowerFrame_Bottom", Vector3(0.10, 0.08, glass_z_size + 0.08), Vector3(glass_x - 0.05, 0.08, shower_center.z), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerThreshold", Vector3(0.18, 0.06, glass_z_size + 0.08), Vector3(glass_x - 0.05, 0.135, shower_center.z), tray_material, false, detail_root)
+	_add_box("ImportedBath_ShowerGlassSeal", Vector3(0.025, 2.12, 0.025), Vector3(glass_x - 0.105, 1.15, shower_center.z - glass_z_size * 0.5 + 0.035), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerGlassHandle", Vector3(0.045, 0.30, 0.045), Vector3(glass_x - 0.12, 1.28, shower_center.z), steel, false, detail_root)
 	# Keep the shower fittings in the wet zone, derived from the same tray.
 	var shower_back_z := shower_center.z - shower_size.z * 0.37
 	var shower_wall_x := shower_center.x - shower_size.x * 0.08
