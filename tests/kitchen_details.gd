@@ -22,6 +22,7 @@ func _run() -> void:
 		"KitchenDetail_FridgeHingeTop", "KitchenDetail_FridgeHingeBottom", "KitchenDetail_FridgeDisplay",
 		"KitchenDetail_OvenGlass", "KitchenDetail_OvenHandle", "KitchenDetail_OvenFrameTop",
 		"KitchenDetail_ExtractorHood_Rim", "KitchenDetail_ExtractorHood_Duct", "KitchenDetail_ExtractorHood_Flange", "KitchenDetail_ExtractorHood_UpperJoint",
+		"KitchenDetail_SinkBacksplash", "KitchenDetail_SinkBacksplashSeal", "KitchenDetail_SinkCabinetToeKick", "KitchenDetail_SinkCabinetSideSeal",
 		"KitchenDetail_TableEdge_Front", "KitchenDetail_TableEdge_Back", "KitchenDetail_FridgeDoorSweep",
 		"KitchenDetail_TableEdge_Left", "KitchenDetail_TableEdge_Right", "KitchenDetail_ChairLeg_00_0",
 		"KitchenDetail_ChairCrossbarX_00", "KitchenDetail_ChairCrossbarZ_00"
@@ -88,6 +89,22 @@ func _run() -> void:
 	if leak_position == Vector3.ZERO or not sink_worktop.has_volume() or not sink_cabinet.has_volume() or absf(leak_position.x - (sink_cabinet.position.x - 0.035)) > 0.06 or absf(leak_position.z - (sink_worktop.get_center().z + sink_worktop.size.z * 0.08)) > 0.06:
 		printerr("FAIL sink leak issue is not attached to the real sink plumbing bounds")
 		failures += 1
+	var backsplash := game.get_node_or_null("KitchenDetail_SinkBacksplash") as Node3D
+	var backsplash_seal := game.get_node_or_null("KitchenDetail_SinkBacksplashSeal") as Node3D
+	var toe_kick := game.get_node_or_null("KitchenDetail_SinkCabinetToeKick") as Node3D
+	var side_seal := game.get_node_or_null("KitchenDetail_SinkCabinetSideSeal") as Node3D
+	if not sink_worktop.has_volume() or not sink_cabinet.has_volume() or backsplash == null or backsplash_seal == null or toe_kick == null or side_seal == null:
+		printerr("FAIL sink run finish details are missing")
+		failures += 1
+	else:
+		var expected_backdrop := Vector3(sink_worktop.end.x + 0.016, sink_worktop.end.y + clampf(sink_cabinet.size.y * 0.16, 0.08, 0.14) * 0.50, sink_worktop.get_center().z)
+		if backsplash.global_position.distance_to(expected_backdrop) > 0.05 or backsplash_seal.global_position.x < sink_worktop.end.x - 0.02 or backsplash.global_position.z < sink_worktop.position.z or backsplash.global_position.z > sink_worktop.end.z:
+			printerr("FAIL sink backsplash is not attached to measured worktop bounds")
+			failures += 1
+		var expected_toe_kick := Vector3(sink_cabinet.position.x - 0.013, sink_cabinet.position.y + clampf(sink_cabinet.size.y * 0.12, 0.07, 0.11) * 0.50 + 0.012, sink_cabinet.get_center().z)
+		if toe_kick.global_position.distance_to(expected_toe_kick) > 0.05 or side_seal.global_position.x < sink_cabinet.position.x - 0.04 or side_seal.global_position.z < sink_cabinet.position.z or side_seal.global_position.z > sink_cabinet.end.z:
+			printerr("FAIL sink cabinet toe-kick/seal is not attached to measured cabinet bounds")
+			failures += 1
 	var table_bounds: AABB = game._find_kitchen_mesh_bounds("63_Tabletop")
 	var cooker_bounds: AABB = game._find_kitchen_mesh_bounds("251_CookerBlack")
 	var cooker_knob := game.get_node_or_null("KitchenDetail_CookerKnob_0") as Node3D

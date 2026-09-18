@@ -669,6 +669,12 @@ func _add_kitchen_imported_details() -> void:
 	ceramic.clearcoat_roughness = 0.16
 	var dark := _mat(Color(0.07, 0.08, 0.08))
 	var wood := _wood_mat(Color(0.63, 0.38, 0.18))
+	var cabinet_finish := _mat(Color(0.58, 0.61, 0.60))
+	cabinet_finish.roughness = 0.34
+	cabinet_finish.clearcoat = 0.16
+	cabinet_finish.clearcoat_roughness = 0.18
+	var silicone_seal := _mat(Color(0.16, 0.18, 0.18))
+	silicone_seal.roughness = 0.52
 	# The sink used to be authored from a stale fixed point. Attach the whole
 	# assembly to the real worktop bounds so the basin and the sink_leak anchor
 	# remain coincident when the kitchen hero scale changes.
@@ -709,6 +715,19 @@ func _add_kitchen_imported_details() -> void:
 		_add_box("KitchenDetail_SinkLeakJoint", Vector3(0.16, 0.045, 0.08), Vector3(pipe_x, leak_y - 0.12, pipe_z), pipe_material, false)
 		var drip_material := _emissive_mat(Color(0.10, 0.42, 0.52), 0.12)
 		_add_cylinder("KitchenDetail_SinkLeakDrop", 0.014, 0.10, Vector3(pipe_x + 0.065, leak_y - 0.20, pipe_z), drip_material, false)
+		# Finish the sink run against the imported cabinet instead of leaving a
+		# visible gap behind the basin. Both pieces are derived from the measured
+		# worktop/cabinet bounds, so the seal follows future hero-scale changes.
+		var backsplash_height := clampf(sink_cabinet.size.y * 0.16, 0.08, 0.14)
+		var backsplash_size := Vector3(0.032, backsplash_height, maxf(0.56, sink_worktop.size.z - 0.08))
+		var backsplash_pos := Vector3(sink_worktop.end.x + 0.016, sink_worktop.end.y + backsplash_height * 0.50, sink_worktop.get_center().z)
+		_add_box("KitchenDetail_SinkBacksplash", backsplash_size, backsplash_pos, cabinet_finish, false)
+		_add_box("KitchenDetail_SinkBacksplashSeal", Vector3(0.040, 0.018, backsplash_size.z + 0.018), Vector3(sink_worktop.end.x + 0.012, sink_worktop.end.y + 0.008, sink_worktop.get_center().z), silicone_seal, false)
+		var toe_kick_height := clampf(sink_cabinet.size.y * 0.12, 0.07, 0.11)
+		var toe_kick_size := Vector3(0.026, toe_kick_height, maxf(0.56, sink_cabinet.size.z - 0.10))
+		var toe_kick_pos := Vector3(sink_cabinet.position.x - 0.013, sink_cabinet.position.y + toe_kick_height * 0.50 + 0.012, sink_cabinet.get_center().z)
+		_add_box("KitchenDetail_SinkCabinetToeKick", toe_kick_size, toe_kick_pos, dark, false)
+		_add_box("KitchenDetail_SinkCabinetSideSeal", Vector3(0.020, maxf(0.12, sink_cabinet.size.y - 0.10), 0.018), Vector3(sink_cabinet.position.x + 0.012, sink_cabinet.position.y + sink_cabinet.size.y * 0.50, sink_cabinet.end.z - 0.028), silicone_seal, false)
 	for knob_index in range(4):
 		var knob_position := _kitchen_point(Vector3(6.25 + knob_index * 0.18, 0.70, 3.62))
 		if cooker_bounds.has_volume():
