@@ -621,3 +621,10 @@
 - 所有衣櫃內裝為 render-only；`tests/bedroom_details.gd` 驗證掛衣桿方向、衣物數量，家具碰撞與 14 題互動仍為 `0 failures`。
 - 圖形截圖回歸：臥室 median `5.852ms`、p95 `6.534ms`、`1146` draws；四房均成功渲染。
 - Web Release 回歸：PCK `103,722,540` bytes、WASM `39,514,754` bytes，合計 `143,237,294` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：廚房餐椅下部結構（2026-09-19）
+
+- 依每張匯入餐椅座墊 bounds 新增四支椅腳、兩支橫向加強桿，補足原本近景只看得到座墊與零散輪廓的問題；新增節點全部為 render-only。
+- `tests/kitchen_details.gd` 驗證每張座墊都有完整下部結構；家具碰撞仍為 28 個 BoxShape3D，14 題互動與三角面預算均為 `0 failures`。
+- 圖形截圖回歸：廚房 median `5.645ms`、p95 `6.429ms`、`1415` draws；四房均成功渲染。
+- Web Release 回歸：PCK `103,722,892` bytes、WASM `39,514,754` bytes，合計 `143,237,646` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

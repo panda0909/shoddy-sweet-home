@@ -23,7 +23,8 @@ func _run() -> void:
 		"KitchenDetail_OvenGlass", "KitchenDetail_OvenHandle", "KitchenDetail_OvenFrameTop",
 		"KitchenDetail_ExtractorHood_Rim", "KitchenDetail_ExtractorHood_Duct", "KitchenDetail_ExtractorHood_Flange", "KitchenDetail_ExtractorHood_UpperJoint",
 		"KitchenDetail_TableEdge_Front", "KitchenDetail_TableEdge_Back", "KitchenDetail_FridgeDoorSweep",
-		"KitchenDetail_TableEdge_Left", "KitchenDetail_TableEdge_Right"
+		"KitchenDetail_TableEdge_Left", "KitchenDetail_TableEdge_Right", "KitchenDetail_ChairLeg_00_0",
+		"KitchenDetail_ChairCrossbarX_00", "KitchenDetail_ChairCrossbarZ_00"
 	]
 	var failures := 0
 	for node_name in required:
@@ -38,6 +39,10 @@ func _run() -> void:
 	if dining_pads.is_empty():
 		printerr("FAIL no bounds-attached dining chair pads")
 		failures += 1
+	var chair_seats: Array = []
+	for pad in dining_pads:
+		if "Piping" not in pad.name and "Fastener" not in pad.name:
+			chair_seats.append(pad)
 	var chair_piping: Array = game.find_children("KitchenDetail_ChairPad_Piping_*", "StaticBody3D", true, false)
 	var chair_fasteners: Array = game.find_children("KitchenDetail_ChairPad_Fastener_*", "StaticBody3D", true, false)
 	if chair_piping.size() < 16 or chair_fasteners.size() < 16:
@@ -50,6 +55,11 @@ func _run() -> void:
 	var table_foot_pads: Array = game.find_children("KitchenDetail_TableFootPad_*", "StaticBody3D", true, false)
 	if table_foot_pads.size() != 4:
 		printerr("FAIL dining table floor contact pads: ", table_foot_pads.size())
+		failures += 1
+	var chair_legs: Array = game.find_children("KitchenDetail_ChairLeg_*", "StaticBody3D", true, false)
+	var chair_crossbars: Array = game.find_children("KitchenDetail_ChairCrossbar*", "StaticBody3D", true, false)
+	if chair_legs.size() < chair_seats.size() * 4 or chair_crossbars.size() < chair_seats.size() * 2:
+		printerr("FAIL dining chair underframes: seats=", chair_seats.size(), " legs=", chair_legs.size(), " crossbars=", chair_crossbars.size())
 		failures += 1
 	var sink_worktop: AABB = game._find_kitchen_mesh_bounds("123_Worktops")
 	var sink := game.get_node_or_null("KitchenDetail_SinkBasin") as Node3D
@@ -167,7 +177,7 @@ func _run() -> void:
 	if fridge_enamel_material == null or fridge_enamel_material.clearcoat < 0.18:
 		printerr("FAIL refrigerator enamel clearcoat tuning")
 		failures += 1
-	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size(), "; table foot pads: ", table_foot_pads.size())
+	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size(), "; chair legs: ", chair_legs.size(), "; table foot pads: ", table_foot_pads.size())
 	print("Kitchen detail failures: ", failures)
 	game.queue_free()
 	await process_frame

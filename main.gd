@@ -890,6 +890,24 @@ func _add_kitchen_dining_details() -> void:
 			var corner_x := pad_position.x - pad_size.x * 0.34 if corner % 2 == 0 else pad_position.x + pad_size.x * 0.34
 			var corner_z := pad_position.z - pad_size.z * 0.34 if corner < 2 else pad_position.z + pad_size.z * 0.34
 			_add_cylinder("KitchenDetail_ChairPad_Fastener_%02d_%d" % [cushion_index, corner], 0.012, 0.008, Vector3(corner_x, pad_position.y + 0.032, corner_z), steel, false)
+		# Add a bounds-attached chair underframe. The imported cushions have
+		# readable upholstery but their thin source legs disappear in the dark
+		# floor shadow; these four visual-only legs and two stretchers restore the
+		# manufactured joinery without introducing a second movement collider.
+		var chair_floor_y := foot_y
+		var leg_height := maxf(0.18, pad_position.y - chair_floor_y)
+		var leg_x_offset := pad_size.x * 0.32
+		var leg_z_offset := pad_size.z * 0.32
+		var leg_points := [
+			Vector3(pad_position.x - leg_x_offset, chair_floor_y + leg_height * 0.5, pad_position.z - leg_z_offset),
+			Vector3(pad_position.x + leg_x_offset, chair_floor_y + leg_height * 0.5, pad_position.z - leg_z_offset),
+			Vector3(pad_position.x - leg_x_offset, chair_floor_y + leg_height * 0.5, pad_position.z + leg_z_offset),
+			Vector3(pad_position.x + leg_x_offset, chair_floor_y + leg_height * 0.5, pad_position.z + leg_z_offset)
+		]
+		for leg_index in range(leg_points.size()):
+			_add_box("KitchenDetail_ChairLeg_%02d_%d" % [cushion_index, leg_index], Vector3(0.045, leg_height, 0.045), leg_points[leg_index], dark_wood, false)
+		_add_box("KitchenDetail_ChairCrossbarX_%02d" % cushion_index, Vector3(leg_x_offset * 2.0, 0.035, 0.035), Vector3(pad_position.x, chair_floor_y + leg_height * 0.35, pad_position.z - leg_z_offset), steel, false)
+		_add_box("KitchenDetail_ChairCrossbarZ_%02d" % cushion_index, Vector3(0.035, 0.035, leg_z_offset * 2.0), Vector3(pad_position.x - leg_x_offset, chair_floor_y + leg_height * 0.35, pad_position.z), steel, false)
 		cushion_index += 1
 	if cushion_index == 0:
 		# Keep the test scene useful even if a later kitchen asset renames its
