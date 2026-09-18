@@ -51,6 +51,8 @@ var hint_until := 0.0
 var imported_material_cache: Dictionary = {}
 var generated_oak_texture: Texture2D
 var generated_fabric_texture: Texture2D
+var generated_oak_roughness_texture: Texture2D
+var generated_fabric_roughness_texture: Texture2D
 
 var tool_names := ["手電筒", "水平儀", "空鼓槌", "驗電筆"]
 var tool_descriptions := [
@@ -1532,12 +1534,16 @@ func _load_generated_material_textures() -> void:
 	# 程序化臥室使用低解析度可重複貼圖；匯入家具仍保留各自的原始材質。
 	generated_oak_texture = load("res://assets/materials/generated_oak_albedo.png") as Texture2D
 	generated_fabric_texture = load("res://assets/materials/generated_fabric_albedo.png") as Texture2D
+	generated_oak_roughness_texture = load("res://assets/materials/generated_oak_roughness.png") as Texture2D
+	generated_fabric_roughness_texture = load("res://assets/materials/generated_fabric_roughness.png") as Texture2D
 
 
 func _wood_mat(color: Color) -> StandardMaterial3D:
 	var material := _mat(color)
 	if generated_oak_texture != null:
 		material.albedo_texture = generated_oak_texture
+	if generated_oak_roughness_texture != null:
+		material.roughness_texture = generated_oak_roughness_texture
 	material.roughness = 0.58
 	return material
 
@@ -1546,6 +1552,8 @@ func _fabric_mat(color: Color) -> StandardMaterial3D:
 	var material := _mat(color)
 	if generated_fabric_texture != null:
 		material.albedo_texture = generated_fabric_texture
+	if generated_fabric_roughness_texture != null:
+		material.roughness_texture = generated_fabric_roughness_texture
 	material.roughness = 0.88
 	return material
 
