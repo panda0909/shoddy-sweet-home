@@ -647,7 +647,10 @@ func _add_kitchen_imported_details() -> void:
 		var pipe_material := _mat(Color(0.12, 0.16, 0.17))
 		pipe_material.metallic = 0.58
 		pipe_material.roughness = 0.34
-		var pipe_x := sink_center.x - sink_size.x * 0.16
+		# Expose the leaking trap on the cabinet's service side. Keeping it just
+		# outside the 262 cabinet shell makes the pipe visible and ray-pickable
+		# from the aisle; the old sink-centre point sat inside the cabinet body.
+		var pipe_x := sink_cabinet.position.x - 0.035
 		var pipe_z := sink_center.z + sink_size.y * 0.08
 		_add_cylinder("KitchenDetail_SinkLeakTrap", 0.026, 0.24, Vector3(pipe_x, leak_y, pipe_z), pipe_material, false)
 		_add_box("KitchenDetail_SinkLeakJoint", Vector3(0.16, 0.045, 0.08), Vector3(pipe_x, leak_y - 0.12, pipe_z), pipe_material, false)
@@ -1849,7 +1852,7 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			var sink_cabinet := _find_anchor_bounds("261_CupboardUnits")
 			if sink_worktop.has_volume() and sink_cabinet.has_volume():
 				var leak_y := sink_cabinet.position.y + sink_cabinet.size.y * 0.42
-				pos = Vector3(sink_worktop.get_center().x - sink_worktop.size.x * 0.12, leak_y, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
+				pos = Vector3(sink_cabinet.position.x - 0.035, leak_y, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
 				size = Vector3(clampf(sink_worktop.size.x * 0.30, 0.18, 0.34), 0.18, clampf(sink_worktop.size.z * 0.24, 0.16, 0.30))
 			else:
 				pos = Vector3(6.39, 0.43, 4.6)
@@ -1929,7 +1932,7 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 				# horizontal location must follow the actual worktop/sink above it.
 				var sink_worktop := _find_kitchen_mesh_bounds("123_Worktops")
 				if sink_worktop.has_volume():
-					pos = Vector3(sink_worktop.get_center().x - sink_worktop.size.x * 0.12, bounds.position.y + bounds.size.y * 0.42, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
+					pos = Vector3(bounds.position.x - 0.035, bounds.position.y + bounds.size.y * 0.42, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
 					size = Vector3(clampf(sink_worktop.size.x * 0.30, 0.18, 0.34), 0.18, clampf(sink_worktop.size.z * 0.24, 0.16, 0.30))
 			elif issue_id == "tile_hollow":
 				# BackWall is the room's actual wall plane; keep the clue on

@@ -52,7 +52,7 @@ func _run() -> void:
 		var expected := bounds.get_center()
 		if entry[0] == "sink_leak":
 			var sink_worktop: AABB = game._find_kitchen_mesh_bounds("123_Worktops")
-			expected = Vector3(sink_worktop.get_center().x - sink_worktop.size.x * 0.12, bounds.position.y + bounds.size.y * 0.42, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
+			expected = Vector3(bounds.position.x - 0.035, bounds.position.y + bounds.size.y * 0.42, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
 		elif entry[0] in ["vent_wrong", "cabinet_blocked"]:
 			expected = Vector3(bounds.position.x - 0.035, bounds.get_center().y, bounds.get_center().z)
 		elif entry[0] == "kitchen_socket":

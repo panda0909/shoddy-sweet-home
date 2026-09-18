@@ -47,6 +47,50 @@ func _run() -> void:
 	if window_reveal < 0.30:
 		printerr("FAIL living sofa overlaps window opening: ", window_reveal)
 		failures += 1
+	# The imported living asset used to lose furniture fragments when a source
+	# mesh touched a generous doorway safety volume. Validate the actual hero
+	# meshes against the LivingDoor opening in both closed and open states so a
+	# future scale/offset change cannot silently hide a sofa or make the passage
+	# visually impassable again.
+	var living_asset := game.get_node_or_null("LivingRoomRealAsset") as Node3D
+	var living_door_pivot := game.get_node_or_null("LivingDoorPivot") as Node3D
+	var living_door := game.get_node_or_null("LivingDoorPivot/LivingDoor") as StaticBody3D
+	if living_asset == null or living_door_pivot == null or living_door == null:
+		printerr("FAIL missing living hero asset or hinged doorway")
+		failures += 1
+	else:
+		var original_angle := living_door_pivot.rotation.y
+		living_door_pivot.rotation.y = float(game.doors["LivingDoor"]["closed_angle"])
+		var closed_bounds := _visual_bounds(living_door)
+		living_door_pivot.rotation.y = float(game.doors["LivingDoor"]["closed_angle"]) + float(game.doors["LivingDoor"]["open_delta"])
+		var open_bounds := _visual_bounds(living_door)
+		living_door_pivot.rotation.y = original_angle
+		var door_corridor := closed_bounds.merge(open_bounds).grow(0.32) if closed_bounds.has_volume() and open_bounds.has_volume() else AABB()
+		var blocked_meshes := 0
+		var visual_only_meshes := 0
+		for mesh_node in living_asset.find_children("*", "MeshInstance3D", true, false):
+			var living_mesh := mesh_node as MeshInstance3D
+			if living_mesh == null or living_mesh.mesh == null:
+				continue
+			if living_mesh.has_meta("hidden_for_door_clearance") or living_mesh.has_meta("door_clearance_visual_only"):
+				visual_only_meshes += 1
+			if not living_mesh.visible:
+				continue
+			var mesh_bounds: AABB = living_mesh.global_transform * living_mesh.get_aabb()
+			if door_corridor.has_volume() and mesh_bounds.intersects(door_corridor):
+				blocked_meshes += 1
+		if blocked_meshes > 0:
+			printerr("FAIL living hero furniture intersects doorway safety corridor: ", blocked_meshes)
+			failures += 1
+		if visual_only_meshes > 0:
+			printerr("FAIL living hero mesh was hidden or made visual-only for door clearance: ", visual_only_meshes)
+			failures += 1
+		if not closed_bounds.has_volume() or not open_bounds.has_volume():
+			printerr("FAIL living door has no closed/open visual bounds")
+			failures += 1
+		print("Living doorway closed bounds: ", closed_bounds)
+		print("Living doorway open bounds: ", open_bounds)
+		print("Living doorway furniture conflicts: ", blocked_meshes)
 	for window_piece in ["LivingWindowGlass", "LivingWindowFrame_Top", "LivingWindowFrame_Center"]:
 		if game.get_node_or_null(window_piece) == null:
 			printerr("FAIL missing rebuilt living window piece: ", window_piece)
@@ -81,3 +125,19 @@ func _run() -> void:
 	game.queue_free()
 	await process_frame
 	quit(1 if failures else 0)
+
+
+func _visual_bounds(node: Node) -> AABB:
+	var result := AABB()
+	var has_bounds := false
+	for mesh_node in node.find_children("*", "MeshInstance3D", true, false):
+		var mesh := mesh_node as MeshInstance3D
+		if mesh == null or mesh.mesh == null or not mesh.visible:
+			continue
+		var bounds: AABB = mesh.global_transform * mesh.get_aabb()
+		if not has_bounds:
+			result = bounds
+			has_bounds = true
+		else:
+			result = result.merge(bounds)
+	return result
