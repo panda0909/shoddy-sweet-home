@@ -1004,6 +1004,15 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		var left_sink_x := vanity_x - mirror_bounds.size.x * 0.27
 		var right_sink_x := vanity_x + mirror_bounds.size.x * 0.27
 		_add_box("ImportedBath_VanityCounterEdge", Vector3(mirror_bounds.size.x + 0.16, 0.05, 0.56), Vector3(vanity_x, vanity_y, vanity_z), tray_material, false, detail_root)
+		# Close the measured backsplash gap behind the marble slabs. This is a
+		# render-only seal: it makes the vanity read as wall-mounted without
+		# introducing another obstacle into the narrow bathroom aisle.
+		var vanity_back_wall := _find_anchor_bounds("BackWall")
+		var vanity_wall_gap := vanity_source_bounds.position.z - vanity_back_wall.end.z if vanity_source_bounds.has_volume() and vanity_back_wall.has_volume() else 0.0
+		if vanity_wall_gap > 0.01:
+			var vanity_seal_size := Vector3(mirror_bounds.size.x + 0.14, 0.18, vanity_wall_gap)
+			var vanity_seal_pos := Vector3(vanity_x, vanity_y - 0.10, vanity_back_wall.end.z + vanity_wall_gap * 0.50)
+			_add_box("ImportedBath_VanityWallSeal", vanity_seal_size, vanity_seal_pos, tray_material, false, detail_root)
 		for sink_data in [["Left", left_sink_x], ["Right", right_sink_x]]:
 			var sink_name: String = sink_data[0]
 			var sink_x: float = sink_data[1]

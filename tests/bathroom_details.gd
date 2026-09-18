@@ -25,7 +25,7 @@ func _run() -> void:
 		"ImportedBath_VanityFaucetLeft", "ImportedBath_VanityFaucetRight",
 		"ImportedBath_VanityHandle_0", "ImportedBath_VanityHandle_3",
 		"ImportedBath_MirrorEdgeTop", "ImportedBath_MirrorEdgeLeft", "ImportedBath_MirrorEdgeRight",
-		"ImportedBath_MirrorWallSpacer",
+		"ImportedBath_MirrorWallSpacer", "ImportedBath_VanityWallSeal",
 		"ImportedBath_TubWater", "ImportedBath_TubDrain", "ImportedBath_TubRim", "ImportedBath_TubFaucetStem", "ImportedBath_TubSpout",
 		"ImportedBath_TubHandle_Left", "ImportedBath_TubHandle_Right", "ImportedBath_TubOverflow"
 	]
@@ -100,6 +100,17 @@ func _run() -> void:
 			failures += 1
 		elif mirror_spacer.find_child("CollisionShape3D", true, false) != null:
 			printerr("FAIL bathroom mirror wall spacer blocks movement")
+			failures += 1
+	var vanity_back_wall_bounds: AABB = game._find_anchor_bounds("BackWall")
+	var vanity_wall_seal := game.find_child("ImportedBath_VanityWallSeal", true, false) as Node3D
+	if vanity_source_bounds.has_volume() and vanity_back_wall_bounds.has_volume() and vanity_source_bounds.position.z - vanity_back_wall_bounds.end.z > 0.01:
+		var vanity_gap := vanity_source_bounds.position.z - vanity_back_wall_bounds.end.z
+		var vanity_seal_expected := Vector3(vanity_source_bounds.get_center().x, vanity_source_bounds.end.y + 0.01, vanity_back_wall_bounds.end.z + vanity_gap * 0.50)
+		if vanity_wall_seal == null or vanity_wall_seal.global_position.distance_to(vanity_seal_expected) > 0.08:
+			printerr("FAIL vanity does not bridge the measured rear-wall gap")
+			failures += 1
+		elif vanity_wall_seal.find_child("CollisionShape3D", true, false) != null:
+			printerr("FAIL vanity wall seal blocks movement")
 			failures += 1
 	var bathroom_reference_bounds: AABB = game._find_bathroom_mesh_bounds("849_Ceiling")
 	var bathtub_bounds: AABB = game._find_anchor_group_bounds(["843_Bathtube", "844_Bathtube"])

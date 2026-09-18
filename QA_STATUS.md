@@ -559,3 +559,8 @@
 
 - 依 `44_Mirror` 與可玩 `BackWall` 的實際深度差新增 `ImportedBath_MirrorWallSpacer`，補上近距離視角可見的鏡面浮縫。
 - Spacer 為 render-only，並由 `tests/bathroom_details.gd` 驗證位置與無碰撞；浴室材質批次沿用既有鋼材，不增加下載貼圖。
+
+### 追加：浴室洗手台後牆接縫（2026-09-19）
+
+- 依 `43_Marble`／`838_Marble` 與可玩 `BackWall` 的深度差新增 `ImportedBath_VanityWallSeal`，讓雙洗手盆檯面與鏡面共享同一個後牆接合基準。
+- 收邊為 render-only；測試同時驗證位置、無碰撞，避免為了補美術細節而縮窄浴室通道。
