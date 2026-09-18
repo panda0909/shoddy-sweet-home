@@ -19,7 +19,7 @@ func _run() -> void:
 		"KitchenDetail_FridgeDoorPanel", "KitchenDetail_FridgeGasketTop", "KitchenDetail_FridgeGasketBottom",
 		"KitchenDetail_FridgeHingeTop", "KitchenDetail_FridgeHingeBottom", "KitchenDetail_FridgeDisplay",
 		"KitchenDetail_OvenGlass", "KitchenDetail_OvenHandle", "KitchenDetail_OvenFrameTop",
-		"KitchenDetail_ExtractorHood_Rim", "KitchenDetail_ExtractorHood_Duct", "KitchenDetail_ExtractorHood_Flange",
+		"KitchenDetail_ExtractorHood_Rim", "KitchenDetail_ExtractorHood_Duct", "KitchenDetail_ExtractorHood_Flange", "KitchenDetail_ExtractorHood_UpperJoint",
 		"KitchenDetail_TableEdge_Front", "KitchenDetail_TableEdge_Back", "KitchenDetail_FridgeDoorSweep",
 		"KitchenDetail_TableEdge_Left", "KitchenDetail_TableEdge_Right"
 	]
@@ -64,6 +64,18 @@ func _run() -> void:
 	if not hood_bounds.has_volume() or hood_rim == null or hood_rim.global_position.distance_to(hood_rim_expected) > 0.05:
 		printerr("FAIL extractor hood trim is not attached to real hood bounds")
 		failures += 1
+	var hood_joint := game.get_node_or_null("KitchenDetail_ExtractorHood_UpperJoint") as Node3D
+	var upper_run_bounds: AABB = game._find_anchor_group_bounds(["70_CupboardUnits", "74_CupboardUnits"])
+	var hood_joint_expected_y := hood_bounds.end.y + maxf(0.035, upper_run_bounds.end.y - hood_bounds.end.y) * 0.50 if hood_bounds.has_volume() and upper_run_bounds.has_volume() else 0.0
+	if not hood_bounds.has_volume() or not upper_run_bounds.has_volume() or hood_joint == null or absf(hood_joint.global_position.x - hood_bounds.get_center().x) > 0.05 or absf(hood_joint.global_position.z - hood_bounds.get_center().z) > 0.05 or absf(hood_joint.global_position.y - hood_joint_expected_y) > 0.05:
+		printerr("FAIL extractor hood upper joint is not attached to hood/cabinet bounds")
+		failures += 1
+	else:
+		var joint_mesh := hood_joint.get_node_or_null("Mesh") as MeshInstance3D
+		var joint_box := joint_mesh.mesh as BoxMesh if joint_mesh != null else null
+		if joint_box == null or joint_box.size.y <= 0.0 or joint_box.size.y > 0.20:
+			printerr("FAIL extractor hood upper joint has invalid bridge height")
+			failures += 1
 	var fridge_bounds: AABB = game._find_kitchen_mesh_bounds("253_CupboardUnits")
 	var fridge_handle := game.get_node_or_null("KitchenDetail_FridgeHandle") as Node3D
 	var fridge_handle_expected := Vector3(fridge_bounds.position.x - 0.035, fridge_bounds.get_center().y, fridge_bounds.get_center().z) if fridge_bounds.has_volume() else Vector3.ZERO

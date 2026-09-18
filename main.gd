@@ -690,6 +690,14 @@ func _add_kitchen_imported_details() -> void:
 		_add_box("KitchenDetail_ExtractorHood_Rim", Vector3(hood_bounds.size.x + 0.08, 0.045, hood_bounds.size.z + 0.08), Vector3(hood_center.x, hood_bounds.position.y - 0.018, hood_center.z), hood_trim, false)
 		_add_box("KitchenDetail_ExtractorHood_Duct", Vector3(hood_bounds.size.x * 0.56, maxf(0.16, hood_bounds.size.y * 0.72), hood_bounds.size.z * 0.48), Vector3(hood_center.x, hood_bounds.end.y + hood_bounds.size.y * 0.32, hood_center.z), hood_trim, false)
 		_add_box("KitchenDetail_ExtractorHood_Flange", Vector3(hood_bounds.size.x * 0.68, 0.035, hood_bounds.size.z * 0.58), Vector3(hood_center.x, hood_bounds.end.y + hood_bounds.size.y * 0.70, hood_center.z), steel, false)
+		# The upper run is split around the hood in the source scan. Build a
+		# bounds-derived collar between its highest face and the hood chimney so
+		# the exhaust transition remains closed when the hero asset is rescaled.
+		var upper_run_bounds := _find_anchor_group_bounds(["70_CupboardUnits", "74_CupboardUnits"])
+		if upper_run_bounds.has_volume():
+			var joint_gap := maxf(0.035, upper_run_bounds.end.y - hood_bounds.end.y)
+			var joint_size := Vector3(hood_bounds.size.x * 0.62, joint_gap, hood_bounds.size.z * 0.40)
+			_add_box("KitchenDetail_ExtractorHood_UpperJoint", joint_size, Vector3(hood_center.x, hood_bounds.end.y + joint_gap * 0.50, hood_center.z), hood_trim, false)
 	# Derive the under-cabinet light from the actual upper cabinet bounds. The
 	# previous authored point used the old 0.60 scale and left a long glowing
 	# bar inside the cabinet run after the kitchen was enlarged to 0.72.
