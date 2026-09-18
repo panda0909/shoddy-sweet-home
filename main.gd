@@ -443,6 +443,30 @@ func _build_kitchen(scene_override: PackedScene = null) -> void:
 	add_child(kitchen_asset)
 	_remove_asset_shell(kitchen_asset)
 	_prepare_furniture(kitchen_asset)
+	_add_kitchen_imported_details()
+
+
+func _add_kitchen_imported_details() -> void:
+	# Small high-contrast props make the imported kitchen readable at the
+	# inspection distance without adding another texture set to the Web build.
+	var steel := _mat(Color(0.52, 0.57, 0.58))
+	steel.metallic = 0.72
+	steel.roughness = 0.24
+	var ceramic := _mat(Color(0.78, 0.80, 0.77))
+	var dark := _mat(Color(0.07, 0.08, 0.08))
+	var wood := _wood_mat(Color(0.63, 0.38, 0.18))
+	_add_box("KitchenDetail_SinkBasin", Vector3(0.72, 0.08, 0.48), Vector3(6.35, 0.65, 4.55), dark, false)
+	_add_box("KitchenDetail_SinkRim", Vector3(0.86, 0.045, 0.60), Vector3(6.35, 0.70, 4.55), steel, false)
+	_add_cylinder("KitchenDetail_FaucetStem", 0.035, 0.38, Vector3(6.35, 0.91, 4.36), steel, false)
+	_add_box("KitchenDetail_FaucetSpout", Vector3(0.24, 0.045, 0.045), Vector3(6.35, 1.08, 4.45), steel, false)
+	_add_cylinder("KitchenDetail_FaucetHandle", 0.025, 0.14, Vector3(6.50, 0.92, 4.36), steel, false)
+	for knob_index in range(4):
+		_add_cylinder("KitchenDetail_CookerKnob_%d" % knob_index, 0.045, 0.025, Vector3(6.25 + knob_index * 0.18, 0.70, 3.62), steel, false)
+	_add_box("KitchenDetail_CuttingBoard", Vector3(0.48, 0.035, 0.34), Vector3(5.25, 0.66, 4.32), wood, false)
+	_add_cylinder("KitchenDetail_Cup", 0.09, 0.16, Vector3(5.68, 0.76, 4.12), ceramic, false)
+	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, Vector3(5.78, 0.76, 4.12), ceramic, false)
+	_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.72, 0.045), Vector3(6.27, 1.04, 2.72), steel, false)
+	_add_box("KitchenDetail_UnderCabinetLight", Vector3(1.20, 0.025, 0.06), Vector3(6.25, 1.14, 4.00), _emissive_mat(Color(1.0, 0.72, 0.38), 0.75), false)
 
 
 func _build_kitchen_procedural() -> void:
@@ -1647,6 +1671,14 @@ func _mat(color: Color) -> StandardMaterial3D:
 	material.albedo_color = color
 	material.roughness = 0.72
 	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	return material
+
+
+func _emissive_mat(color: Color, energy: float) -> StandardMaterial3D:
+	var material := _mat(color)
+	material.emission_enabled = true
+	material.emission = color
+	material.emission_energy_multiplier = energy
 	return material
 
 
