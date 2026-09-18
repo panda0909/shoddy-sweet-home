@@ -10,6 +10,9 @@ const MOUSE_SENSITIVITY := 0.0022
 const FURNITURE_COLLISION_MIN_HEIGHT := 0.18
 const FURNITURE_COLLISION_MIN_FOOTPRINT := 0.075
 const FURNITURE_COLLISION_MIN_SPAN := 0.42
+const KITCHEN_ASSET_ORIGIN := Vector3(5.5, 0.0, 3.6)
+const KITCHEN_ASSET_BASE_SCALE := 0.60
+const KITCHEN_ASSET_SCALE := 0.72
 
 var player: CharacterBody3D
 var camera: Camera3D
@@ -49,6 +52,7 @@ var progressive_loading := false
 var hint_world_label: Label3D
 var hint_until := 0.0
 var imported_material_cache: Dictionary = {}
+var contact_shadow_material: StandardMaterial3D
 var generated_oak_texture: Texture2D
 var generated_fabric_texture: Texture2D
 var generated_oak_roughness_texture: Texture2D
@@ -445,9 +449,9 @@ func _build_kitchen(scene_override: PackedScene = null) -> void:
 
 	var kitchen_asset := kitchen_scene.instantiate()
 	kitchen_asset.name = "KitchenRealAsset"
-	kitchen_asset.position = Vector3(5.5, 0.0, 3.6)
+	kitchen_asset.position = KITCHEN_ASSET_ORIGIN
 	kitchen_asset.rotation.y = PI
-	kitchen_asset.scale = Vector3.ONE * 0.60
+	kitchen_asset.scale = Vector3.ONE * KITCHEN_ASSET_SCALE
 	add_child(kitchen_asset)
 	_remove_asset_shell(kitchen_asset)
 	_prepare_furniture(kitchen_asset)
@@ -463,18 +467,25 @@ func _add_kitchen_imported_details() -> void:
 	var ceramic := _mat(Color(0.78, 0.80, 0.77))
 	var dark := _mat(Color(0.07, 0.08, 0.08))
 	var wood := _wood_mat(Color(0.63, 0.38, 0.18))
-	_add_box("KitchenDetail_SinkBasin", Vector3(0.72, 0.08, 0.48), Vector3(6.35, 0.65, 4.55), dark, false)
-	_add_box("KitchenDetail_SinkRim", Vector3(0.86, 0.045, 0.60), Vector3(6.35, 0.70, 4.55), steel, false)
-	_add_cylinder("KitchenDetail_FaucetStem", 0.035, 0.38, Vector3(6.35, 0.91, 4.36), steel, false)
-	_add_box("KitchenDetail_FaucetSpout", Vector3(0.24, 0.045, 0.045), Vector3(6.35, 1.08, 4.45), steel, false)
-	_add_cylinder("KitchenDetail_FaucetHandle", 0.025, 0.14, Vector3(6.50, 0.92, 4.36), steel, false)
+	_add_box("KitchenDetail_SinkBasin", Vector3(0.72, 0.08, 0.48), _kitchen_point(Vector3(6.35, 0.65, 4.55)), dark, false)
+	_add_box("KitchenDetail_SinkRim", Vector3(0.86, 0.045, 0.60), _kitchen_point(Vector3(6.35, 0.70, 4.55)), steel, false)
+	_add_cylinder("KitchenDetail_FaucetStem", 0.035, 0.38, _kitchen_point(Vector3(6.35, 0.91, 4.36)), steel, false)
+	_add_box("KitchenDetail_FaucetSpout", Vector3(0.24, 0.045, 0.045), _kitchen_point(Vector3(6.35, 1.08, 4.45)), steel, false)
+	_add_cylinder("KitchenDetail_FaucetHandle", 0.025, 0.14, _kitchen_point(Vector3(6.50, 0.92, 4.36)), steel, false)
 	for knob_index in range(4):
-		_add_cylinder("KitchenDetail_CookerKnob_%d" % knob_index, 0.045, 0.025, Vector3(6.25 + knob_index * 0.18, 0.70, 3.62), steel, false)
-	_add_box("KitchenDetail_CuttingBoard", Vector3(0.48, 0.035, 0.34), Vector3(5.25, 0.66, 4.32), wood, false)
-	_add_cylinder("KitchenDetail_Cup", 0.09, 0.16, Vector3(5.68, 0.76, 4.12), ceramic, false)
-	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, Vector3(5.78, 0.76, 4.12), ceramic, false)
-	_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.72, 0.045), Vector3(6.27, 1.04, 2.72), steel, false)
-	_add_box("KitchenDetail_UnderCabinetLight", Vector3(1.20, 0.025, 0.06), Vector3(6.25, 1.14, 4.00), _emissive_mat(Color(1.0, 0.72, 0.38), 0.75), false)
+		_add_cylinder("KitchenDetail_CookerKnob_%d" % knob_index, 0.045, 0.025, _kitchen_point(Vector3(6.25 + knob_index * 0.18, 0.70, 3.62)), steel, false)
+	_add_box("KitchenDetail_CuttingBoard", Vector3(0.48, 0.035, 0.34), _kitchen_point(Vector3(5.25, 0.66, 4.32)), wood, false)
+	_add_cylinder("KitchenDetail_Cup", 0.09, 0.16, _kitchen_point(Vector3(5.68, 0.76, 4.12)), ceramic, false)
+	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, _kitchen_point(Vector3(5.78, 0.76, 4.12)), ceramic, false)
+	_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.72, 0.045), _kitchen_point(Vector3(6.27, 1.04, 2.72)), steel, false)
+	_add_box("KitchenDetail_UnderCabinetLight", Vector3(1.20, 0.025, 0.06), _kitchen_point(Vector3(6.25, 1.14, 4.00)), _emissive_mat(Color(1.0, 0.72, 0.38), 0.75), false)
+
+
+func _kitchen_point(base_point: Vector3) -> Vector3:
+	# Detail props were authored against the original 0.60 room scale. Keep
+	# their local relationship to the imported asset when the hero furniture is
+	# enlarged for a more believable room proportion.
+	return KITCHEN_ASSET_ORIGIN + (base_point - KITCHEN_ASSET_ORIGIN) * (KITCHEN_ASSET_SCALE / KITCHEN_ASSET_BASE_SCALE)
 
 
 func _build_kitchen_procedural() -> void:
@@ -631,6 +642,7 @@ func _prepare_furniture(asset: Node3D) -> void:
 			continue
 		if _should_have_furniture_collision(mesh, bounds):
 			_add_furniture_box_collision(asset, mesh, bounds)
+			_add_contact_shadow(asset, mesh, bounds)
 
 
 func _apply_imported_lod(asset: Node3D, mesh: MeshInstance3D, bounds: AABB) -> void:
@@ -849,6 +861,44 @@ func _add_furniture_box_collision(asset: Node3D, source_mesh: MeshInstance3D, bo
 	shape.size = bounds.size
 	shape_node.shape = shape
 	body.add_child(shape_node)
+
+
+func _add_contact_shadow(asset: Node3D, source_mesh: MeshInstance3D, bounds: AABB) -> void:
+	# A small unlit card at the furniture footprint restores the contact cue
+	# lost when the imported scene is rendered with one affordable shadow light.
+	# It is visual-only: no collision shape is ever attached to this node.
+	if asset.name not in ["LivingRoomRealAsset", "KitchenRealAsset", "BathroomRealAsset"]:
+		return
+	var mesh_name := str(source_mesh.name).to_lower()
+	var hero_tokens := [
+		"sofa", "cushion", "table", "carpet", "cupboard", "cabinet", "toilet",
+		"bathtub", "bath", "vanity", "chair", "fridge", "cooker", "oven", "bed"
+	]
+	var is_hero := false
+	for token in hero_tokens:
+		if token in mesh_name:
+			is_hero = true
+			break
+	if not is_hero or bounds.size.y < 0.18:
+		return
+	if contact_shadow_material == null:
+		contact_shadow_material = _mat(Color(0.015, 0.018, 0.022, 0.20))
+		contact_shadow_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		contact_shadow_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		contact_shadow_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var shadow := MeshInstance3D.new()
+	shadow.name = "ContactShadow_" + str(source_mesh.name)
+	shadow.set_meta("contact_shadow", true)
+	var shadow_mesh := BoxMesh.new()
+	shadow_mesh.size = Vector3(
+		clampf(bounds.size.x * 0.90, 0.18, 3.2),
+		0.008,
+		clampf(bounds.size.z * 0.90, 0.18, 3.2)
+	)
+	shadow.mesh = shadow_mesh
+	shadow.material_override = contact_shadow_material
+	asset.get_parent().add_child(shadow)
+	shadow.global_position = Vector3(bounds.get_center().x, 0.008, bounds.get_center().z)
 
 
 func _align_wall_fixtures(asset: Node3D) -> void:

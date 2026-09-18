@@ -55,6 +55,8 @@ static func apply(room: Node3D) -> void:
 		var bedside: Node3D = room.get_node(bedside_id)
 		_add_detail_box(bedside, "DrawerFront", Vector3(0.56, 0.22, 0.025), Vector3(0, 0.12, 0.315), room._wood_mat(Color(0.74, 0.48, 0.27)))
 		_add_detail_box(bedside, "DrawerPull", Vector3(0.18, 0.025, 0.035), Vector3(0, 0.12, 0.335), room._mat(Color(0.55, 0.40, 0.20)))
+		var lamp_shade := room.get_node("BedsideLampShade_" + ("Left" if "Left" in bedside_id else "Right"))
+		_add_detail_sphere(lamp_shade, "LampBulb", 0.065, Vector3(0, 0.105, 0), room._emissive_mat(Color(1.0, 0.70, 0.25), 1.15))
 	# Closet construction lines and visible hinges make the doors read as parts.
 	var closet_left: Node3D = room.get_node("ClosetDoorLeft")
 	var closet_right: Node3D = room.get_node("ClosetDoorRight")
@@ -62,6 +64,7 @@ static func apply(room: Node3D) -> void:
 		_add_detail_box(door, "InsetPanel", Vector3(0.82, 1.82, 0.012), Vector3(0, 0, 0.026), room._wood_mat(Color(0.62, 0.39, 0.22)))
 		_add_detail_box(door, "UpperHinge", Vector3(0.06, 0.12, 0.025), Vector3(-0.38, 0.76, 0.04), room._mat(Color(0.26, 0.23, 0.19)))
 		_add_detail_box(door, "LowerHinge", Vector3(0.06, 0.12, 0.025), Vector3(-0.38, -0.76, 0.04), room._mat(Color(0.26, 0.23, 0.19)))
+	_add_detail_box(room.get_node("Closet"), "ClosetInteriorShadow", Vector3(2.05, 1.96, 0.025), Vector3(0, 0, -0.31), room._mat(Color(0.055, 0.038, 0.026)))
 	# Desk details: a recessed drawer, monitor foot, keyboard and chair arms/base.
 	_add_detail_box(desk, "DrawerFront", Vector3(1.05, 0.18, 0.025), Vector3(0, 0.30, 0.38), room._wood_mat(Color(0.72, 0.47, 0.25)))
 	_add_detail_box(desk, "DrawerPull", Vector3(0.20, 0.025, 0.035), Vector3(0, 0.30, 0.40), room._mat(Color(0.56, 0.42, 0.24)))
@@ -79,6 +82,8 @@ static func apply(room: Node3D) -> void:
 	_add_detail_box(rug, "RugFrontEdge", Vector3(4.65, 0.025, 0.08), Vector3(0, 0.045, 1.76), rug_trim)
 	_add_detail_box(rug, "RugBackEdge", Vector3(4.65, 0.025, 0.08), Vector3(0, 0.045, -1.76), rug_trim)
 	_add_detail_box(rug, "RugCornerLift", Vector3(0.28, 0.06, 0.28), Vector3(-2.16, 0.09, 1.56), rug_trim)
+	for fringe_index in range(12):
+		_add_detail_box(rug, "RugFringe_%d" % fringe_index, Vector3(0.12, 0.018, 0.10), Vector3(-2.05 + fringe_index * 0.37, 0.055, 1.84), rug_trim)
 	# Soil, pot rim and a stem turn the plant into a small assembled prop.
 	var pot: Node3D = room.get_node("BedroomPlantPot")
 	_add_detail_cylinder(pot, "Soil", 0.19, 0.025, Vector3(0, 0.22, 0), room._mat(Color(0.12, 0.07, 0.035)))
@@ -100,6 +105,11 @@ static func apply(room: Node3D) -> void:
 		leaf.rotation = Vector3(0.45, -angle, 0.25)
 		leaf.material_override = room._mat(Color(0.10 + (i % 3) * 0.025, 0.25 + (i % 4) * 0.025, 0.09))
 		plant.add_child(leaf)
+	# Three slightly different shelf thicknesses make the bookcase read as a
+	# built cabinet rather than a single brown volume.
+	var bookcase: Node3D = room.get_node("Bookcase")
+	for shelf_index in range(3):
+		_add_detail_box(bookcase, "Shelf_%d" % shelf_index, Vector3(0.68, 0.045, 0.34), Vector3(0, -0.72 + shelf_index * 0.70, 0), room._wood_mat(Color(0.55, 0.34, 0.19)))
 	# Pleats give the curtains depth without altering their collision footprint.
 	for id in ["CurtainLeft", "CurtainRight"]:
 		var curtain: Node3D = room.get_node(id)
@@ -112,13 +122,37 @@ static func apply(room: Node3D) -> void:
 static func _add_detail_box(parent: Node3D, node_name: String, size: Vector3, local_pos: Vector3, material: Material) -> MeshInstance3D:
 	var mesh := MeshInstance3D.new()
 	mesh.name = node_name
-	var box := BoxMesh.new()
-	box.size = size
-	mesh.mesh = box
+	var minimum := minf(size.x, minf(size.y, size.z))
+	mesh.mesh = rounded(size, minf(0.025, minimum * 0.24)) if minimum >= 0.035 else _plain_box(size)
 	mesh.position = local_pos
 	mesh.material_override = material
 	parent.add_child(mesh)
 	return mesh
+
+
+static func _add_detail_sphere(parent: Node3D, node_name: String, radius: float, local_pos: Vector3, material: Material) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	mesh.name = node_name
+	var sphere := SphereMesh.new()
+	sphere_radius(sphere, radius)
+	mesh.mesh = sphere
+	mesh.position = local_pos
+	mesh.material_override = material
+	parent.add_child(mesh)
+	return mesh
+
+
+static func sphere_radius(sphere: SphereMesh, radius: float) -> void:
+	sphere.radius = radius
+	sphere.height = radius * 2.0
+	sphere.radial_segments = 16
+	sphere.rings = 8
+
+
+static func _plain_box(size: Vector3) -> BoxMesh:
+	var box := BoxMesh.new()
+	box.size = size
+	return box
 
 
 static func _add_detail_cylinder(parent: Node3D, node_name: String, radius: float, height: float, local_pos: Vector3, material: Material) -> MeshInstance3D:

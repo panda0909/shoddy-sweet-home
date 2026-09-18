@@ -37,6 +37,14 @@ func _run() -> void:
 		if game.get_node_or_null("Mattress/" + id) == null:
 			printerr("FAIL missing mattress detail: ", id)
 			failures += 1
+	for id in [
+		"BedsideLampShade_Left/LampBulb", "BedsideLampShade_Right/LampBulb",
+		"Closet/ClosetInteriorShadow", "Bookcase/Shelf_0", "Bookcase/Shelf_1",
+		"Bookcase/Shelf_2", "BedroomRug/RugFringe_0", "BedroomRug/RugFringe_11"
+	]:
+		if game.get_node_or_null(id) == null:
+			printerr("FAIL missing P0 finish detail: ", id)
+			failures += 1
 
 	for child in game.get_children():
 		failures += _count_concave(child)
