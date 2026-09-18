@@ -308,3 +308,8 @@
 
 - 淋浴玻璃、左右端框、上下框與排水孔改由 `ImportedBath_ShowerTray` 實際 bounds 推導，避免浴室資產移動或縮放後隔間漂移。
 - `tests/bathroom_details.gd` 新增玻璃中心與 tray bounds 的接合檢查；浴室批次維持 13 組，浴室細節與 11 張圖形驗收均為 0 failures。
+
+### 追加：客廳壁爐 bounds 收邊（2026-09-19）
+
+- 依匯入壁爐的 `117_BlackMarble`、`118_WhitePaint`、`119_WhitePaint` 三組實際 bounds 補上 hearth、mantel edge 與側收邊，改善壁爐／邊櫃貼牆薄片感。
+- `room_finish_quality.gd` 新增三個客廳建築細節檢查；客廳 bounds details 增至 10 個，11 張圖形驗收仍為 0 failures。

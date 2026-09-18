@@ -431,6 +431,7 @@ func _build_living_room(scene_override: PackedScene = null) -> void:
 	_reposition_living_sofa(living_asset)
 	_prepare_furniture(living_asset)
 	_add_living_imported_details()
+	_add_living_architecture_details()
 	_add_living_window_details()
 
 
@@ -476,6 +477,24 @@ func _add_living_imported_details() -> void:
 		cushion_index += 1
 	if cushion_index == 0:
 		return
+
+
+func _add_living_architecture_details() -> void:
+	# The imported fireplace is assembled from three thin scan surfaces. Add
+	# manufactured hearth/mantel edges from those real bounds so the wall-side
+	# furniture reads as one proportional architectural assembly.
+	var marble := _mat(Color(0.14, 0.15, 0.16))
+	marble.metallic = 0.12
+	marble.roughness = 0.30
+	var hearth_bounds := _find_living_mesh_bounds("117_BlackMarble")
+	if hearth_bounds.has_volume():
+		_add_box("LivingDetail_FireplaceHearthEdge", Vector3(hearth_bounds.size.x + 0.08, 0.035, hearth_bounds.size.z + 0.06), Vector3(hearth_bounds.get_center().x, hearth_bounds.end.y + 0.014, hearth_bounds.get_center().z), marble, false)
+	var mantel_bounds := _find_living_mesh_bounds("118_WhitePaint")
+	if mantel_bounds.has_volume():
+		_add_box("LivingDetail_FireplaceMantelEdge", Vector3(mantel_bounds.size.x + 0.06, 0.035, mantel_bounds.size.z + 0.04), Vector3(mantel_bounds.get_center().x, mantel_bounds.end.y + 0.016, mantel_bounds.get_center().z), _mat(Color(0.76, 0.75, 0.70)), false)
+	var side_bounds := _find_living_mesh_bounds("119_WhitePaint")
+	if side_bounds.has_volume():
+		_add_box("LivingDetail_FireplaceSideTrim", Vector3(side_bounds.size.x + 0.035, side_bounds.size.y * 0.94, 0.035), Vector3(side_bounds.get_center().x, side_bounds.get_center().y, side_bounds.position.z - 0.020), _mat(Color(0.70, 0.69, 0.65)), false)
 
 
 func _add_living_window_details() -> void:

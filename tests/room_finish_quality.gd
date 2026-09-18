@@ -51,6 +51,10 @@ func _run() -> void:
 		if game.get_node_or_null(window_piece) == null:
 			printerr("FAIL missing rebuilt living window piece: ", window_piece)
 			failures += 1
+	for fireplace_piece in ["LivingDetail_FireplaceHearthEdge", "LivingDetail_FireplaceMantelEdge", "LivingDetail_FireplaceSideTrim"]:
+		if game.get_node_or_null(fireplace_piece) == null:
+			printerr("FAIL missing bounds-attached fireplace detail: ", fireplace_piece)
+			failures += 1
 
 	print("Furniture contact shadows: ", shadow_count)
 	print("Kitchen hero scale: ", kitchen.scale.x if kitchen != null else -1.0)
