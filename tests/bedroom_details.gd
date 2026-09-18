@@ -39,7 +39,8 @@ func _run() -> void:
 			failures += 1
 	for id in [
 		"BedsideLampShade_Left/LampBulb", "BedsideLampShade_Right/LampBulb",
-		"Closet/ClosetInteriorShadow", "Bookcase/Shelf_0", "Bookcase/Shelf_1",
+		"Closet/ClosetInteriorShadow", "Closet/ClosetBottomRail", "Closet/ClosetTopRail",
+		"Bookcase/Shelf_0", "Bookcase/Shelf_1",
 		"Bookcase/Shelf_2", "BedroomRug/RugFringe_0", "BedroomRug/RugFringe_11",
 		"CurtainLeft/CurtainRod", "CurtainRight/CurtainRod"
 	]:
@@ -49,6 +50,14 @@ func _run() -> void:
 	var left_rod := game.get_node_or_null("CurtainLeft/CurtainRod") as MeshInstance3D
 	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:
 		printerr("FAIL curtain rod is not horizontal")
+		failures += 1
+	for id in ["Desk/DrawerBodyCollisionLeft", "Desk/DrawerBodyCollisionRight", "DeskTop/DeskTopCollision"]:
+		var collision := game.get_node_or_null(id) as CollisionShape3D
+		if collision == null or not collision.shape is BoxShape3D:
+			printerr("FAIL missing box-form desk assembly collision: ", id)
+			failures += 1
+	if game.get_node_or_null("DeskTop/CableGrommet") == null:
+		printerr("FAIL missing desk cable grommet")
 		failures += 1
 
 	for child in game.get_children():

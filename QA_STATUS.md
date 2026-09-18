@@ -208,3 +208,9 @@
 
 - `cabinet_blocked` 的 15 段紅色掃掠弧線現在由同一組半徑與角度執行 BoxShape3D sweep probe；測試確認 15/15 採樣點都能碰到實際家具碰撞，而缺陷視覺本身仍沒有 CollisionShape3D。
 - `tests/issue_visuals.gd` 不再只驗證弧線數量，也驗證冰箱門開啟範圍確實和廚房家具的物理盒重疊。
+
+### 追加：臥室書桌組件與衣櫃導軌（2026-09-19）
+
+- 書桌不再只靠隱藏整體外殼；新增左右抽屜櫃、抽屜面、拉手、桌面線孔，以及桌面獨立 BoxShape3D 碰撞，視覺組件與可通行碰撞分離。
+- 衣櫃補上上下導軌，並保留門片內嵌板與鉸鏈細節；導軌、線孔與抽屜裝飾均不新增阻擋玩家的碰撞。
+- `tests/bedroom_details.gd`、`tests/furniture_collision.gd`、`tests/issue_access.gd` 通過；圖形化四房驗收輸出 7 張情境圖，0 failures。臥室近景確認床架、床品、床頭櫃、窗簾與材質細節正常顯示。

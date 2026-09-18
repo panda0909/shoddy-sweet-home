@@ -36,8 +36,20 @@ static func apply(room: Node3D) -> void:
 			_add_box_collision(desk, "LegCollision", Vector3(0.13, 0.85, 0.13), Vector3(x, 0, z))
 	room._add_door_frame_piece(desk, "BackPanel", Vector3(2.2, 0.28, 0.04), Vector3(0, 0.20, -0.31), room._mat(Color(0.3, 0.19, 0.11)))
 	_add_box_collision(desk, "BackPanelCollision", Vector3(2.2, 0.28, 0.04), Vector3(0, 0.20, -0.31))
+	# Two shallow drawer pedestals turn the desk from a hidden shell into a
+	# readable piece of joinery. Their bodies and drawer fronts remain separate
+	# so the collision stays a pair of simple boxes instead of a trimesh.
+	for side_data in [["Left", -0.82], ["Right", 0.82]]:
+		var side_name: String = side_data[0]
+		var side_x: float = side_data[1]
+		room._add_door_frame_piece(desk, "DrawerBody" + side_name, Vector3(0.42, 0.50, 0.62), Vector3(side_x, -0.17, 0.02), room._wood_mat(Color(0.63, 0.40, 0.22)))
+		_add_box_collision(desk, "DrawerBodyCollision" + side_name, Vector3(0.42, 0.50, 0.62), Vector3(side_x, -0.17, 0.02))
+		_add_detail_box(desk, "DrawerFront" + side_name, Vector3(0.34, 0.16, 0.025), Vector3(side_x, -0.02, 0.34), room._wood_mat(Color(0.72, 0.47, 0.25)))
+		_add_detail_box(desk, "DrawerPull" + side_name, Vector3(0.13, 0.022, 0.032), Vector3(side_x, -0.02, 0.365), room._mat(Color(0.56, 0.42, 0.24)))
 	var desk_top: Node3D = room.get_node("DeskTop")
 	_add_box_collision(desk_top, "DeskTopCollision", Vector3(2.55, 0.10, 0.85), Vector3.ZERO)
+	# A small cable grommet is an actual desk detail, not a floating UI clue.
+	_add_detail_cylinder(desk_top, "CableGrommet", 0.055, 0.018, Vector3(-0.82, 0.062, -0.22), room._mat(Color(0.08, 0.09, 0.10)))
 
 	# Mattress piping, duvet seams and a shallow throw fold make the soft parts
 	# read as manufactured fabric instead of flat colored boxes.
@@ -64,7 +76,10 @@ static func apply(room: Node3D) -> void:
 		_add_detail_box(door, "InsetPanel", Vector3(0.82, 1.82, 0.012), Vector3(0, 0, 0.026), room._wood_mat(Color(0.62, 0.39, 0.22)))
 		_add_detail_box(door, "UpperHinge", Vector3(0.06, 0.12, 0.025), Vector3(-0.38, 0.76, 0.04), room._mat(Color(0.26, 0.23, 0.19)))
 		_add_detail_box(door, "LowerHinge", Vector3(0.06, 0.12, 0.025), Vector3(-0.38, -0.76, 0.04), room._mat(Color(0.26, 0.23, 0.19)))
-	_add_detail_box(room.get_node("Closet"), "ClosetInteriorShadow", Vector3(2.05, 1.96, 0.025), Vector3(0, 0, -0.31), room._mat(Color(0.055, 0.038, 0.026)))
+	var closet: Node3D = room.get_node("Closet")
+	_add_detail_box(closet, "ClosetInteriorShadow", Vector3(2.05, 1.96, 0.025), Vector3(0, 0, -0.31), room._mat(Color(0.055, 0.038, 0.026)))
+	_add_detail_box(closet, "ClosetBottomRail", Vector3(2.12, 0.055, 0.045), Vector3(0, -1.06, 0.335), room._wood_mat(Color(0.55, 0.33, 0.18)))
+	_add_detail_box(closet, "ClosetTopRail", Vector3(2.12, 0.055, 0.045), Vector3(0, 1.06, 0.335), room._wood_mat(Color(0.55, 0.33, 0.18)))
 	# Desk details: a recessed drawer, monitor foot, keyboard and chair arms/base.
 	_add_detail_box(desk, "DrawerFront", Vector3(1.05, 0.18, 0.025), Vector3(0, 0.30, 0.38), room._wood_mat(Color(0.72, 0.47, 0.25)))
 	_add_detail_box(desk, "DrawerPull", Vector3(0.20, 0.025, 0.035), Vector3(0, 0.30, 0.40), room._mat(Color(0.56, 0.42, 0.24)))
