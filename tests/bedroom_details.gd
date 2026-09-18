@@ -40,14 +40,31 @@ func _run() -> void:
 	for id in [
 		"BedsideLampShade_Left/LampBulb", "BedsideLampShade_Right/LampBulb",
 		"Closet/ClosetInteriorShadow", "Bookcase/Shelf_0", "Bookcase/Shelf_1",
-		"Bookcase/Shelf_2", "BedroomRug/RugFringe_0", "BedroomRug/RugFringe_11"
+		"Bookcase/Shelf_2", "BedroomRug/RugFringe_0", "BedroomRug/RugFringe_11",
+		"CurtainLeft/CurtainRod", "CurtainRight/CurtainRod"
 	]:
 		if game.get_node_or_null(id) == null:
 			printerr("FAIL missing P0 finish detail: ", id)
 			failures += 1
+	var left_rod := game.get_node_or_null("CurtainLeft/CurtainRod") as MeshInstance3D
+	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:
+		printerr("FAIL curtain rod is not horizontal")
+		failures += 1
 
 	for child in game.get_children():
 		failures += _count_concave(child)
+	for id in ["Desk", "DeskTop"]:
+		var furniture: Node = game.get_node_or_null(id)
+		if furniture == null:
+			continue
+		for shape_node in furniture.find_children("*", "CollisionShape3D", true, false):
+			if not shape_node.shape is BoxShape3D:
+				printerr("FAIL non-box bedroom collision: ", shape_node.get_path())
+				failures += 1
+	var old_desk_collision := game.get_node_or_null("Desk/CollisionShape3D") as CollisionShape3D
+	if old_desk_collision != null and not old_desk_collision.disabled:
+		printerr("FAIL hidden desk shell collision remains active")
+		failures += 1
 
 	print("Bedroom detail failures: ", failures)
 	game.queue_free()

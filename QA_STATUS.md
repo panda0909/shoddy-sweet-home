@@ -192,3 +192,8 @@
 - 洗手台檯面、左右盆、雙龍頭與鏡框改以匯入模型 `44_Mirror` 的世界 bounds 對齊，讓配件隨浴室資產位置與比例同步，不再散落於固定座標。
 - 新增 8 個無碰撞浴室 finish detail；原有馬桶、淋浴盤、排水孔與玻璃框仍保留碰撞與缺陷錨點。
 - `tests/bathroom_details.gd`、四房渲染與 7 張近距離情境驗收均通過 0 failures；新增配件後浴室約 498 draws，frame median 7.194ms / p95 13.218ms。
+
+### 追加：臥室窗簾桿方向修正（2026-09-18）
+
+- 修正 `bedroom_details.gd` 中 CylinderMesh 預設垂直造成窗簾桿像立柱的問題；現在桿體沿窗寬水平旋轉，窗簾褶皺仍維持無碰撞。
+- `tests/bedroom_details.gd` 新增水平方向驗證；臥室近景與四房圖形渲染通過，臥室 frame median 6.799ms / p95 12.126ms。

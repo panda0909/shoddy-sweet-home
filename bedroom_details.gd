@@ -114,7 +114,10 @@ static func apply(room: Node3D) -> void:
 	for id in ["CurtainLeft", "CurtainRight"]:
 		var curtain: Node3D = room.get_node(id)
 		curtain.get_node("Mesh").hide()
-		_add_detail_cylinder(curtain, "CurtainRod", 0.035, 0.62, Vector3(0, 0.88, 0), room._mat(Color(0.32, 0.26, 0.18)))
+		var rod := _add_detail_cylinder(curtain, "CurtainRod", 0.035, 0.62, Vector3(0, 0.88, 0), room._mat(Color(0.32, 0.26, 0.18)))
+		# CylinderMesh is vertical by default; a curtain rod must run across the
+		# panel instead of appearing as a standing pole through the window.
+		rod.rotation.z = PI / 2.0
 		for i in range(10):
 			room._add_door_frame_piece(curtain, "Pleat", Vector3(0.052, 1.65, 0.06), Vector3(-0.22 + i * 0.048, 0, sin(i * 1.8) * 0.025), room._mat(Color(0.25, 0.32, 0.42)))
 
