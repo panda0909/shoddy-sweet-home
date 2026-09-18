@@ -15,19 +15,34 @@ func _run() -> void:
 		body.queue_free()
 	game.issue_bodies.clear()
 	game.issue_records = game._get_issue_definitions()
+	var failures := 0
+	var expected_ids := [
+		"sofa_gap", "sink_leak", "vent_wrong", "kitchen_socket", "cabinet_blocked", "cabinet_wear",
+		"bed_slope", "window_sealed", "closet_deadend", "drain_missing", "tile_hollow", "bath_vanity", "bath_door", "bath_vent"
+	]
+	if game.issue_records.size() != 14:
+		printerr("FAIL issue pool count: ", game.issue_records.size())
+		failures += 1
+	for expected_id in expected_ids:
+		var found := false
+		for issue in game.issue_records:
+			if str(issue["id"]) == expected_id:
+				found = true
+				break
+		if not found:
+			printerr("FAIL missing required issue definition: ", expected_id)
+			failures += 1
 	for issue in game.issue_records:
 		game._add_issue_target(issue)
 
-	var failures := 0
 	var anchored := [
-		["tv_outlet", "78_Socket", 0.85],
 		["sink_leak", "261_CupboardUnits", 0.90],
 		["vent_wrong", "255_ExtractorHood", 0.90],
 		["kitchen_socket", "195_WallSocket", 0.85],
 		["cabinet_blocked", "253_CupboardUnits", 0.90],
+		["cabinet_wear", "74_CupboardUnits", 0.90],
 		["bed_slope", "BedBase", 0.90],
 		["window_sealed", "WindowGlass", 0.65],
-		["rug_tilt", "141_Carpet", 0.75],
 		["drain_missing", "ImportedBath_DrainCover", 0.55],
 		["bath_vent", "ImportedBath_CeilingVent", 0.55]
 	]
@@ -37,6 +52,8 @@ func _run() -> void:
 		var expected := bounds.get_center()
 		if entry[0] == "bed_slope":
 			expected = Vector3(bounds.end.x - 0.10, bounds.position.y + 0.02, bounds.get_center().z)
+		elif entry[0] == "cabinet_wear":
+			expected = Vector3(bounds.position.x - 0.045, bounds.get_center().y, bounds.get_center().z)
 		if body == null or bounds.size.length() <= 0.0:
 			printerr("FAIL missing issue anchor: ", entry[0], " -> ", entry[1])
 			failures += 1
@@ -60,13 +77,18 @@ func _run() -> void:
 	if door == null or door.position.distance_to(door_anchor) > 0.05:
 		printerr("FAIL bathroom door-frame placement: ", door.position if door != null else "missing")
 		failures += 1
+	var vanity_issue := game.issue_bodies.get("bath_vanity") as Node3D
+	var vanity_anchor: Vector3 = game.get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 0.24, -0.09)) + Vector3(-0.45, 0, -0.28)
+	if vanity_issue == null or vanity_issue.position.distance_to(vanity_anchor) > 0.05:
+		printerr("FAIL bathroom door/vanity issue placement: ", vanity_issue.position if vanity_issue != null else "missing")
+		failures += 1
 	var closet := game.issue_bodies.get("closet_deadend") as Node3D
 	var closet_anchor: Vector3 = game.get_node("ClosetDoorLeft").position + Vector3(0.50, 0, 0.045)
 	if closet == null or closet.position.distance_to(closet_anchor) > 0.05:
 		printerr("FAIL closet-door placement: ", closet.position if closet != null else "missing")
 		failures += 1
 
-	print("Issue anchors checked: ", anchored.size() + 4)
+	print("Issue anchors checked: ", anchored.size() + 5)
 	print("Issue anchor fit failures: ", failures)
 	game.queue_free()
 	await process_frame

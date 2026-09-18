@@ -38,7 +38,7 @@ static func build(parent: Node3D, id: String) -> void:
 	var dark := Color(0.07, 0.06, 0.045)
 	var wood := Color(0.36, 0.20, 0.10)
 	match id:
-		"tv_outlet", "kitchen_socket":
+		"kitchen_socket":
 			box(parent, Vector3(0.22, 0.30, 0.035), Vector3.ZERO, ivory, 0.09)
 			for x in [-0.055, 0.055]:
 				box(parent, Vector3(0.024, 0.06, 0.008), Vector3(x, 0.02, -0.024), dark)
@@ -58,11 +58,11 @@ static func build(parent: Node3D, id: String) -> void:
 			for i in range(6):
 				box(parent, Vector3(0.018, 0.055, 0.018), Vector3(0.05, 0.04 - i * 0.07, 0), Color(0.12, 0.33, 0.40))
 				parent.get_child(parent.get_child_count() - 1).set_meta("water_drop", true)
-		"rug_tilt":
-			# Folded fabric remains attached to the existing carpet edge.
-			box(parent, Vector3(0.48, 0.018, 0.36), Vector3.ZERO, Color(0.28, 0.24, 0.19), 0.06)
-			for i in range(12):
-				box(parent, Vector3(0.008, 0.008, 0.07), Vector3(-0.22 + i * 0.04, 0.004, 0.20), ivory)
+		"cabinet_wear":
+			# Short irregular abrasions sit on the cabinet face; the hitbox is
+			# generous but this visual remains a small, believable defect.
+			for index in range(5):
+				box(parent, Vector3(0.012, 0.075, 0.006), Vector3(-0.018, -0.16 + index * 0.08, -0.004), Color(0.22, 0.10, 0.045), 0.12 if index % 2 == 0 else -0.18)
 		"bed_slope":
 			box(parent, Vector3(0.65, 0.035, 0.45), Vector3.ZERO, Color(0.34, 0.29, 0.21), 0.07)
 			for x in [-0.34, 0.34]:
@@ -89,3 +89,9 @@ static func build(parent: Node3D, id: String) -> void:
 				# It is visual-only; the real passage remains governed by the
 				# furniture BoxShape3D and the inspection hitbox.
 				floor_arc(parent, 0.58, -72.0, 72.0, Color(0.92, 0.20, 0.12, 0.72))
+		"bath_vanity":
+			# A floor sweep plus two low scuffs makes the door/vanity conflict
+			# readable without adding another collision shape.
+			floor_arc(parent, 0.62, -78.0, 78.0, Color(0.92, 0.20, 0.12, 0.72))
+			box(parent, Vector3(0.34, 0.025, 0.018), Vector3(0, -0.015, 0.28), wood, 0.12)
+			box(parent, Vector3(0.28, 0.025, 0.018), Vector3(0.16, -0.015, 0.20), wood, -0.16)

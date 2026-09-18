@@ -1593,18 +1593,18 @@ func _start_round() -> void:
 
 func _get_issue_definitions() -> Array[Dictionary]:
 	return [
-		_issue("rug_tilt", "客廳地毯坡向牆角", "客廳", 1, 2, Vector3(-6.0, 0.05, 2.0), Vector3(2.6, 0.06, 1.4), "地毯正在替地板偷偷校正水平。"),
-		_issue("tv_outlet", "電視插座沒有接地", "客廳", 3, 3, Vector3(-7.9, 1.25, 5.55), Vector3(0.55, 0.32, 0.12), "這個插座比電視節目還刺激。"),
 		_issue("sofa_gap", "沙發後方封死檢修孔", "客廳", 0, 2, Vector3(-3.0, 1.05, 5.72), Vector3(1.25, 1.0, 0.10), "設計師把維修的未來一起封進牆裡。"),
 		_issue("sink_leak", "水槽下方正在漏水", "廚房", 0, 3, Vector3(4.2, 0.86, 4.65), Vector3(0.9, 0.45, 0.65), "櫥櫃裡面有一個小型室內瀑布。"),
 		_issue("vent_wrong", "抽油煙機排向櫃子", "廚房", 0, 2, Vector3(7.5, 2.4, 5.52), Vector3(1.4, 0.45, 0.25), "油煙沒有消失，只是搬進櫃子。"),
 		_issue("kitchen_socket", "廚房插座位置過低", "廚房", 3, 2, Vector3(2.2, 0.9, 5.35), Vector3(0.55, 0.32, 0.10), "這個插座很適合讓延長線泡湯。"),
 		_issue("cabinet_blocked", "冰箱門會撞到櫃子", "廚房", -1, 2, Vector3(8.8, 1.3, 3.5), Vector3(0.15, 1.8, 0.9), "冰箱不是打不開，只是需要先搬家。"),
+		_issue("cabinet_wear", "櫥櫃門板磨損", "廚房", 0, 2, Vector3(7.0, 1.45, 4.1), Vector3(0.14, 0.55, 0.72), "這扇門每天都在和把手互相傷害。"),
 		_issue("bed_slope", "床底地板明顯傾斜", "臥室", 1, 2, Vector3(-6.2, 1.08, -3.3), Vector3(3.0, 0.08, 2.2), "每天早上醒來，枕頭都已經先下床了。"),
 		_issue("window_sealed", "逃生窗被裝潢封死", "臥室", -1, 3, Vector3(-7.7, 1.75, -5.62), Vector3(2.0, 1.1, 0.08), "這扇窗唯一能做的事，是讓你看見外面的自由。"),
 		_issue("closet_deadend", "衣櫃門完全打不開", "臥室", -1, 1, Vector3(-1.9, 1.2, -4.42), Vector3(1.7, 1.75, 0.10), "衣服不是收納在裡面，是被判刑在裡面。"),
 		_issue("drain_missing", "淋浴區沒有排水孔", "浴室", -1, 3, Vector3(4.8, 0.03, -2.8), Vector3(0.9, 0.04, 0.9), "這間浴室採用『水自己想辦法』的排水系統。"),
 		_issue("tile_hollow", "牆磚大面積空鼓", "浴室", 2, 2, Vector3(7.3, 1.45, -5.75), Vector3(0.8, 1.0, 0.07), "這面牆裡面比屋主的承諾還空。"),
+		_issue("bath_vanity", "浴室門會撞到洗手台", "浴室", -1, 2, Vector3(8.2, 0.24, -0.50), Vector3(0.90, 0.20, 0.90), "這扇門每次開啟，都會順便替洗手台量一次尺寸。"),
 		_issue("bath_door", "浴室門會撞到洗手台", "浴室", -1, 2, Vector3(8.8, 1.25, -0.82), Vector3(1.3, 2.1, 0.08), "這扇門的設計理念是每天撞一次。"),
 		_issue("bath_vent", "排風扇把濕氣吹回浴室", "浴室", 0, 2, Vector3(3.1, 2.72, -2.1), Vector3(0.9, 0.26, 0.55), "濕氣離開浴室三秒後，決定回來住。")
 	]
@@ -1613,9 +1613,6 @@ func _get_issue_definitions() -> Array[Dictionary]:
 func _issue(issue_id: String, title: String, room: String, required_tool: int, severity: int, pos: Vector3, size: Vector3, joke: String) -> Dictionary:
 	# Keep fixtures on the revised walls, clear of the entrance and door swing.
 	match issue_id:
-		"tv_outlet":
-			pos = Vector3(-9.72, 0.85, 2.6)
-			size = Vector3(0.12, 0.35, 0.4)
 		"sofa_gap":
 			# The repair opening belongs on the wall immediately behind the sofa,
 			# not on the unrelated side wall used by the old placeholder. Derive
@@ -1641,6 +1638,12 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			size = Vector3(0.16, 0.65, 0.3)
 			title = "冰箱門會撞到櫃子"
 			joke = "每次開門，都順便替門板磨一次皮。地產廣告沒說這是附贈功能。"
+		"cabinet_wear":
+			title = "櫥櫃門板磨損"
+		"bath_vanity":
+			var door_floor_anchor: Vector3 = get_node("RightInnerDoorFrame").to_global(Vector3(1.30, 0.24, -0.09))
+			pos = door_floor_anchor + Vector3(-0.45, 0, -0.28)
+			size = Vector3(0.80, 0.20, 0.80)
 		"bed_slope":
 			pos = Vector3(-4.6, 0.07, -3.3)
 			size = Vector3(0.7, 0.14, 0.9)
@@ -1663,14 +1666,13 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			size = Vector3(0.35, 0.8, 0.12)
 	# Resolve against imported furniture after scale/placement, not guessed room coordinates.
 	var anchor_names := {
-		"tv_outlet": "78_Socket",
 		"sink_leak": "261_CupboardUnits",
 		"vent_wrong": "255_ExtractorHood",
 		"cabinet_blocked": "253_CupboardUnits",
+		"cabinet_wear": "74_CupboardUnits",
 		"kitchen_socket": "195_WallSocket",
 		"bed_slope": "BedBase",
 		"window_sealed": "WindowGlass",
-		"rug_tilt": "141_Carpet",
 		"drain_missing": "ImportedBath_DrainCover",
 		"tile_hollow": "BackWall",
 		"bath_vent": "ImportedBath_CeilingVent"
@@ -1679,14 +1681,7 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		var bounds := _find_anchor_bounds(str(anchor_names[issue_id]))
 		if bounds.size.length() > 0.0:
 			pos = bounds.get_center()
-			if issue_id == "rug_tilt":
-				pos = Vector3(bounds.end.x - 0.25, bounds.end.y + 0.012, bounds.end.z - 0.20)
-			elif issue_id == "tv_outlet":
-				# The socket is a tiny source mesh; enlarge the inspection area
-				# around its actual wall position without moving the visual clue.
-				pos = bounds.get_center() + Vector3(0, 0.58, -0.12)
-				size = Vector3(0.16, 0.35, 0.24)
-			elif issue_id == "kitchen_socket":
+			if issue_id == "kitchen_socket":
 				pos = bounds.get_center() + Vector3(-0.06, 0, 0)
 				size = Vector3(0.16, 0.35, 0.24)
 			elif issue_id == "bed_slope":
@@ -1705,6 +1700,9 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 				size = Vector3(0.80, 1.0, 0.07)
 			elif issue_id == "bath_vent":
 				pos = bounds.get_center() + Vector3(0, 0.02, 0.02)
+			elif issue_id == "cabinet_wear":
+				pos = Vector3(bounds.position.x - 0.045, bounds.get_center().y, bounds.get_center().z)
+				size = Vector3(0.12, minf(0.60, bounds.size.y * 0.78), minf(0.80, bounds.size.z * 0.64))
 			else:
 				pos.x = bounds.position.x - 0.035
 				if issue_id == "sink_leak":
@@ -1780,11 +1778,9 @@ func _add_issue_target(issue: Dictionary) -> void:
 	var visual := Node3D.new()
 	visual.name = "DefectVisual"
 	body.add_child(visual)
-	if issue["id"] == "tv_outlet":
-		visual.rotation.y = -PI / 2.0
 	if issue["id"] == "bath_vent":
 		visual.rotation.x = PI / 2.0
-	if issue["id"] in ["sink_leak", "vent_wrong", "cabinet_blocked"]:
+	if issue["id"] in ["sink_leak", "vent_wrong", "cabinet_blocked", "cabinet_wear"]:
 		visual.rotation.y = PI / 2.0
 	preload("res://defect_visuals.gd").build(visual, str(issue["id"]))
 	issue_meshes[issue["id"]] = mesh
@@ -2027,18 +2023,18 @@ func _show_hint() -> void:
 
 func _issue_hint(issue_id: String) -> String:
 	var hints := {
-		"rug_tilt": "客廳：查看地毯邊緣與地板接縫",
-		"tv_outlet": "客廳：查看電視附近的牆面插座",
 		"sofa_gap": "客廳：查看沙發後方靠牆的位置",
 		"sink_leak": "廚房：查看水槽下方的櫥櫃側面",
 		"vent_wrong": "廚房：查看抽油煙機與上方櫃體",
 		"kitchen_socket": "廚房：查看檯面附近偏低的插座",
 		"cabinet_blocked": "廚房：查看冰箱與櫃門相鄰的邊緣",
+		"cabinet_wear": "廚房：查看上櫃門板與把手周圍",
 		"bed_slope": "臥室：查看床底附近的地板",
 		"window_sealed": "臥室：查看床側的逃生窗",
 		"closet_deadend": "臥室：查看衣櫃門板與門把",
 		"drain_missing": "浴室：查看淋浴區地面中央",
 		"tile_hollow": "浴室：查看後牆的大面積牆磚",
+		"bath_vanity": "浴室：查看門扇掃過洗手台的地面",
 		"bath_door": "浴室：查看門框靠近洗手台的一側",
 		"bath_vent": "浴室：查看天花板上的排風扇"
 	}

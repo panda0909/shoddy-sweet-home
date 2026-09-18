@@ -60,6 +60,15 @@ func _run() -> void:
 			failures += 1
 		else:
 			print("Cabinet sweep physics hits: ", sweep_hits, "/15")
+	for visual_issue in ["cabinet_wear", "bath_vanity"]:
+		var issue_body := game.issue_bodies.get(visual_issue) as StaticBody3D
+		var visual := issue_body.get_node_or_null("DefectVisual") as Node3D if issue_body != null else null
+		if issue_body == null or visual == null or visual.get_child_count() == 0:
+			printerr("FAIL missing visible clue for issue: ", visual_issue)
+			failures += 1
+		elif visual.find_children("*", "CollisionShape3D", true, false).size() != 0:
+			printerr("FAIL issue visual added collision: ", visual_issue)
+			failures += 1
 	print("Cabinet swing arc segments: ", 15 if failures == 0 else 0)
 	print("Issue visual failures: ", failures)
 	game.queue_free()
