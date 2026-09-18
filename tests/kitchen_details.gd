@@ -15,7 +15,8 @@ func _run() -> void:
 	var required := [
 		"KitchenDetail_SinkBasin", "KitchenDetail_SinkRim", "KitchenDetail_FaucetStem",
 		"KitchenDetail_FaucetSpout", "KitchenDetail_FaucetHandle", "KitchenDetail_CuttingBoard",
-		"KitchenDetail_Cup", "KitchenDetail_FridgeHandle", "KitchenDetail_UnderCabinetLight",
+		"KitchenDetail_Cup", "KitchenDetail_SinkLeakTrap", "KitchenDetail_SinkLeakJoint", "KitchenDetail_SinkLeakDrop",
+		"KitchenDetail_FridgeHandle", "KitchenDetail_UnderCabinetLight",
 		"KitchenDetail_FridgeDoorPanel", "KitchenDetail_FridgeGasketTop", "KitchenDetail_FridgeGasketBottom",
 		"KitchenDetail_FridgeHingeTop", "KitchenDetail_FridgeHingeBottom", "KitchenDetail_FridgeDisplay",
 		"KitchenDetail_OvenGlass", "KitchenDetail_OvenHandle", "KitchenDetail_OvenFrameTop",
@@ -44,6 +45,14 @@ func _run() -> void:
 	var sink := game.get_node_or_null("KitchenDetail_SinkBasin") as Node3D
 	if not sink_worktop.has_volume() or sink == null or sink.global_position.distance_to(sink_worktop.get_center()) > 0.40:
 		printerr("FAIL sink is not attached to real worktop bounds")
+		failures += 1
+	var leak_position := Vector3.ZERO
+	for issue in game._get_issue_definitions():
+		if str(issue["id"]) == "sink_leak":
+			leak_position = issue["pos"]
+			break
+	if leak_position == Vector3.ZERO or not sink_worktop.has_volume() or absf(leak_position.x - (sink_worktop.get_center().x - sink_worktop.size.x * 0.12)) > 0.06 or absf(leak_position.z - (sink_worktop.get_center().z + sink_worktop.size.z * 0.08)) > 0.06:
+		printerr("FAIL sink leak issue is not attached to the real sink plumbing bounds")
 		failures += 1
 	var table_bounds: AABB = game._find_kitchen_mesh_bounds("63_Tabletop")
 	var table_edge := game.get_node_or_null("KitchenDetail_TableEdge_Front") as Node3D

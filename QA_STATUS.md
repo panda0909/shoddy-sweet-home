@@ -462,3 +462,9 @@
 
 - 廚房執行期鋼材、陶瓷、冰箱烤漆與玻璃現在統一設定 Clearcoat／Clearcoat roughness；玻璃沿用 `_glass_mat()`，不新增貼圖下載量。
 - `tests/kitchen_details.gd` 驗證烤箱玻璃與冰箱門板的反射參數；廚房細節、匯入材質、14 題缺陷與 15 張圖形驗收均為 0 failures。
+
+### 追加：水槽漏水缺陷與真實管線貼合（2026-09-19）
+
+- 水槽下方新增可見的存水彎、鬆脫接頭與滴水段，全部使用純視覺件，不會阻擋玩家移動；位置跟隨 `123_Worktops` 與 `261_CupboardUnits` 的實際邊界。
+- `sink_leak` 缺陷標記改為同時依賴水槽工作檯的水平位置與下櫃的垂直範圍，不再使用過時固定座標。
+- `tests/kitchen_details.gd`、`tests/issue_anchor_fit.gd`、家具碰撞與 Godot headless 專案解析均通過；目前環境沒有 `xvfb-run`，本輪圖形測試需在已解鎖的 macOS 桌面重跑。

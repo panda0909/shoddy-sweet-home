@@ -637,6 +637,21 @@ func _add_kitchen_imported_details() -> void:
 	_add_cylinder("KitchenDetail_FaucetStem", 0.035, 0.38, Vector3(sink_center.x, sink_surface_y + 0.20, sink_center.z - sink_size.y * 0.40), steel, false)
 	_add_box("KitchenDetail_FaucetSpout", Vector3(0.24, 0.045, 0.045), Vector3(sink_center.x, sink_surface_y + 0.37, sink_center.z - sink_size.y * 0.16), steel, false)
 	_add_cylinder("KitchenDetail_FaucetHandle", 0.025, 0.14, Vector3(sink_center.x + sink_size.x * 0.42, sink_surface_y + 0.20, sink_center.z - sink_size.y * 0.40), steel, false)
+	# The defect is part of the plumbing, not a floating marker. Keep a small
+	# visible trap, loose coupling and drip under the real sink cabinet so the
+	# player can discover the answer before selecting the inspection tool.
+	var sink_cabinet := _find_kitchen_mesh_bounds("261_CupboardUnits")
+	if sink_worktop.has_volume() and sink_cabinet.has_volume():
+		var leak_y := sink_cabinet.position.y + sink_cabinet.size.y * 0.42
+		var pipe_material := _mat(Color(0.12, 0.16, 0.17))
+		pipe_material.metallic = 0.58
+		pipe_material.roughness = 0.34
+		var pipe_x := sink_center.x - sink_size.x * 0.16
+		var pipe_z := sink_center.z + sink_size.y * 0.08
+		_add_cylinder("KitchenDetail_SinkLeakTrap", 0.026, 0.24, Vector3(pipe_x, leak_y, pipe_z), pipe_material, false)
+		_add_box("KitchenDetail_SinkLeakJoint", Vector3(0.16, 0.045, 0.08), Vector3(pipe_x, leak_y - 0.12, pipe_z), pipe_material, false)
+		var drip_material := _emissive_mat(Color(0.10, 0.42, 0.52), 0.12)
+		_add_cylinder("KitchenDetail_SinkLeakDrop", 0.014, 0.10, Vector3(pipe_x + 0.065, leak_y - 0.20, pipe_z), drip_material, false)
 	for knob_index in range(4):
 		_add_cylinder("KitchenDetail_CookerKnob_%d" % knob_index, 0.045, 0.025, _kitchen_point(Vector3(6.25 + knob_index * 0.18, 0.70, 3.62)), steel, false)
 	_add_box("KitchenDetail_CuttingBoard", Vector3(0.48, 0.035, 0.34), _kitchen_point(Vector3(5.25, 0.66, 4.32)), wood, false)
@@ -1798,8 +1813,15 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 				size = Vector3(1.45, 0.90, 0.10)
 			title = "檢修孔被木條封死"
 		"sink_leak":
-			pos = Vector3(6.39, 0.43, 4.6)
-			size = Vector3(0.18, 0.8, 0.6)
+			var sink_worktop := _find_kitchen_mesh_bounds("123_Worktops")
+			var sink_cabinet := _find_anchor_bounds("261_CupboardUnits")
+			if sink_worktop.has_volume() and sink_cabinet.has_volume():
+				var leak_y := sink_cabinet.position.y + sink_cabinet.size.y * 0.42
+				pos = Vector3(sink_worktop.get_center().x - sink_worktop.size.x * 0.12, leak_y, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
+				size = Vector3(clampf(sink_worktop.size.x * 0.30, 0.18, 0.34), 0.18, clampf(sink_worktop.size.z * 0.24, 0.16, 0.30))
+			else:
+				pos = Vector3(6.39, 0.43, 4.6)
+				size = Vector3(0.18, 0.8, 0.6)
 			title = "櫥櫃側管線漏水"
 		"vent_wrong":
 			pos = Vector3(6.58, 1.48, 3.65)
@@ -1864,6 +1886,13 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			elif issue_id == "drain_missing":
 				pos = bounds.get_center() + Vector3(0, 0.018, 0)
 				size = Vector3(0.48, 0.04, 0.48)
+			elif issue_id == "sink_leak":
+				# The plumbing cabinet is a useful vertical anchor, but the
+				# horizontal location must follow the actual worktop/sink above it.
+				var sink_worktop := _find_kitchen_mesh_bounds("123_Worktops")
+				if sink_worktop.has_volume():
+					pos = Vector3(sink_worktop.get_center().x - sink_worktop.size.x * 0.12, bounds.position.y + bounds.size.y * 0.42, sink_worktop.get_center().z + sink_worktop.size.z * 0.08)
+					size = Vector3(clampf(sink_worktop.size.x * 0.30, 0.18, 0.34), 0.18, clampf(sink_worktop.size.z * 0.24, 0.16, 0.30))
 			elif issue_id == "tile_hollow":
 				# BackWall is the room's actual wall plane; keep the clue on
 				# its bathroom-side surface instead of floating in the room. The
