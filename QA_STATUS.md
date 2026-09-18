@@ -339,6 +339,11 @@
 - 依 `63_Tabletop` 世界 bounds 新增四個桌腳落地腳墊，補上餐桌與地板的接觸收尾；腳墊是視覺件，不增加玩家碰撞。
 - `tests/kitchen_details.gd` 新增四個腳墊數量回歸檢查，並維持餐桌／椅墊的 bounds 貼合。
 
+### 追加：臥室窗簾連續軌道貼合（2026-09-19）
+
+- 依 `WindowGlass` 世界 bounds 新增完整窗寬的窗簾軌道與左右封頭，讓兩側布簾、窗框與逃生窗缺陷維持同一組施工基準。
+- `tests/bedroom_details.gd` 新增軌道位置與封頭存在檢查；軌道仍是純視覺件，不新增碰撞。
+
 ### 追加：廚房冰箱把手 bounds 貼合（2026-09-19）
 
 - `KitchenDetail_FridgeHandle` 不再使用舊廚房比例下的固定座標，改依匯入 `253_CupboardUnits` 世界 bounds 生成，與 `cabinet_blocked` 缺陷共用同一個冰箱／高櫃基準。

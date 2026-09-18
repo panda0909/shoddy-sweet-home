@@ -57,6 +57,16 @@ func _run() -> void:
 	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:
 		printerr("FAIL curtain rod is not horizontal")
 		failures += 1
+	var window_bounds: AABB = game._find_anchor_bounds("WindowGlass")
+	var curtain_rail := game.get_node_or_null("BedroomCurtainRail") as MeshInstance3D
+	var expected_rail := Vector3(window_bounds.get_center().x, window_bounds.end.y + 0.22, window_bounds.end.z + 0.035) if window_bounds.has_volume() else Vector3.ZERO
+	if curtain_rail == null or not window_bounds.has_volume() or curtain_rail.global_position.distance_to(expected_rail) > 0.06:
+		printerr("FAIL curtain rail is not attached to the bedroom window bounds")
+		failures += 1
+	for id in ["BedroomCurtainFinialLeft", "BedroomCurtainFinialRight"]:
+		if game.get_node_or_null(id) == null:
+			printerr("FAIL missing curtain rail finial: ", id)
+			failures += 1
 	for id in ["BedsideLampShade_Left/Mesh", "BedsideLampShade_Right/Mesh"]:
 		var shade_mesh := game.get_node_or_null(id) as MeshInstance3D
 		var shade := shade_mesh.mesh as CylinderMesh if shade_mesh != null else null

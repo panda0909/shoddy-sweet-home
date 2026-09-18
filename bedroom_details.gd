@@ -168,6 +168,16 @@ static func apply(room: Node3D) -> void:
 		_add_detail_box(curtain, "CurtainHeader", Vector3(0.46, 0.10, 0.08), Vector3(0, 0.77, 0), room._fabric_mat(Color(0.20, 0.27, 0.36)))
 		for i in range(10):
 			room._add_door_frame_piece(curtain, "Pleat", Vector3(0.052, 1.65, 0.06), Vector3(-0.22 + i * 0.048, 0, sin(i * 1.8) * 0.025), room._mat(Color(0.25, 0.32, 0.42)))
+	# Complete the two panels with one continuous rail derived from the actual
+	# window glass. The original per-panel rods made the curtains read as two
+	# floating poles when the window was moved with the escape-window clue.
+	var window_bounds: AABB = room._find_anchor_bounds("WindowGlass")
+	if window_bounds.has_volume():
+		var rail_material: Material = room._mat(Color(0.32, 0.26, 0.18))
+		var rail_position := Vector3(window_bounds.get_center().x, window_bounds.end.y + 0.22, window_bounds.end.z + 0.035)
+		room._add_door_frame_piece(room, "BedroomCurtainRail", Vector3(window_bounds.size.x + 0.32, 0.055, 0.055), rail_position, rail_material)
+		_add_detail_sphere(room, "BedroomCurtainFinialLeft", 0.055, rail_position + Vector3(-(window_bounds.size.x + 0.32) * 0.5, 0, 0), rail_material)
+		_add_detail_sphere(room, "BedroomCurtainFinialRight", 0.055, rail_position + Vector3((window_bounds.size.x + 0.32) * 0.5, 0, 0), rail_material)
 
 
 static func _add_detail_box(parent: Node3D, node_name: String, size: Vector3, local_pos: Vector3, material: Material) -> MeshInstance3D:
