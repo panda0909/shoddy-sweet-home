@@ -37,6 +37,15 @@ static func apply(room: Node3D) -> void:
 		seat_shape.rings = 16
 		chair_seat_mesh.mesh = seat_shape
 		chair_seat_mesh.scale = Vector3(1.0, 0.18, 1.0)
+	var chair_back := room.get_node("DeskChairBack") as Node3D
+	var chair_back_mesh := chair_back.get_node("Mesh") as MeshInstance3D
+	if chair_back_mesh != null:
+		chair_back_mesh.mesh = _chair_back_mesh(Vector3(0.65, 0.72, 0.12))
+		var back_piping: StandardMaterial3D = room._fabric_mat(Color(0.90, 0.92, 0.91))
+		_add_detail_box(chair_back, "BackStitchTop", Vector3(0.46, 0.018, 0.018), Vector3(0, 0.20, 0.068), back_piping)
+		_add_detail_box(chair_back, "BackStitchBottom", Vector3(0.46, 0.018, 0.018), Vector3(0, -0.20, 0.068), back_piping)
+		_add_detail_box(chair_back, "BackPipingLeft", Vector3(0.018, 0.43, 0.018), Vector3(-0.25, 0, 0.068), back_piping)
+		_add_detail_box(chair_back, "BackPipingRight", Vector3(0.018, 0.43, 0.018), Vector3(0.25, 0, 0.068), back_piping)
 	# Replace the solid desk front with four legs and a modesty panel.
 	var desk: Node3D = room.get_node("Desk")
 	# The imported-looking box was only a temporary desk proxy. Remove its
@@ -248,6 +257,46 @@ static func apply(room: Node3D) -> void:
 		room._add_door_frame_piece(room, "BedroomCurtainRail", Vector3(window_bounds.size.x + 0.32, 0.055, 0.055), rail_position, rail_material)
 		_add_detail_sphere(room, "BedroomCurtainFinialLeft", 0.055, rail_position + Vector3(-(window_bounds.size.x + 0.32) * 0.5, 0, 0), rail_material)
 		_add_detail_sphere(room, "BedroomCurtainFinialRight", 0.055, rail_position + Vector3((window_bounds.size.x + 0.32) * 0.5, 0, 0), rail_material)
+
+
+static func _chair_back_mesh(size: Vector3) -> ArrayMesh:
+	var columns := 9
+	var rows := 7
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	for side in [1.0, -1.0]:
+		var base := vertices.size()
+		for y in range(rows):
+			var v := float(y) / float(rows - 1)
+			var y_pos := (v - 0.5) * size.y
+			for x in range(columns):
+				var u := float(x) / float(columns - 1)
+				var edge_falloff := 1.0 - pow(absf(u * 2.0 - 1.0), 2.0)
+				var z_pos: float = side * (size.z * 0.5 + 0.055 * edge_falloff)
+				vertices.append(Vector3((u - 0.5) * size.x, y_pos, z_pos))
+				normals.append(Vector3(0, 0, side))
+				uvs.append(Vector2(u, 1.0 - v))
+		for y in range(rows - 1):
+			for x in range(columns - 1):
+				var a := base + y * columns + x
+				var b := a + 1
+				var c := a + columns
+				var d := c + 1
+				if side > 0.0:
+					indices.append_array([a, c, b, b, c, d])
+				else:
+					indices.append_array([a, b, c, b, d, c])
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
 
 
 static func _add_detail_box(parent: Node3D, node_name: String, size: Vector3, local_pos: Vector3, material: Material) -> MeshInstance3D:

@@ -74,6 +74,7 @@ func _run() -> void:
 		"Mattress/SideBandFront", "Duvet/DuvetFold_0", "Duvet/DuvetFold_2",
 		"Duvet/QuiltSurface",
 		"DeskChairSeat/BackCushion", "DeskChairSeat/BaseArm_0",
+		"DeskChairBack/BackStitchTop", "DeskChairBack/BackStitchBottom",
 		"Desk/FrontApron", "DeskTop/DesktopFrontNosing", "DeskTop/DesktopLeftReturn",
 		"DeskTop/KeyboardKey_00", "DeskTop/KeyboardKey_11", "Monitor/MonitorScreen",
 		"Monitor/MonitorBezelTop", "Monitor/MonitorBezelBottom", "MonitorStand/MonitorFoot",
@@ -96,6 +97,10 @@ func _run() -> void:
 		if chair_seat.radial_segments < 24 or chair_seat.rings < 12:
 			printerr("FAIL desk chair seat segment quality: ", chair_seat.radial_segments, "x", chair_seat.rings)
 			failures += 1
+	var chair_back_mesh := game.get_node_or_null("DeskChairBack/Mesh") as MeshInstance3D
+	if chair_back_mesh == null or not chair_back_mesh.mesh is ArrayMesh or chair_back_mesh.mesh.get_aabb().size.x < 0.55 or chair_back_mesh.mesh.get_aabb().size.y < 0.60:
+		printerr("FAIL desk chair back is still a low-detail box silhouette")
+		failures += 1
 	var left_rod := game.get_node_or_null("CurtainLeft/CurtainRod") as MeshInstance3D
 	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:
 		printerr("FAIL curtain rod is not horizontal")

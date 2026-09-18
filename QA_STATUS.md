@@ -600,3 +600,10 @@
 - `tests/room_finish_quality.gd` 現在驗證層架位於沙發上方、貼近前牆、具有完整支架且沒有碰撞；客廳門洞家具衝突仍為 `0`。
 - 圖形截圖回歸：客廳 median `3.930ms`、p95 `4.800ms`、`734` draws；四房仍能正常渲染。
 - Web Release 回歸：PCK `103,719,420` bytes、WASM `39,514,754` bytes，合計 `143,234,174` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：臥室工作椅曲面椅背（2026-09-19）
+
+- `DeskChairBack/Mesh` 由圓角盒替換為雙面微弧曲面 ArrayMesh，補上上下縫線與左右包邊；原本椅背 BoxShape3D 碰撞保持不變，避免影響書桌區通行。
+- `tests/bedroom_details.gd` 驗證椅背為雙面高細節網格且尺寸足夠；臥室細節、家具碰撞與 14 題互動回歸均為 `0 failures`。
+- 圖形截圖回歸：臥室 median `5.825ms`、p95 `6.604ms`、`1113` draws；四房均成功渲染。
+- Web Release 回歸：PCK `103,721,004` bytes、WASM `39,514,754` bytes，合計 `143,235,758` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
