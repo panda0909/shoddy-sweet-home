@@ -128,6 +128,18 @@ func _run() -> void:
 		if game.get_node_or_null(id) == null:
 			printerr("FAIL missing curtain rail finial: ", id)
 			failures += 1
+	for id in ["BedroomWindowSill", "BedroomWindowLatch"]:
+		if game.get_node_or_null(id) == null:
+			printerr("FAIL missing bedroom window finish: ", id)
+			failures += 1
+	var bedroom_glass := game.get_node_or_null("WindowGlass/Mesh") as MeshInstance3D
+	var bedroom_glass_material := bedroom_glass.material_override as StandardMaterial3D if bedroom_glass != null else null
+	if bedroom_glass == null or not bedroom_glass.mesh is ArrayMesh:
+		printerr("FAIL bedroom window glass still uses a sharp box silhouette")
+		failures += 1
+	if bedroom_glass_material == null or bedroom_glass_material.transparency != BaseMaterial3D.TRANSPARENCY_ALPHA or bedroom_glass_material.roughness > 0.22:
+		printerr("FAIL bedroom window glass material is not translucent low-roughness glazing")
+		failures += 1
 	for id in ["BedsideLampShade_Left/Mesh", "BedsideLampShade_Right/Mesh"]:
 		var shade_mesh := game.get_node_or_null(id) as MeshInstance3D
 		var shade := shade_mesh.mesh as CylinderMesh if shade_mesh != null else null

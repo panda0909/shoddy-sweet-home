@@ -255,11 +255,26 @@ static func apply(room: Node3D) -> void:
 	# floating poles when the window was moved with the escape-window clue.
 	var window_bounds: AABB = room._find_anchor_bounds("WindowGlass")
 	if window_bounds.has_volume():
+		# The bedroom window used to remain a sharp opaque BoxMesh while the
+		# curtains had already moved to a cloth mesh. Give the glazing the same
+		# manufactured treatment as the living-room window and keep every trim
+		# piece derived from its measured bounds.
+		var window_glass := room.get_node_or_null("WindowGlass/Mesh") as MeshInstance3D
+		if window_glass != null and window_glass.mesh is BoxMesh:
+			window_glass.mesh = room.bedroom_details_rounded((window_glass.mesh as BoxMesh).size, 0.025)
+			var glass_material: StandardMaterial3D = room._mat(Color(0.22, 0.54, 0.70, 0.42))
+			glass_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			glass_material.roughness = 0.18
+			glass_material.metallic = 0.04
+			glass_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+			window_glass.material_override = glass_material
 		var rail_material: Material = room._mat(Color(0.32, 0.26, 0.18))
 		var rail_position := Vector3(window_bounds.get_center().x, window_bounds.end.y + 0.22, window_bounds.end.z + 0.035)
 		room._add_door_frame_piece(room, "BedroomCurtainRail", Vector3(window_bounds.size.x + 0.32, 0.055, 0.055), rail_position, rail_material)
 		_add_detail_sphere(room, "BedroomCurtainFinialLeft", 0.055, rail_position + Vector3(-(window_bounds.size.x + 0.32) * 0.5, 0, 0), rail_material)
 		_add_detail_sphere(room, "BedroomCurtainFinialRight", 0.055, rail_position + Vector3((window_bounds.size.x + 0.32) * 0.5, 0, 0), rail_material)
+		room._add_door_frame_piece(room, "BedroomWindowSill", Vector3(window_bounds.size.x + 0.18, 0.08, 0.16), Vector3(window_bounds.get_center().x, window_bounds.position.y - 0.075, window_bounds.end.z + 0.045), rail_material)
+		room._add_door_frame_piece(room, "BedroomWindowLatch", Vector3(0.035, 0.12, 0.035), Vector3(window_bounds.get_center().x, window_bounds.get_center().y - 0.06, window_bounds.end.z + 0.030), room._mat(Color(0.26, 0.24, 0.20)))
 
 
 static func _chair_back_mesh(size: Vector3) -> ArrayMesh:

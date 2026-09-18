@@ -668,3 +668,9 @@
 - `tests/issue_visuals.gd` 新增磨損細節數量與無碰撞驗證；14 題缺陷定位、互動與報告均為 `0 failures`。
 - 圖形截圖回歸：客廳 median `4.161ms`、廚房 `5.727ms`、臥室 `5.893ms`、浴室 `3.730ms`；廚房 draw calls `1364`，四房均成功渲染。
 - Web Release 回歸：PCK `103,727,100` bytes、WASM `39,514,754` bytes，合計 `143,241,854` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：臥室窗戶與窗簾接合（2026-09-19）
+
+- 臥室 `WindowGlass` 由單純 BoxMesh 改為微圓角 ArrayMesh，加入低粗糙度半透明玻璃材質；窗台與窗扣依實際玻璃 bounds 建立，窗簾導軌仍共用同一組量測結果。
+- `tests/bedroom_details.gd` 新增玻璃網格、透光材質、窗台與窗扣驗證；木材 PBR、床／衣櫃／書桌／椅子／窗簾細節與盒型碰撞為 `0 failures`。
+- 圖形回歸：15 張近距離／逆光／手電筒／開門狀態驗收畫面全部成功；臥室 median `5.926ms`、p95 `6.597ms`、`1145` draws。
