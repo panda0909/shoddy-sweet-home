@@ -115,6 +115,17 @@ func _run() -> void:
 	if not cooker_bounds.has_volume() or oven_glass == null or absf(oven_glass.global_position.x - oven_expected_x) > 0.06:
 		printerr("FAIL oven front is not attached to the imported cooker bounds")
 		failures += 1
+	var oven_glass_mesh := oven_glass.get_node_or_null("Mesh") as MeshInstance3D if oven_glass != null else null
+	var oven_glass_material := oven_glass_mesh.material_override as StandardMaterial3D if oven_glass_mesh != null else null
+	if oven_glass_material == null or oven_glass_material.clearcoat < 0.45 or oven_glass_material.clearcoat_roughness > 0.16:
+		printerr("FAIL kitchen oven glass clearcoat tuning")
+		failures += 1
+	var fridge_enamel_node := game.get_node_or_null("KitchenDetail_FridgeDoorPanel") as Node3D
+	var fridge_enamel_mesh := fridge_enamel_node.get_node_or_null("Mesh") as MeshInstance3D if fridge_enamel_node != null else null
+	var fridge_enamel_material := fridge_enamel_mesh.material_override as StandardMaterial3D if fridge_enamel_mesh != null else null
+	if fridge_enamel_material == null or fridge_enamel_material.clearcoat < 0.18:
+		printerr("FAIL refrigerator enamel clearcoat tuning")
+		failures += 1
 	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size(), "; table foot pads: ", table_foot_pads.size())
 	print("Kitchen detail failures: ", failures)
 	game.queue_free()

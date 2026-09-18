@@ -457,3 +457,8 @@
 
 - 工作椅可見座墊改為 32×16 段數的扁平 SphereMesh，保留原本圓柱碰撞與扶手／椅背／底座／滾輪組件。
 - `tests/bedroom_details.gd` 新增座墊網格品質檢查；臥室與四房圖形驗收維持 0 failures。
+
+### 追加：廚房執行期材質反射（2026-09-19）
+
+- 廚房執行期鋼材、陶瓷、冰箱烤漆與玻璃現在統一設定 Clearcoat／Clearcoat roughness；玻璃沿用 `_glass_mat()`，不新增貼圖下載量。
+- `tests/kitchen_details.gd` 驗證烤箱玻璃與冰箱門板的反射參數；廚房細節、匯入材質、14 題缺陷與 15 張圖形驗收均為 0 failures。

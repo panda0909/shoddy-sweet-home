@@ -612,7 +612,12 @@ func _add_kitchen_imported_details() -> void:
 	var steel := _mat(Color(0.52, 0.57, 0.58))
 	steel.metallic = 0.72
 	steel.roughness = 0.24
+	steel.clearcoat = 0.22
+	steel.clearcoat_roughness = 0.12
 	var ceramic := _mat(Color(0.78, 0.80, 0.77))
+	ceramic.roughness = 0.28
+	ceramic.clearcoat = 0.18
+	ceramic.clearcoat_roughness = 0.16
 	var dark := _mat(Color(0.07, 0.08, 0.08))
 	var wood := _wood_mat(Color(0.63, 0.38, 0.18))
 	# The sink used to be authored from a stale fixed point. Attach the whole
@@ -652,6 +657,8 @@ func _add_kitchen_imported_details() -> void:
 		var enamel := _mat(Color(0.72, 0.74, 0.73))
 		enamel.metallic = 0.16
 		enamel.roughness = 0.31
+		enamel.clearcoat = 0.24
+		enamel.clearcoat_roughness = 0.14
 		var fridge_front_x := fridge_bounds.position.x - 0.014
 		var fridge_panel_size := Vector3(0.018, maxf(0.40, fridge_bounds.size.y - 0.095), maxf(0.72, fridge_bounds.size.z - 0.10))
 		_add_box("KitchenDetail_FridgeDoorPanel", fridge_panel_size, Vector3(fridge_front_x, fridge_bounds.get_center().y, fridge_bounds.get_center().z), enamel, false)
@@ -2487,6 +2494,8 @@ func _glass_mat(color: Color, alpha: float) -> StandardMaterial3D:
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.roughness = 0.12
 	material.metallic = 0.05
+	material.clearcoat = 0.55
+	material.clearcoat_roughness = 0.10
 	material.cull_mode = BaseMaterial3D.CULL_BACK
 	material.emission_enabled = true
 	material.emission = color.lightened(0.15)
