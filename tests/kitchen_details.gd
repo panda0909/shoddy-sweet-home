@@ -37,6 +37,19 @@ func _run() -> void:
 	if not sink_worktop.has_volume() or sink == null or sink.global_position.distance_to(sink_worktop.get_center()) > 0.40:
 		printerr("FAIL sink is not attached to real worktop bounds")
 		failures += 1
+	var table_bounds: AABB = game._find_kitchen_mesh_bounds("63_Tabletop")
+	var table_edge := game.get_node_or_null("KitchenDetail_TableEdge_Front") as Node3D
+	if not table_bounds.has_volume() or table_edge == null:
+		printerr("FAIL dining table bounds-attached edge")
+		failures += 1
+	var upper_cabinet_bounds: AABB = game._find_kitchen_mesh_bounds("74_CupboardUnits")
+	var cabinet_light := game.get_node_or_null("KitchenDetail_UnderCabinetLight") as Node3D
+	if not upper_cabinet_bounds.has_volume() or cabinet_light == null:
+		printerr("FAIL missing upper-cabinet light anchor")
+		failures += 1
+	elif cabinet_light.global_position.y >= upper_cabinet_bounds.position.y or absf(cabinet_light.global_position.x - upper_cabinet_bounds.get_center().x) > 0.25 or absf(cabinet_light.global_position.z - upper_cabinet_bounds.get_center().z) > 0.25:
+		printerr("FAIL under-cabinet light is not attached to upper cabinet bounds: ", cabinet_light.global_position)
+		failures += 1
 	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size())
 	print("Kitchen detail failures: ", failures)
 	game.queue_free()

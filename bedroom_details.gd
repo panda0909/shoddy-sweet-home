@@ -62,12 +62,27 @@ static func apply(room: Node3D) -> void:
 	var duvet: Node3D = room.get_node("Duvet")
 	for seam_index in range(4):
 		_add_detail_box(duvet, "DuvetSeam_%d" % seam_index, Vector3(0.025, 0.018, 1.34), Vector3(-1.15 + seam_index * 0.77, 0.09, 0), fabric_trim)
+	# A narrow side band and soft transverse folds give the mattress and duvet
+	# manufactured thickness instead of reading as two unbroken cuboids.
+	_add_detail_box(mattress, "SideBandFront", Vector3(3.00, 0.12, 0.025), Vector3(0, -0.11, 1.24), room._fabric_mat(Color(0.60, 0.67, 0.72)))
+	_add_detail_box(mattress, "SideBandLeft", Vector3(0.025, 0.12, 2.35), Vector3(-1.51, -0.11, 0), room._fabric_mat(Color(0.60, 0.67, 0.72)))
+	for fold_index in range(3):
+		_add_detail_box(duvet, "DuvetFold_%d" % fold_index, Vector3(0.42, 0.028, 1.22), Vector3(-0.82 + fold_index * 0.78, 0.125, 0.02), room._fabric_mat(Color(0.48, 0.63, 0.75)))
 	# A drawer front and small pulls give each bedside table a usable visual scale.
 	for bedside_id in ["BedsideTable_Left", "BedsideTable_Right"]:
 		var bedside: Node3D = room.get_node(bedside_id)
 		_add_detail_box(bedside, "DrawerFront", Vector3(0.56, 0.22, 0.025), Vector3(0, 0.12, 0.315), room._wood_mat(Color(0.74, 0.48, 0.27)))
 		_add_detail_box(bedside, "DrawerPull", Vector3(0.18, 0.025, 0.035), Vector3(0, 0.12, 0.335), room._mat(Color(0.55, 0.40, 0.20)))
 		var lamp_shade := room.get_node("BedsideLampShade_" + ("Left" if "Left" in bedside_id else "Right"))
+		var shade_mesh := lamp_shade.get_node("Mesh") as MeshInstance3D
+		if shade_mesh != null and shade_mesh.mesh is CylinderMesh:
+			var shade := shade_mesh.mesh as CylinderMesh
+			shade.top_radius = 0.17
+			shade.bottom_radius = 0.25
+			shade.radial_segments = 24
+			shade.rings = 4
+		_add_detail_cylinder(lamp_shade, "LampShadeRim", 0.255, 0.025, Vector3(0, -0.135, 0), room._mat(Color(0.48, 0.32, 0.18)))
+		_add_detail_cylinder(lamp_shade, "LampSocket", 0.075, 0.08, Vector3(0, 0.02, 0), room._mat(Color(0.28, 0.22, 0.15)))
 		_add_detail_sphere(lamp_shade, "LampBulb", 0.065, Vector3(0, 0.105, 0), room._emissive_mat(Color(1.0, 0.70, 0.25), 1.15))
 	# Closet construction lines and visible hinges make the doors read as parts.
 	var closet_left: Node3D = room.get_node("ClosetDoorLeft")
@@ -76,10 +91,14 @@ static func apply(room: Node3D) -> void:
 		_add_detail_box(door, "InsetPanel", Vector3(0.82, 1.82, 0.012), Vector3(0, 0, 0.026), room._wood_mat(Color(0.62, 0.39, 0.22)))
 		_add_detail_box(door, "UpperHinge", Vector3(0.06, 0.12, 0.025), Vector3(-0.38, 0.76, 0.04), room._mat(Color(0.26, 0.23, 0.19)))
 		_add_detail_box(door, "LowerHinge", Vector3(0.06, 0.12, 0.025), Vector3(-0.38, -0.76, 0.04), room._mat(Color(0.26, 0.23, 0.19)))
+		_add_detail_box(door, "DoorEdgeBand", Vector3(0.025, 1.92, 0.022), Vector3(0.48, 0, 0.042), room._wood_mat(Color(0.48, 0.28, 0.14)))
 	var closet: Node3D = room.get_node("Closet")
 	_add_detail_box(closet, "ClosetInteriorShadow", Vector3(2.05, 1.96, 0.025), Vector3(0, 0, -0.31), room._mat(Color(0.055, 0.038, 0.026)))
 	_add_detail_box(closet, "ClosetBottomRail", Vector3(2.12, 0.055, 0.045), Vector3(0, -1.06, 0.335), room._wood_mat(Color(0.55, 0.33, 0.18)))
 	_add_detail_box(closet, "ClosetTopRail", Vector3(2.12, 0.055, 0.045), Vector3(0, 1.06, 0.335), room._wood_mat(Color(0.55, 0.33, 0.18)))
+	_add_detail_box(closet, "ClosetCenterSeam", Vector3(0.025, 1.95, 0.03), Vector3(0, 0, 0.35), room._mat(Color(0.20, 0.12, 0.07)))
+	_add_detail_box(closet, "ClosetHandleMountLeft", Vector3(0.10, 0.10, 0.03), Vector3(-0.49, 0, 0.38), room._mat(Color(0.32, 0.25, 0.18)))
+	_add_detail_box(closet, "ClosetHandleMountRight", Vector3(0.10, 0.10, 0.03), Vector3(0.49, 0, 0.38), room._mat(Color(0.32, 0.25, 0.18)))
 	# Desk details: a recessed drawer, monitor foot, keyboard and chair arms/base.
 	_add_detail_box(desk, "DrawerFront", Vector3(1.05, 0.18, 0.025), Vector3(0, 0.30, 0.38), room._wood_mat(Color(0.72, 0.47, 0.25)))
 	_add_detail_box(desk, "DrawerPull", Vector3(0.20, 0.025, 0.035), Vector3(0, 0.30, 0.40), room._mat(Color(0.56, 0.42, 0.24)))
@@ -87,10 +106,13 @@ static func apply(room: Node3D) -> void:
 	var chair: Node3D = room.get_node("DeskChairSeat")
 	_add_detail_box(chair, "ArmLeft", Vector3(0.07, 0.22, 0.42), Vector3(-0.34, 0.15, 0), room._fabric_mat(Color(0.42, 0.56, 0.66)))
 	_add_detail_box(chair, "ArmRight", Vector3(0.07, 0.22, 0.42), Vector3(0.34, 0.15, 0), room._fabric_mat(Color(0.42, 0.56, 0.66)))
+	_add_detail_box(chair, "BackCushion", Vector3(0.48, 0.48, 0.055), Vector3(0, 0.20, -0.055), room._fabric_mat(Color(0.34, 0.48, 0.59)))
+	_add_detail_box(chair, "SeatEdge", Vector3(0.68, 0.055, 0.45), Vector3(0, 0.02, 0.02), room._fabric_mat(Color(0.34, 0.48, 0.59)))
 	_add_detail_box(chair, "ChairStem", Vector3(0.08, 0.30, 0.08), Vector3(0, -0.20, 0), room._mat(Color(0.12, 0.14, 0.16)))
 	for wheel_index in range(5):
 		var wheel_angle := TAU * float(wheel_index) / 5.0
 		_add_detail_box(chair, "Wheel_%d" % wheel_index, Vector3(0.10, 0.04, 0.18), Vector3(cos(wheel_angle) * 0.27, -0.36, sin(wheel_angle) * 0.27), room._mat(Color(0.05, 0.06, 0.07)))
+		_add_detail_box(chair, "BaseArm_%d" % wheel_index, Vector3(0.055, 0.035, 0.25), Vector3(cos(wheel_angle) * 0.14, -0.31, sin(wheel_angle) * 0.14), room._mat(Color(0.12, 0.14, 0.16)))
 	# Rug edge and corner lift add thickness without adding a movement obstacle.
 	var rug: Node3D = room.get_node("BedroomRug")
 	var rug_trim: Material = room._fabric_mat(Color(0.16, 0.21, 0.25))
@@ -99,6 +121,8 @@ static func apply(room: Node3D) -> void:
 	_add_detail_box(rug, "RugCornerLift", Vector3(0.28, 0.06, 0.28), Vector3(-2.16, 0.09, 1.56), rug_trim)
 	for fringe_index in range(12):
 		_add_detail_box(rug, "RugFringe_%d" % fringe_index, Vector3(0.12, 0.018, 0.10), Vector3(-2.05 + fringe_index * 0.37, 0.055, 1.84), rug_trim)
+	for tuft_index in range(7):
+		_add_detail_box(rug, "RugTuft_%d" % tuft_index, Vector3(4.05, 0.012, 0.018), Vector3(0, 0.058, -1.35 + tuft_index * 0.42), room._fabric_mat(Color(0.22, 0.28, 0.33)))
 	# Soil, pot rim and a stem turn the plant into a small assembled prop.
 	var pot: Node3D = room.get_node("BedroomPlantPot")
 	_add_detail_cylinder(pot, "Soil", 0.19, 0.025, Vector3(0, 0.22, 0), room._mat(Color(0.12, 0.07, 0.035)))
@@ -107,6 +131,9 @@ static func apply(room: Node3D) -> void:
 	var plant: Node3D = room.get_node("BedroomPlant")
 	plant.get_node("Mesh").hide()
 	for i in range(16):
+		var stem := _add_detail_cylinder(plant, "Stem_%d" % i, 0.012, 0.32, Vector3(0, -0.30 + i * 0.043, 0), room._mat(Color(0.10, 0.22, 0.08)))
+		var stem_angle: float = i * 2.399
+		stem.rotation = Vector3(0.25, -stem_angle, 0.12)
 		var leaf := MeshInstance3D.new()
 		var sphere := SphereMesh.new()
 		sphere.radius = 0.5
@@ -125,6 +152,11 @@ static func apply(room: Node3D) -> void:
 	var bookcase: Node3D = room.get_node("Bookcase")
 	for shelf_index in range(3):
 		_add_detail_box(bookcase, "Shelf_%d" % shelf_index, Vector3(0.68, 0.045, 0.34), Vector3(0, -0.72 + shelf_index * 0.70, 0), room._wood_mat(Color(0.55, 0.34, 0.19)))
+	for book_index in range(6):
+		var book := room.get_node_or_null("BedroomBook_%d" % book_index) as Node3D
+		if book == null:
+			continue
+		_add_detail_box(book, "Binding", Vector3(0.025, 0.43, 0.30), Vector3(-0.075, 0, 0.015), room._mat(Color(0.78, 0.66, 0.38)))
 	# Pleats give the curtains depth without altering their collision footprint.
 	for id in ["CurtainLeft", "CurtainRight"]:
 		var curtain: Node3D = room.get_node(id)
@@ -133,6 +165,7 @@ static func apply(room: Node3D) -> void:
 		# CylinderMesh is vertical by default; a curtain rod must run across the
 		# panel instead of appearing as a standing pole through the window.
 		rod.rotation.z = PI / 2.0
+		_add_detail_box(curtain, "CurtainHeader", Vector3(0.46, 0.10, 0.08), Vector3(0, 0.77, 0), room._fabric_mat(Color(0.20, 0.27, 0.36)))
 		for i in range(10):
 			room._add_door_frame_piece(curtain, "Pleat", Vector3(0.052, 1.65, 0.06), Vector3(-0.22 + i * 0.048, 0, sin(i * 1.8) * 0.025), room._mat(Color(0.25, 0.32, 0.42)))
 

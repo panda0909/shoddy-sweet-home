@@ -39,9 +39,15 @@ func _run() -> void:
 			failures += 1
 	for id in [
 		"BedsideLampShade_Left/LampBulb", "BedsideLampShade_Right/LampBulb",
+		"BedsideLampShade_Left/LampShadeRim", "BedsideLampShade_Right/LampSocket",
 		"Closet/ClosetInteriorShadow", "Closet/ClosetBottomRail", "Closet/ClosetTopRail",
+		"Closet/ClosetCenterSeam", "Closet/ClosetHandleMountLeft",
 		"Bookcase/Shelf_0", "Bookcase/Shelf_1",
-		"Bookcase/Shelf_2", "BedroomRug/RugFringe_0", "BedroomRug/RugFringe_11",
+		"Bookcase/Shelf_2", "BedroomBook_0/Binding", "BedroomRug/RugFringe_0", "BedroomRug/RugFringe_11",
+		"BedroomRug/RugTuft_0", "BedroomRug/RugTuft_6",
+		"Mattress/SideBandFront", "Duvet/DuvetFold_0", "Duvet/DuvetFold_2",
+		"DeskChairSeat/BackCushion", "DeskChairSeat/BaseArm_0",
+		"BedroomPlant/Stem_0", "BedroomPlant/Stem_15",
 		"CurtainLeft/CurtainRod", "CurtainRight/CurtainRod"
 	]:
 		if game.get_node_or_null(id) == null:
@@ -51,6 +57,12 @@ func _run() -> void:
 	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:
 		printerr("FAIL curtain rod is not horizontal")
 		failures += 1
+	for id in ["BedsideLampShade_Left/Mesh", "BedsideLampShade_Right/Mesh"]:
+		var shade_mesh := game.get_node_or_null(id) as MeshInstance3D
+		var shade := shade_mesh.mesh as CylinderMesh if shade_mesh != null else null
+		if shade == null or shade.bottom_radius <= shade.top_radius:
+			printerr("FAIL lamp shade does not have a tapered profile: ", id)
+			failures += 1
 	for id in ["Desk/DrawerBodyCollisionLeft", "Desk/DrawerBodyCollisionRight", "DeskTop/DeskTopCollision"]:
 		var collision := game.get_node_or_null(id) as CollisionShape3D
 		if collision == null or not collision.shape is BoxShape3D:

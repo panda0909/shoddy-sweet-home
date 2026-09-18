@@ -537,7 +537,16 @@ func _add_kitchen_imported_details() -> void:
 	_add_cylinder("KitchenDetail_Cup", 0.09, 0.16, _kitchen_point(Vector3(5.68, 0.76, 4.12)), ceramic, false)
 	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, _kitchen_point(Vector3(5.78, 0.76, 4.12)), ceramic, false)
 	_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.72, 0.045), _kitchen_point(Vector3(6.27, 1.04, 2.72)), steel, false)
-	_add_box("KitchenDetail_UnderCabinetLight", Vector3(1.20, 0.025, 0.06), _kitchen_point(Vector3(6.25, 1.14, 4.00)), _emissive_mat(Color(1.0, 0.72, 0.38), 0.75), false)
+	# Derive the under-cabinet light from the actual upper cabinet bounds. The
+	# previous authored point used the old 0.60 scale and left a long glowing
+	# bar inside the cabinet run after the kitchen was enlarged to 0.72.
+	var upper_cabinet_bounds := _find_kitchen_mesh_bounds("74_CupboardUnits")
+	if upper_cabinet_bounds.has_volume():
+		var light_size := Vector3(maxf(0.12, upper_cabinet_bounds.size.x * 0.78), 0.025, maxf(0.42, upper_cabinet_bounds.size.z * 0.82))
+		var light_pos := Vector3(upper_cabinet_bounds.get_center().x, upper_cabinet_bounds.position.y - 0.018, upper_cabinet_bounds.get_center().z)
+		_add_box("KitchenDetail_UnderCabinetLight", light_size, light_pos, _emissive_mat(Color(1.0, 0.72, 0.38), 0.75), false)
+	else:
+		_add_box("KitchenDetail_UnderCabinetLight", Vector3(0.20, 0.025, 0.80), _kitchen_point(Vector3(6.25, 1.08, 4.00)), _emissive_mat(Color(1.0, 0.72, 0.38), 0.75), false)
 	_add_kitchen_dining_details()
 
 

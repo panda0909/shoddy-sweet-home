@@ -239,3 +239,10 @@
 - `tests/bathroom_details.gd` 增加門片與 bounds-attached 洗手台檯面的開／關狀態 AABB 掃掠檢查；浴室 28 個細節、主件碰撞與批次化仍為 0 failures。
 - 門片通行回歸：5 扇門 20 個開關／兩側狀態與防夾檢查 0 failures；`tests/player_walkthrough.gd` 實際膠囊穿越四扇室內門 0 failures。
 - `tests/issue_access.gd`：2004 個連通站位、四房 14 題可達、十題互動／結算 0 failures。
+
+### 追加：臥室第二層細節與廚房上櫃收邊（2026-09-19）
+
+- 臥室補上床墊側圍／被褥折痕、錐形燈罩與燈座、衣櫃中縫／把手底座、工作椅背墊／五爪支撐、書本裝訂條、地毯絨面紋理、植物莖、窗簾上緣；全部為視覺細節，不新增玩家碰撞。
+- `tests/bedroom_details.gd` 新增上述零件與燈罩錐面驗收，木材 Albedo／Roughness／Normal 與桌面 BoxShape3D 仍為 0 failures。
+- 廚房檯下燈改以實際 `74_CupboardUnits` 世界 bounds 定位，修正放大廚房後長燈條漂浮／穿入上櫃的問題；`tests/kitchen_details.gd` 新增上櫃底部貼合檢查。
+- 圖形化 `tests/render_acceptance.gd`：11 張遠景／近距離／逆光／手電筒／開門截圖 0 failures；門通行、玩家穿越、14 題錨點／可達性、家具 BoxShape3D、LOD 與三角面預算回歸皆 0 failures。
