@@ -60,6 +60,14 @@ func _run() -> void:
 			if door_bounds.intersects(vanity_bounds):
 				printerr("FAIL bathroom door sweep overlaps vanity; open=", opened)
 				failures += 1
+	var tray_node: Node = game.find_child("ImportedBath_ShowerTray", true, false)
+	var tray_mesh := tray_node.find_child("Mesh", true, false) as MeshInstance3D if tray_node != null else null
+	var tray_bounds: AABB = tray_mesh.global_transform * tray_mesh.get_aabb() if tray_mesh != null else AABB()
+	for fitting_name in ["ImportedBath_ShowerPipe", "ImportedBath_ShowerHead", "ImportedBath_ShowerControl"]:
+		var fitting: Node = game.find_child(fitting_name, true, false)
+		if fitting == null or not tray_bounds.has_volume() or absf((fitting as Node3D).global_position.x - tray_bounds.get_center().x) > tray_bounds.size.x * 0.75 or absf((fitting as Node3D).global_position.z - tray_bounds.get_center().z) > tray_bounds.size.z * 0.75:
+			printerr("FAIL shower fitting is outside tray alignment: ", fitting_name)
+			failures += 1
 	print("Imported bathroom detail nodes: ", required.size())
 	print("Bathroom detail failures: ", failures)
 	game.queue_free()

@@ -754,14 +754,29 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_box("ImportedBath_ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(8.55, 1.18, -1.24), steel, false, detail_root)
 	_add_box("ImportedBath_ShowerFrame_Top", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 2.34, -2.5), steel, false, detail_root)
 	_add_box("ImportedBath_ShowerFrame_Bottom", Vector3(0.10, 0.08, 2.60), Vector3(8.55, 0.08, -2.5), steel, false, detail_root)
-	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(7.35, 2.05, -5.18), steel, false, detail_root)
-	_add_cylinder("ImportedBath_ShowerHead", 0.18, 0.10, Vector3(7.35, 2.68, -5.18), steel, false, detail_root)
-	_add_box("ImportedBath_ShowerShelf", Vector3(0.70, 0.06, 0.24), Vector3(8.28, 1.55, -3.25), steel, false, detail_root)
-	_add_cylinder("ImportedBath_Shampoo", 0.08, 0.24, Vector3(8.08, 1.70, -3.25), dark_shampoo, false, detail_root)
-	_add_cylinder("ImportedBath_Shampoo2", 0.08, 0.24, Vector3(8.30, 1.70, -3.25), warm_shampoo, false, detail_root)
-	_add_cylinder("ImportedBath_ShowerControl", 0.07, 0.035, Vector3(7.42, 1.35, -5.16), steel, false, detail_root)
-	_add_box("ImportedBath_ShowerDrainCrossA", Vector3(0.18, 0.024, 0.025), Vector3(7.6, 0.16, -2.25), steel, false, detail_root)
-	_add_box("ImportedBath_ShowerDrainCrossB", Vector3(0.025, 0.024, 0.18), Vector3(7.6, 0.16, -2.25), steel, false, detail_root)
+	# Keep the shower fittings in the wet zone. The old fixed z=-5.18 point
+	# placed the pipe beside the vanity after the imported room was aligned.
+	var shower_center := Vector3(7.6, 0.08, -2.25)
+	var shower_size := Vector3(2.8, 0.10, 2.2)
+	var shower_tray_node := detail_root.find_child("ImportedBath_ShowerTray", true, false)
+	if shower_tray_node is StaticBody3D:
+		var tray_mesh := shower_tray_node.find_child("Mesh", true, false) as MeshInstance3D
+		if tray_mesh != null:
+			var tray_bounds := tray_mesh.global_transform * tray_mesh.get_aabb()
+			if tray_bounds.has_volume():
+				shower_center = tray_bounds.get_center()
+				shower_size = tray_bounds.size
+	var shower_back_z := shower_center.z - shower_size.z * 0.37
+	var shower_wall_x := shower_center.x - shower_size.x * 0.08
+	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(shower_wall_x, 2.05, shower_back_z), steel, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerHead", 0.18, 0.10, Vector3(shower_wall_x, 2.68, shower_back_z), steel, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerHeadRose", 0.12, 0.018, Vector3(shower_wall_x, 2.735, shower_back_z), _mat(Color(0.68, 0.71, 0.70)), false, detail_root)
+	_add_box("ImportedBath_ShowerShelf", Vector3(0.70, 0.06, 0.24), Vector3(shower_center.x + shower_size.x * 0.24, 1.55, shower_back_z), steel, false, detail_root)
+	_add_cylinder("ImportedBath_Shampoo", 0.08, 0.24, Vector3(shower_center.x + shower_size.x * 0.16, 1.70, shower_back_z), dark_shampoo, false, detail_root)
+	_add_cylinder("ImportedBath_Shampoo2", 0.08, 0.24, Vector3(shower_center.x + shower_size.x * 0.32, 1.70, shower_back_z), warm_shampoo, false, detail_root)
+	_add_cylinder("ImportedBath_ShowerControl", 0.07, 0.035, Vector3(shower_wall_x, 1.35, shower_back_z + 0.02), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerDrainCrossA", Vector3(0.18, 0.024, 0.025), Vector3(shower_center.x, 0.16, shower_center.z), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerDrainCrossB", Vector3(0.025, 0.024, 0.18), Vector3(shower_center.x, 0.16, shower_center.z), steel, false, detail_root)
 
 	_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), steel, false, detail_root)
 	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), towel_material, false, detail_root)

@@ -246,3 +246,9 @@
 - `tests/bedroom_details.gd` 新增上述零件與燈罩錐面驗收，木材 Albedo／Roughness／Normal 與桌面 BoxShape3D 仍為 0 failures。
 - 廚房檯下燈改以實際 `74_CupboardUnits` 世界 bounds 定位，修正放大廚房後長燈條漂浮／穿入上櫃的問題；`tests/kitchen_details.gd` 新增上櫃底部貼合檢查。
 - 圖形化 `tests/render_acceptance.gd`：11 張遠景／近距離／逆光／手電筒／開門截圖 0 failures；門通行、玩家穿越、14 題錨點／可達性、家具 BoxShape3D、LOD 與三角面預算回歸皆 0 failures。
+
+### 追加：浴室淋浴管件 bounds 對齊（2026-09-19）
+
+- 淋浴管、蓮蓬頭、蓮蓬頭出水面、控制器與置物架改以 `ImportedBath_ShowerTray` 的實際世界 bounds 生成；修正舊固定座標把管件放到洗手台旁的問題。
+- `tests/bathroom_details.gd` 新增管件落在淋浴盤範圍內的驗收；浴室批次仍為 40 物件／12 材質組，細節與圖形驗收 0 failures。
+- 14 題可達、四扇室內門實際膠囊穿越、家具碰撞、LOD 與三角面預算重新回歸，全部 0 failures。
