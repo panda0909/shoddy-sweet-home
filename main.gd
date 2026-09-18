@@ -977,6 +977,7 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	var steel := _mat(palette["metal"])
 	var tray_material := _mat(Color(0.68, 0.70, 0.68))
 	var glass_material := _glass_mat(Color(0.35, 0.62, 0.70), 0.12)
+	var tub_water_material := _glass_mat(Color(0.14, 0.48, 0.58), 0.24)
 	var dark_shampoo := _mat(Color(0.24, 0.52, 0.70))
 	var warm_shampoo := _mat(Color(0.75, 0.38, 0.28))
 	var towel_material := _mat(Color(0.72, 0.48, 0.35))
@@ -1083,6 +1084,16 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 		var tub_back_z := bathtub_bounds.end.z - bathtub_bounds.size.z * 0.16
 		var tub_fitting_y := bathtub_bounds.end.y + 0.13
 		var tub_fitting_x := bathtub_bounds.get_center().x + bathtub_bounds.size.x * 0.26
+		# The source tub is an empty shell in the close view. Add a shallow
+		# bounds-attached water surface and drain so it reads as a usable fixture,
+		# while keeping both pieces render-only and out of the player's capsule.
+		var tub_water_size := Vector3(bathtub_bounds.size.x * 0.70, 0.024, bathtub_bounds.size.z * 0.56)
+		var tub_water_position := Vector3(bathtub_bounds.get_center().x, bathtub_bounds.end.y - 0.045, bathtub_bounds.get_center().z)
+		var tub_water := _add_box("ImportedBath_TubWater", tub_water_size, tub_water_position, tub_water_material, false, detail_root)
+		var tub_water_mesh := tub_water.get_node("Mesh") as MeshInstance3D
+		if tub_water_mesh != null:
+			tub_water_mesh.mesh = bedroom_details_rounded(tub_water_size, 0.012)
+		_add_cylinder("ImportedBath_TubDrain", 0.05, 0.012, Vector3(bathtub_bounds.get_center().x, bathtub_bounds.end.y - 0.026, bathtub_bounds.get_center().z), bath_fitting_material, false, detail_root)
 		var tub_rim_size := Vector3(bathtub_bounds.size.x * 0.72, 0.035, 0.055)
 		var tub_rim := _add_box("ImportedBath_TubRim", tub_rim_size, Vector3(bathtub_bounds.get_center().x, bathtub_bounds.end.y + 0.018, tub_back_z), porcelain, false, detail_root)
 		var tub_rim_mesh := tub_rim.get_node("Mesh") as MeshInstance3D
