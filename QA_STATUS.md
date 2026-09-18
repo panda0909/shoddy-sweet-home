@@ -150,3 +150,8 @@
 
 - 淋浴隔間改為低透明度玻璃＋上／下／左右四支金屬框；移除原本會遮住內部的整片金屬框盒，近距離可看見蓮蓬頭、置物架與洗沐瓶。
 - `tests/render_acceptance.gd` 會在四房串流完成後輸出客廳近景／逆光／手電筒、開門狀態、廚房／臥室／浴室近景共 7 張情境圖到暫存目錄；本機圖形驗收 0 failures。
+
+### 追加：臥室執行期微表面法線（2026-09-18）
+
+- 木材與織物 StandardMaterial3D 現在各自接上 256×256 執行期 NoiseTexture2D 法線，保留原有 Albedo／Roughness；不新增 Web 下載圖片，也沒有重新引入 ShaderMaterial 覆蓋流程。
+- `tests/bedroom_details.gd` 已加入 NormalTexture 驗證；臥室近景與手電筒圖形驗收 0 failures。

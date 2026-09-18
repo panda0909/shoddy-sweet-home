@@ -53,6 +53,8 @@ var generated_oak_texture: Texture2D
 var generated_fabric_texture: Texture2D
 var generated_oak_roughness_texture: Texture2D
 var generated_fabric_roughness_texture: Texture2D
+var generated_oak_normal_texture: Texture2D
+var generated_fabric_normal_texture: Texture2D
 
 var tool_names := ["手電筒", "水平儀", "空鼓槌", "驗電筆"]
 var tool_descriptions := [
@@ -1736,6 +1738,24 @@ func _load_generated_material_textures() -> void:
 	generated_fabric_texture = load("res://assets/materials/generated_fabric_albedo.png") as Texture2D
 	generated_oak_roughness_texture = load("res://assets/materials/generated_oak_roughness.png") as Texture2D
 	generated_fabric_roughness_texture = load("res://assets/materials/generated_fabric_roughness.png") as Texture2D
+	generated_oak_normal_texture = _make_runtime_normal_texture(0.095, 3.0, 0.16)
+	generated_fabric_normal_texture = _make_runtime_normal_texture(0.18, 5.5, 0.12)
+
+
+func _make_runtime_normal_texture(frequency: float, detail: float, strength: float) -> Texture2D:
+	var noise := FastNoiseLite.new()
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	noise.frequency = frequency
+	noise.fractal_octaves = 3
+	noise.fractal_gain = 0.55
+	noise.fractal_lacunarity = detail
+	var texture := NoiseTexture2D.new()
+	texture.width = 256
+	texture.height = 256
+	texture.noise = noise
+	texture.as_normal_map = true
+	texture.bump_strength = strength
+	return texture
 
 
 func _wood_mat(color: Color) -> StandardMaterial3D:
@@ -1744,6 +1764,10 @@ func _wood_mat(color: Color) -> StandardMaterial3D:
 		material.albedo_texture = generated_oak_texture
 	if generated_oak_roughness_texture != null:
 		material.roughness_texture = generated_oak_roughness_texture
+	if generated_oak_normal_texture != null:
+		material.normal_enabled = true
+		material.normal_texture = generated_oak_normal_texture
+		material.normal_scale = 0.18
 	material.roughness = 0.58
 	return material
 
@@ -1754,6 +1778,10 @@ func _fabric_mat(color: Color) -> StandardMaterial3D:
 		material.albedo_texture = generated_fabric_texture
 	if generated_fabric_roughness_texture != null:
 		material.roughness_texture = generated_fabric_roughness_texture
+	if generated_fabric_normal_texture != null:
+		material.normal_enabled = true
+		material.normal_texture = generated_fabric_normal_texture
+		material.normal_scale = 0.12
 	material.roughness = 0.88
 	return material
 

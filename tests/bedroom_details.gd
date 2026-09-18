@@ -24,6 +24,9 @@ func _run() -> void:
 		if material == null or material.albedo_texture == null or material.roughness_texture == null:
 			printerr("FAIL wood PBR material: ", id)
 			failures += 1
+		if material == null or not material.normal_enabled or material.normal_texture == null:
+			printerr("FAIL wood normal detail: ", id)
+			failures += 1
 
 	for id in ["BedsideTable_Left", "BedsideTable_Right", "Desk", "DeskTop", "Mattress", "Duvet", "BedroomRug", "BedroomPlantPot"]:
 		if game.get_node_or_null(id) == null:

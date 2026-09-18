@@ -12,12 +12,20 @@ static func apply(room: Node3D) -> void:
 			# replaced both the generated albedo and roughness textures.
 			material.albedo_texture = room.generated_oak_texture
 			material.roughness_texture = room.generated_oak_roughness_texture
+			material.normal_enabled = room.generated_oak_normal_texture != null
+			material.normal_texture = room.generated_oak_normal_texture
+			material.normal_scale = 0.18
 			material.roughness = 0.58
 		if mesh.mesh is BoxMesh:
 			mesh.mesh = rounded(mesh.mesh.size, 0.025)
 	for id in ["Mattress", "Duvet", "PillowLeft", "PillowRight", "BedThrow", "DeskChairBack"]:
 		var mesh: MeshInstance3D = room.get_node(id).get_node("Mesh")
 		mesh.mesh = rounded(mesh.mesh.size, 0.07 if "Pillow" in id else 0.035)
+		var material := mesh.material_override as StandardMaterial3D
+		if material != null:
+			material.normal_enabled = room.generated_fabric_normal_texture != null
+			material.normal_texture = room.generated_fabric_normal_texture
+			material.normal_scale = 0.12
 	# Replace the solid desk front with four legs and a modesty panel.
 	var desk: Node3D = room.get_node("Desk")
 	desk.get_node("Mesh").hide()
