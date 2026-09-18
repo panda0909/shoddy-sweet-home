@@ -605,7 +605,16 @@ func _add_kitchen_imported_details() -> void:
 	_add_box("KitchenDetail_CuttingBoard", Vector3(0.48, 0.035, 0.34), _kitchen_point(Vector3(5.25, 0.66, 4.32)), wood, false)
 	_add_cylinder("KitchenDetail_Cup", 0.09, 0.16, _kitchen_point(Vector3(5.68, 0.76, 4.12)), ceramic, false)
 	_add_cylinder("KitchenDetail_CupHandle", 0.055, 0.025, _kitchen_point(Vector3(5.78, 0.76, 4.12)), ceramic, false)
-	_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.72, 0.045), _kitchen_point(Vector3(6.27, 1.04, 2.72)), steel, false)
+	# Bind the refrigerator pull to the tall imported cabinet that also anchors
+	# the cabinet-blocked inspection issue. The old authored point belonged to
+	# the previous kitchen scale and appeared as a floating vertical bar.
+	var fridge_bounds := _find_kitchen_mesh_bounds("253_CupboardUnits")
+	if fridge_bounds.has_volume():
+		var fridge_handle_height := clampf(fridge_bounds.size.y * 0.86, 0.48, 0.68)
+		var fridge_handle_pos := Vector3(fridge_bounds.position.x - 0.035, fridge_bounds.get_center().y, fridge_bounds.get_center().z)
+		_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, fridge_handle_height, 0.045), fridge_handle_pos, steel, false)
+	else:
+		_add_box("KitchenDetail_FridgeHandle", Vector3(0.045, 0.60, 0.045), _kitchen_point(Vector3(6.27, 1.04, 2.72)), steel, false)
 	# The extractor hood is a dense imported hero mesh, but its scan has no
 	# readable duct transition. Build the trim from its real bounds so the
 	# exhaust clue and the cabinet connection remain aligned after rescaling.

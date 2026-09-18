@@ -318,3 +318,8 @@
 
 - 雙洗手盆由低細節 CylinderMesh 改為 24 徑向段、12 環的橢圓陶瓷 basin，並加入 bounds 內的深色內凹件；視覺件不新增碰撞。
 - `tests/bathroom_details.gd` 新增左右 basin 網格品質檢查；浴室材質批次仍為 13 組，11 張圖形驗收 0 failures。
+
+### 追加：廚房冰箱把手 bounds 貼合（2026-09-19）
+
+- `KitchenDetail_FridgeHandle` 不再使用舊廚房比例下的固定座標，改依匯入 `253_CupboardUnits` 世界 bounds 生成，與 `cabinet_blocked` 缺陷共用同一個冰箱／高櫃基準。
+- 把手高度依實際櫃體高度縮放並限制在 0.48–0.68m；`tests/kitchen_details.gd` 新增位置與比例驗收，避免把手再次漂浮或穿出櫃體。

@@ -57,6 +57,18 @@ func _run() -> void:
 	if not hood_bounds.has_volume() or hood_rim == null or hood_rim.global_position.distance_to(hood_rim_expected) > 0.05:
 		printerr("FAIL extractor hood trim is not attached to real hood bounds")
 		failures += 1
+	var fridge_bounds: AABB = game._find_kitchen_mesh_bounds("253_CupboardUnits")
+	var fridge_handle := game.get_node_or_null("KitchenDetail_FridgeHandle") as Node3D
+	var fridge_handle_expected := Vector3(fridge_bounds.position.x - 0.035, fridge_bounds.get_center().y, fridge_bounds.get_center().z) if fridge_bounds.has_volume() else Vector3.ZERO
+	if not fridge_bounds.has_volume() or fridge_handle == null or fridge_handle.global_position.distance_to(fridge_handle_expected) > 0.06:
+		printerr("FAIL refrigerator handle is not attached to the imported cabinet bounds")
+		failures += 1
+	else:
+		var handle_mesh := fridge_handle.get_node_or_null("Mesh") as MeshInstance3D
+		var handle_box := handle_mesh.mesh as BoxMesh if handle_mesh != null else null
+		if handle_box == null or handle_box.size.y < 0.48 or handle_box.size.y > 0.68:
+			printerr("FAIL refrigerator handle has unexpected vertical proportion")
+			failures += 1
 	print("Kitchen detail nodes: ", required.size(), "; dining pads: ", dining_pads.size())
 	print("Kitchen detail failures: ", failures)
 	game.queue_free()
