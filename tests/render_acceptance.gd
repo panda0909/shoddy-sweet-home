@@ -1,6 +1,6 @@
 extends SceneTree
 
-const OUTPUT_DIR := "/private/tmp/shoddy-sweet-home-acceptance"
+const OUTPUT_DIR := "user://shoddy-sweet-home-acceptance"
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -28,7 +28,7 @@ func _run() -> void:
 		return
 	game.set_process(false)
 	game.hud.hide()
-	DirAccess.make_dir_recursive_absolute(OUTPUT_DIR)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT_DIR))
 	for tool in game.held_tools:
 		tool.hide()
 
