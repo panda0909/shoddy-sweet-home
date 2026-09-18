@@ -49,6 +49,8 @@ var progressive_loading := false
 var hint_world_label: Label3D
 var hint_until := 0.0
 var imported_material_cache: Dictionary = {}
+var generated_oak_texture: Texture2D
+var generated_fabric_texture: Texture2D
 
 var tool_names := ["手電筒", "水平儀", "空鼓槌", "驗電筆"]
 var tool_descriptions := [
@@ -79,6 +81,7 @@ func _ready() -> void:
 	# Web pointer lock must be requested by a real user gesture, never on load.
 	if OS.has_feature("web"):
 		Input.use_accumulated_input = false
+	_load_generated_material_textures()
 	_build_lighting()
 	_build_world()
 	_build_player()
@@ -455,29 +458,29 @@ func _build_kitchen_procedural() -> void:
 func _build_bedroom() -> void:
 	# 臥室沒有使用單一灰盒：床、軟件、收納、工作區與窗邊飾品皆拆成可辨識的家具部件。
 	_add_box("BedroomRug", Vector3(4.8, 0.05, 3.6), Vector3(-5.7, 0.03, -3.2), _mat(Color(0.19, 0.25, 0.30)), false)
-	_add_box("BedBase", Vector3(3.4, 0.55, 2.6), Vector3(-6.2, 0.35, -3.3), _mat(palette["wood"]), true)
-	_add_box("BedHeadboard", Vector3(3.55, 1.25, 0.16), Vector3(-6.2, 1.15, -4.55), _mat(Color(0.22, 0.12, 0.08)), true)
-	_add_box("Mattress", Vector3(3.25, 0.42, 2.5), Vector3(-6.2, 0.83, -3.3), _mat(Color(0.48, 0.55, 0.66)), true)
-	_add_box("Duvet", Vector3(3.12, 0.16, 1.45), Vector3(-6.2, 1.12, -2.85), _mat(Color(0.26, 0.40, 0.53)), false)
-	_add_box("PillowLeft", Vector3(1.2, 0.18, 0.65), Vector3(-6.92, 1.15, -4.12), _mat(palette["white"]), false)
-	_add_box("PillowRight", Vector3(1.2, 0.18, 0.65), Vector3(-5.48, 1.15, -4.12), _mat(palette["white"]), false)
-	_add_box("BedThrow", Vector3(3.15, 0.09, 0.42), Vector3(-6.2, 1.22, -2.15), _mat(Color(0.55, 0.30, 0.18)), false)
+	_add_box("BedBase", Vector3(3.4, 0.55, 2.6), Vector3(-6.2, 0.35, -3.3), _wood_mat(Color(0.92, 0.72, 0.50)), true)
+	_add_box("BedHeadboard", Vector3(3.55, 1.25, 0.16), Vector3(-6.2, 1.15, -4.55), _wood_mat(Color(0.72, 0.48, 0.30)), true)
+	_add_box("Mattress", Vector3(3.25, 0.42, 2.5), Vector3(-6.2, 0.83, -3.3), _fabric_mat(Color(0.72, 0.78, 0.84)), true)
+	_add_box("Duvet", Vector3(3.12, 0.16, 1.45), Vector3(-6.2, 1.12, -2.85), _fabric_mat(Color(0.55, 0.70, 0.82)), false)
+	_add_box("PillowLeft", Vector3(1.2, 0.18, 0.65), Vector3(-6.92, 1.15, -4.12), _fabric_mat(Color(0.88, 0.90, 0.88)), false)
+	_add_box("PillowRight", Vector3(1.2, 0.18, 0.65), Vector3(-5.48, 1.15, -4.12), _fabric_mat(Color(0.88, 0.90, 0.88)), false)
+	_add_box("BedThrow", Vector3(3.15, 0.09, 0.42), Vector3(-6.2, 1.22, -2.15), _fabric_mat(Color(0.82, 0.52, 0.32)), false)
 	for bedside_x in [-8.25, -4.15]:
-		_add_box("BedsideTable_" + str(bedside_x), Vector3(0.72, 0.62, 0.62), Vector3(bedside_x, 0.31, -4.25), _mat(Color(0.26, 0.16, 0.10)), true)
+		_add_box("BedsideTable_" + str(bedside_x), Vector3(0.72, 0.62, 0.62), Vector3(bedside_x, 0.31, -4.25), _wood_mat(Color(0.86, 0.62, 0.38)), true)
 		_add_cylinder("BedsideLampBase_" + str(bedside_x), 0.10, 0.30, Vector3(bedside_x, 0.82, -4.25), _mat(palette["metal"]), false)
 		_add_cylinder("BedsideLampShade_" + str(bedside_x), 0.24, 0.30, Vector3(bedside_x, 1.10, -4.25), _mat(Color(0.70, 0.54, 0.32)), false)
-	_add_box("Closet", Vector3(2.3, 2.4, 0.65), Vector3(-1.9, 1.2, -4.8), _mat(palette["wood"]), true)
-	_add_box("ClosetDoorLeft", Vector3(1.06, 2.18, 0.04), Vector3(-2.47, 1.2, -4.44), _mat(Color(0.36, 0.20, 0.11)), false)
-	_add_box("ClosetDoorRight", Vector3(1.06, 2.18, 0.04), Vector3(-1.33, 1.2, -4.44), _mat(Color(0.36, 0.20, 0.11)), false)
+	_add_box("Closet", Vector3(2.3, 2.4, 0.65), Vector3(-1.9, 1.2, -4.8), _wood_mat(Color(0.88, 0.66, 0.42)), true)
+	_add_box("ClosetDoorLeft", Vector3(1.06, 2.18, 0.04), Vector3(-2.47, 1.2, -4.44), _wood_mat(Color(0.74, 0.50, 0.30)), false)
+	_add_box("ClosetDoorRight", Vector3(1.06, 2.18, 0.04), Vector3(-1.33, 1.2, -4.44), _wood_mat(Color(0.74, 0.50, 0.30)), false)
 	_add_cylinder("ClosetHandleLeft", 0.035, 0.38, Vector3(-1.98, 1.2, -4.40), _mat(palette["metal"]), false)
 	_add_cylinder("ClosetHandleRight", 0.035, 0.38, Vector3(-1.82, 1.2, -4.40), _mat(palette["metal"]), false)
-	_add_box("Desk", Vector3(2.4, 0.85, 0.75), Vector3(-2.6, 0.45, -1.45), _mat(palette["wood_light"]), true)
-	_add_box("DeskTop", Vector3(2.55, 0.10, 0.85), Vector3(-2.6, 0.91, -1.45), _mat(Color(0.60, 0.38, 0.18)), false)
+	_add_box("Desk", Vector3(2.4, 0.85, 0.75), Vector3(-2.6, 0.45, -1.45), _wood_mat(Color(0.84, 0.60, 0.36)), true)
+	_add_box("DeskTop", Vector3(2.55, 0.10, 0.85), Vector3(-2.6, 0.91, -1.45), _wood_mat(Color(0.94, 0.72, 0.46)), false)
 	_add_box("Monitor", Vector3(0.92, 0.58, 0.06), Vector3(-2.9, 1.32, -1.76), _mat(Color(0.025, 0.035, 0.045)), false)
 	_add_cylinder("MonitorStand", 0.07, 0.38, Vector3(-2.9, 1.08, -1.70), _mat(palette["metal"]), false)
-	_add_box("DeskChairBack", Vector3(0.65, 0.72, 0.12), Vector3(-2.6, 0.88, -0.35), _mat(Color(0.12, 0.20, 0.28)), true)
-	_add_cylinder("DeskChairSeat", 0.40, 0.12, Vector3(-2.6, 0.55, -0.55), _mat(Color(0.12, 0.20, 0.28)), true)
-	_add_box("Bookcase", Vector3(0.72, 2.10, 0.36), Vector3(-9.1, 1.05, -4.65), _mat(Color(0.20, 0.13, 0.09)), true)
+	_add_box("DeskChairBack", Vector3(0.65, 0.72, 0.12), Vector3(-2.6, 0.88, -0.35), _fabric_mat(Color(0.45, 0.60, 0.70)), true)
+	_add_cylinder("DeskChairSeat", 0.40, 0.12, Vector3(-2.6, 0.55, -0.55), _fabric_mat(Color(0.45, 0.60, 0.70)), true)
+	_add_box("Bookcase", Vector3(0.72, 2.10, 0.36), Vector3(-9.1, 1.05, -4.65), _wood_mat(Color(0.70, 0.48, 0.30)), true)
 	for book_index in range(6):
 		var book_x: float = -9.34 + float(book_index % 3) * 0.23
 		var book_y: float = 0.48 + float(book_index / 3) * 0.75
@@ -1522,6 +1525,28 @@ func _mat(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
 	material.roughness = 0.72
+	return material
+
+
+func _load_generated_material_textures() -> void:
+	# 程序化臥室使用低解析度可重複貼圖；匯入家具仍保留各自的原始材質。
+	generated_oak_texture = load("res://assets/materials/generated_oak_albedo.png") as Texture2D
+	generated_fabric_texture = load("res://assets/materials/generated_fabric_albedo.png") as Texture2D
+
+
+func _wood_mat(color: Color) -> StandardMaterial3D:
+	var material := _mat(color)
+	if generated_oak_texture != null:
+		material.albedo_texture = generated_oak_texture
+	material.roughness = 0.58
+	return material
+
+
+func _fabric_mat(color: Color) -> StandardMaterial3D:
+	var material := _mat(color)
+	if generated_fabric_texture != null:
+		material.albedo_texture = generated_fabric_texture
+	material.roughness = 0.88
 	return material
 
 
