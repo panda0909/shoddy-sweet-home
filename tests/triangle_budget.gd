@@ -37,6 +37,19 @@ func _run() -> void:
 	if near_kitchen_triangles < 1000000:
 		printerr("FAIL kitchen high-detail model was not restored near player")
 		failures += 1
+	game.player.position = Vector3(5.0, 1.0, -3.1)
+	game._update_high_poly_lods()
+	var near_bathroom_triangles := 0
+	var near_bathroom := game.get_node_or_null("BathroomRealAsset") as Node3D
+	if near_bathroom != null:
+		for child in near_bathroom.find_children("*", "MeshInstance3D", true, false):
+			var mesh := child as MeshInstance3D
+			if mesh != null and mesh.visible:
+				near_bathroom_triangles += game._mesh_triangle_count(mesh.mesh)
+	print("Bathroom near-player triangles=", near_bathroom_triangles)
+	if near_bathroom_triangles < 400000:
+		printerr("FAIL bathroom high-detail model was not restored near player")
+		failures += 1
 	print("Triangle budget failures: ", failures)
 	game.queue_free()
 	await process_frame

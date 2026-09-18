@@ -823,7 +823,7 @@ func _apply_imported_lod(asset: Node3D, mesh: MeshInstance3D, bounds: AABB) -> v
 	# Keep the high-detail hero furniture intact. Only small, non-colliding
 	# decorations in the large imported living/kitchen scenes are culled after
 	# the player is far enough away to make them sub-pixel on Web.
-	if asset.name not in ["LivingRoomRealAsset", "KitchenRealAsset"]:
+	if asset.name not in ["LivingRoomRealAsset", "KitchenRealAsset", "BathroomRealAsset"]:
 		return
 	if not _is_imported_lod_candidate(mesh, bounds):
 		return
@@ -834,12 +834,12 @@ func _apply_imported_lod(asset: Node3D, mesh: MeshInstance3D, bounds: AABB) -> v
 
 
 func _add_high_poly_lod_proxy(asset: Node3D, mesh: MeshInstance3D, bounds: AABB) -> void:
-	if asset.name not in ["LivingRoomRealAsset", "KitchenRealAsset"]:
+	if asset.name not in ["LivingRoomRealAsset", "KitchenRealAsset", "BathroomRealAsset"]:
 		return
 	if _is_door_clearance_shell(mesh):
 		return
 	var triangles := _mesh_triangle_count(mesh.mesh)
-	var proxy_threshold := 1200 if asset.name == "KitchenRealAsset" else 4000
+	var proxy_threshold := 1200 if asset.name == "KitchenRealAsset" else (3000 if asset.name == "BathroomRealAsset" else 4000)
 	if triangles < proxy_threshold:
 		return
 	var proxy := MeshInstance3D.new()
@@ -860,6 +860,10 @@ func _add_high_poly_lod_proxy(asset: Node3D, mesh: MeshInstance3D, bounds: AABB)
 		# active while the player is in the living room, then restore the full
 		# model as soon as the player enters the kitchen inspection distance.
 		lod_distance = 7.5
+	elif asset.name == "BathroomRealAsset":
+		# The bathroom has dense sanitaryware and foliage. Keep its proxy active
+		# from the entrance until the player enters the inspection aisle.
+		lod_distance = 7.0
 	high_poly_lod_entries.append({
 		"source": mesh,
 		"proxy": proxy,

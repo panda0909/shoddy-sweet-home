@@ -46,6 +46,7 @@ func _run() -> void:
 			printerr("FAIL high-poly source was not restored near player")
 			failures += 1
 	var kitchen_lod_entries := 0
+	var bathroom_lod_entries := 0
 	for entry in game.high_poly_lod_entries:
 		var source := entry["source"] as MeshInstance3D
 		if source != null and source.get_parent() is Node3D and source.get_parent().get_parent() is Node3D:
@@ -54,11 +55,20 @@ func _run() -> void:
 				ancestor = ancestor.get_parent()
 			if ancestor != null and is_equal_approx(float(entry["distance"]), 7.5):
 				kitchen_lod_entries += 1
-		if source != null and source.has_meta("high_poly_lod_distance") and float(source.get_meta("high_poly_lod_distance")) < 7.5:
-			printerr("FAIL unexpected sub-7.5m LOD distance: ", source.name)
+		if source != null and source.has_meta("high_poly_lod_distance") and float(source.get_meta("high_poly_lod_distance")) < 7.0:
+			printerr("FAIL unexpected sub-7.0m LOD distance: ", source.name)
 			failures += 1
+		if source != null and source.has_meta("high_poly_lod_distance") and is_equal_approx(float(entry["distance"]), 7.0):
+			var bathroom_ancestor: Node = source
+			while bathroom_ancestor != null and bathroom_ancestor.name != "BathroomRealAsset":
+				bathroom_ancestor = bathroom_ancestor.get_parent()
+			if bathroom_ancestor != null:
+				bathroom_lod_entries += 1
 	if kitchen_lod_entries == 0:
 		printerr("FAIL kitchen high-poly LOD budget was not configured")
+		failures += 1
+	if bathroom_lod_entries == 0:
+		printerr("FAIL bathroom high-poly LOD budget was not configured")
 		failures += 1
 	print("Imported decorative LOD meshes: ", lod_count)
 	print("High-poly proxy LOD entries: ", game.high_poly_lod_entries.size())

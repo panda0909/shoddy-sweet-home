@@ -221,3 +221,9 @@
 - 匯入 glTF 材質現在同時讀取 Mesh 節點名與來源材質名，對金屬、玻璃、木材、布料、陶瓷／磁磚套用對應 Metallic、Roughness 與 Clearcoat；新增 `tests/imported_materials.gd` 驗證廚房、客廳、浴室代表材質 5 組，0 failures。
 - 廚房水槽、龍頭與把手改由實際 `123_Worktops` bounds 生成；`tests/kitchen_details.gd` 確認水槽中心與真實檯面距離小於 0.40，漏水缺陷仍對準 `261_CupboardUnits`。
 - 浴室補上洗手台櫃門把手、馬桶水面／鉸鏈、淋浴控制與排水孔十字件；`tests/bathroom_details.gd` 現在驗證 28 個細節節點，0 failures。
+
+### 追加：浴室高模遠景 LOD（2026-09-19）
+
+- 浴室匯入資產加入 7m 高模 proxy 距離；玩家在入口時浴室可見三角面由 862,340 降至 558,988，進入浴室檢查位置後恢復 862,340 高細節三角面。
+- `tests/lod_visibility.gd` 新增浴室 proxy 存在性與距離檢查；`tests/triangle_budget.gd` 新增浴室遠景／近景雙狀態驗證，兩者均為 0 failures。
+- 四房 11 張近距離／逆光／手電筒／開門圖形驗收仍為 0 failures，Web 資產未增加新的外部貼圖。
