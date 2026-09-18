@@ -4,11 +4,22 @@ func _initialize() -> void:
 func _run() -> void:
 	var game = load("res://main.tscn").instantiate()
 	root.add_child(game)
-	game.set_process(false)
 	game.set_physics_process(false)
-	game.set_process_unhandled_input(false)
 	game.set_process_input(false)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	# In graphical mode the game intentionally streams rooms after the living
+	# room. Keep _process alive until that queue completes, otherwise this test
+	# captures the entrance shell before any furniture has arrived.
+	for frame in range(1200):
+		await process_frame
+		if game.loaded_rooms.size() == 4 and not game.progressive_loading:
+			break
+	if game.loaded_rooms.size() != 4:
+		printerr("FAIL progressive room render captured before all rooms loaded")
+		game.queue_free()
+		await process_frame
+		quit(1)
+	game.set_process(false)
 	game.hud.hide()
 	for tool in game.held_tools:
 		tool.hide()

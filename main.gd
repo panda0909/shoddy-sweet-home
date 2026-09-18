@@ -521,6 +521,31 @@ func _build_bathroom(scene_override: PackedScene = null) -> void:
 
 	_prepare_furniture(bathroom_asset)
 	preload("res://static_batch.gd").build(bathroom_asset)
+	_add_bathroom_imported_details()
+
+
+func _add_bathroom_imported_details() -> void:
+	# The imported bathroom provides the vanity and tub, but leaves the wet
+	# zone visually unfinished. Add the missing sanitaryware as separate,
+	# readable pieces after batching so each prop keeps its own silhouette.
+	_add_cylinder("ImportedBath_ToiletBase", 0.52, 0.62, Vector3(7.3, 0.31, -4.5), _mat(Color(0.76, 0.78, 0.76)), true)
+	_add_box("ImportedBath_ToiletTank", Vector3(0.82, 0.80, 0.36), Vector3(7.3, 0.98, -4.78), _mat(Color(0.76, 0.78, 0.76)), true)
+	_add_cylinder("ImportedBath_ToiletSeat", 0.40, 0.08, Vector3(7.3, 0.66, -4.5), _mat(Color(0.58, 0.60, 0.58)), true)
+	_add_box("ImportedBath_ToiletLid", Vector3(0.68, 0.045, 0.54), Vector3(7.3, 0.73, -4.70), _mat(Color(0.84, 0.85, 0.82)), false)
+	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, Vector3(7.3, 1.39, -4.78), _mat(Color(0.42, 0.44, 0.42)), false)
+
+	_add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), _mat(Color(0.68, 0.70, 0.68)), true)
+	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, 2.5), Vector3(8.6, 1.15, -2.5), _mat(Color(0.42, 0.63, 0.68)), false)
+	_add_box("ImportedBath_ShowerFrame", Vector3(0.10, 2.35, 2.65), Vector3(8.55, 1.18, -2.5), _mat(palette["metal"]), false)
+	_add_cylinder("ImportedBath_ShowerPipe", 0.045, 1.30, Vector3(7.35, 2.05, -5.18), _mat(palette["metal"]), false)
+	_add_cylinder("ImportedBath_ShowerHead", 0.18, 0.10, Vector3(7.35, 2.68, -5.18), _mat(palette["metal"]), false)
+	_add_box("ImportedBath_ShowerShelf", Vector3(0.70, 0.06, 0.24), Vector3(8.28, 1.55, -3.25), _mat(palette["metal"]), false)
+	_add_cylinder("ImportedBath_Shampoo", 0.08, 0.24, Vector3(8.08, 1.70, -3.25), _mat(Color(0.24, 0.52, 0.70)), false)
+	_add_cylinder("ImportedBath_Shampoo2", 0.08, 0.24, Vector3(8.30, 1.70, -3.25), _mat(Color(0.75, 0.38, 0.28)), false)
+
+	_add_box("ImportedBath_TowelBar", Vector3(0.95, 0.08, 0.08), Vector3(3.7, 1.42, -5.76), _mat(palette["metal"]), false)
+	_add_box("ImportedBath_Towel", Vector3(0.75, 0.58, 0.05), Vector3(3.7, 1.10, -5.70), _mat(Color(0.72, 0.48, 0.35)), false)
+	_add_box("ImportedBath_DrainCover", Vector3(0.28, 0.02, 0.28), Vector3(7.6, 0.145, -2.25), _mat(Color(0.30, 0.33, 0.34)), false)
 
 
 func _prepare_furniture(asset: Node3D) -> void:
@@ -617,6 +642,7 @@ func _tune_imported_materials(mesh: MeshInstance3D) -> void:
 			tuned.metallic = metallic
 			var standard := tuned as StandardMaterial3D
 			if standard != null:
+				standard.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				standard.clearcoat = clearcoat
 				standard.clearcoat_roughness = clearcoat_roughness
 			imported_material_cache[cache_key] = tuned
@@ -1577,6 +1603,7 @@ func _add_cylinder(node_name: String, radius: float, height: float, pos: Vector3
 	body.add_child(mesh)
 	if collision:
 		var shape_node := CollisionShape3D.new()
+		shape_node.name = "CollisionShape3D"
 		var shape := CylinderShape3D.new()
 		shape.radius = radius
 		shape.height = height
@@ -1589,6 +1616,7 @@ func _mat(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
 	material.roughness = 0.72
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	return material
 
 
