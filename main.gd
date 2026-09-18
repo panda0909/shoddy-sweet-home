@@ -552,10 +552,32 @@ func _prepare_furniture(asset: Node3D) -> void:
 				blocks_door = true
 				break
 		if blocks_door:
-			mesh.hide()
+			# Do not remove a whole piece of furniture just because an imported
+			# bevel or trim overlaps the generous doorway safety volume. Room-shell
+			# fragments can be hidden, but furniture remains visible and becomes
+			# render-only at this exact piece so the player can still pass smoothly.
+			if _is_door_clearance_shell(mesh):
+				mesh.set_meta("hidden_for_door_clearance", true)
+				mesh.hide()
+			else:
+				mesh.set_meta("door_clearance_visual_only", true)
 			continue
 		if _should_have_furniture_collision(mesh, bounds):
 			_add_furniture_box_collision(asset, mesh, bounds)
+
+
+func _is_door_clearance_shell(mesh: MeshInstance3D) -> bool:
+	# These are architectural fragments from the original room scan. They do
+	# not belong to the furniture composition and have no valid wall to support
+	# them after the room shell is replaced by the playable floor plan.
+	var mesh_name := str(mesh.name).to_lower()
+	for token in [
+		"wall", "floor", "ceiling", "skirting", "cornice", "moulding",
+		"trim", "shell", "room_shell", "doorframe", "door_frame"
+	]:
+		if token in mesh_name:
+			return true
+	return false
 
 
 func _tune_imported_materials(mesh: MeshInstance3D) -> void:
@@ -999,6 +1021,8 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 		"vent_wrong": "255_ExtractorHood",
 		"cabinet_blocked": "253_CupboardUnits",
 		"kitchen_socket": "195_WallSocket",
+		"bed_slope": "BedBase",
+		"window_sealed": "WindowGlass",
 		"rug_tilt": "141_Carpet"
 	}
 	if anchor_names.has(issue_id):
@@ -1016,6 +1040,12 @@ func _issue(issue_id: String, title: String, room: String, required_tool: int, s
 			elif issue_id == "kitchen_socket":
 				pos = bounds.get_center() + Vector3(-0.06, 0, 0)
 				size = Vector3(0.16, 0.35, 0.24)
+			elif issue_id == "bed_slope":
+				pos = Vector3(bounds.end.x - 0.10, bounds.position.y + 0.02, bounds.get_center().z)
+				size = Vector3(0.72, 0.14, 0.90)
+			elif issue_id == "window_sealed":
+				pos = bounds.get_center() + Vector3(0, 0.18, 0.04)
+				size = Vector3(minf(2.0, bounds.size.x), 0.60, 0.10)
 			else:
 				pos.x = bounds.position.x - 0.035
 				if issue_id == "sink_leak":
