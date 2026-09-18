@@ -210,13 +210,8 @@ static func apply(room: Node3D) -> void:
 		var stem_angle: float = i * 2.399
 		stem.rotation = Vector3(0.25, -stem_angle, 0.12)
 		var leaf := MeshInstance3D.new()
-		var sphere := SphereMesh.new()
-		sphere.radius = 0.5
-		sphere.height = 1.0
-		sphere.radial_segments = 16
-		sphere.rings = 8
-		leaf.mesh = sphere
-		leaf.scale = Vector3(0.15, 0.035, 0.43)
+		leaf.name = "Leaf_%d" % i
+		leaf.mesh = _plant_leaf_mesh(0.18, 0.52, 0.022, 6)
 		var angle: float = i * 2.399
 		leaf.position = Vector3(cos(angle) * 0.18, -0.25 + i * 0.043, sin(angle) * 0.18)
 		leaf.rotation = Vector3(0.45, -angle, 0.25)
@@ -281,6 +276,47 @@ static func _chair_back_mesh(size: Vector3) -> ArrayMesh:
 		for y in range(rows - 1):
 			for x in range(columns - 1):
 				var a := base + y * columns + x
+				var b := a + 1
+				var c := a + columns
+				var d := c + 1
+				if side > 0.0:
+					indices.append_array([a, c, b, b, c, d])
+				else:
+					indices.append_array([a, b, c, b, d, c])
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
+
+
+static func _plant_leaf_mesh(width: float, length: float, thickness: float, rows: int) -> ArrayMesh:
+	var columns := 5
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	for side in [1.0, -1.0]:
+		var base := vertices.size()
+		for row in range(rows):
+			var v := float(row) / float(rows - 1)
+			var tip_falloff: float = pow(sin(v * PI), 0.72)
+			var z: float = (v - 0.5) * length
+			for column in range(columns):
+				var u := float(column) / float(columns - 1)
+				var center_falloff := 1.0 - absf(u * 2.0 - 1.0)
+				var x := (u - 0.5) * width * tip_falloff
+				var y: float = side * (thickness * 0.5 + 0.018 * center_falloff * tip_falloff)
+				vertices.append(Vector3(x, y, z))
+				normals.append(Vector3(0, side, 0))
+				uvs.append(Vector2(u, v))
+		for row in range(rows - 1):
+			for column in range(columns - 1):
+				var a := base + row * columns + column
 				var b := a + 1
 				var c := a + columns
 				var d := c + 1

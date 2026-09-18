@@ -78,7 +78,7 @@ func _run() -> void:
 		"Desk/FrontApron", "DeskTop/DesktopFrontNosing", "DeskTop/DesktopLeftReturn",
 		"DeskTop/KeyboardKey_00", "DeskTop/KeyboardKey_11", "Monitor/MonitorScreen",
 		"Monitor/MonitorBezelTop", "Monitor/MonitorBezelBottom", "MonitorStand/MonitorFoot",
-		"BedroomPlant/Stem_0", "BedroomPlant/Stem_15",
+		"BedroomPlant/Stem_0", "BedroomPlant/Stem_15", "BedroomPlant/Leaf_0", "BedroomPlant/Leaf_15",
 		"CurtainLeft/CurtainRod", "CurtainRight/CurtainRod"
 	]:
 		if game.get_node_or_null(id) == null:
@@ -100,6 +100,10 @@ func _run() -> void:
 	var chair_back_mesh := game.get_node_or_null("DeskChairBack/Mesh") as MeshInstance3D
 	if chair_back_mesh == null or not chair_back_mesh.mesh is ArrayMesh or chair_back_mesh.mesh.get_aabb().size.x < 0.55 or chair_back_mesh.mesh.get_aabb().size.y < 0.60:
 		printerr("FAIL desk chair back is still a low-detail box silhouette")
+		failures += 1
+	var leaf_mesh := game.get_node_or_null("BedroomPlant/Leaf_0") as MeshInstance3D
+	if leaf_mesh == null or not leaf_mesh.mesh is ArrayMesh or leaf_mesh.mesh.get_aabb().size.x < 0.12 or leaf_mesh.mesh.get_aabb().size.z < 0.35:
+		printerr("FAIL bedroom plant still uses a low-detail blob leaf")
 		failures += 1
 	var left_rod := game.get_node_or_null("CurtainLeft/CurtainRod") as MeshInstance3D
 	if left_rod != null and absf(left_rod.rotation.z - PI / 2.0) > 0.01:

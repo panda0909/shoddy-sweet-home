@@ -607,3 +607,10 @@
 - `tests/bedroom_details.gd` 驗證椅背為雙面高細節網格且尺寸足夠；臥室細節、家具碰撞與 14 題互動回歸均為 `0 failures`。
 - 圖形截圖回歸：臥室 median `5.825ms`、p95 `6.604ms`、`1113` draws；四房均成功渲染。
 - Web Release 回歸：PCK `103,721,004` bytes、WASM `39,514,754` bytes，合計 `143,235,758` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：臥室植物葉片網格（2026-09-19）
+
+- `BedroomPlant/Leaf_0..15` 不再使用放大 SphereMesh，改為有葉尖、葉緣與中央隆起的雙面 ArrayMesh，保留原本 render-only 植物與通行空間。
+- `tests/bedroom_details.gd` 現在驗證葉片網格尺寸與數量；臥室細節、家具碰撞、家具可見性與 14 題互動回歸均為 `0 failures`。
+- 圖形截圖回歸：臥室 median `5.861ms`、p95 `6.663ms`、`1107` draws；四房均成功渲染。
+- Web Release 回歸：PCK `103,722,028` bytes、WASM `39,514,754` bytes，合計 `143,236,782` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
