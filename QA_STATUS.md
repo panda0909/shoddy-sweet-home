@@ -432,3 +432,8 @@
 
 - 目前 Web Release 的主要封裝載荷為 `index.pck` 約 99 MiB、`index.wasm` 約 38 MiB，合計約 143 MB。
 - GitHub Pages CI 新增 150 MB（157,286,400 bytes）硬門檻，若新增材質或模型令主要下載載荷超標，建置會直接失敗而不會部署慢版本。
+
+### 追加：臥室窗簾布料網格（2026-09-19）
+
+- 將原本 10 根垂直方條替換成每片 15×9 細分的連續布料網格，加入週期褶皺、底部中央自然下垂與獨立下擺；仍是純視覺件，不新增碰撞。
+- `tests/bedroom_details.gd` 驗證兩側 `DrapePanel` 為完整 ArrayMesh、下擺存在；臥室 PBR 測試與 15 張圖形驗收均為 `0 failures`。

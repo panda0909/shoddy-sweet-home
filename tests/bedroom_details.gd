@@ -107,10 +107,19 @@ func _run() -> void:
 		if collision == null or not collision.shape is BoxShape3D:
 			printerr("FAIL missing box-form desk assembly collision: ", id)
 			failures += 1
-	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "CurtainLeft/Pleat", "CurtainRight/Pleat"]:
+	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "CurtainLeft/DrapePanel", "CurtainRight/DrapePanel"]:
 		var structural_mesh := game.get_node_or_null(id) as MeshInstance3D
 		if structural_mesh == null or not structural_mesh.mesh is ArrayMesh:
 			printerr("FAIL structural detail is still a sharp box: ", id)
+			failures += 1
+	for id in ["CurtainLeft/DrapePanel", "CurtainRight/DrapePanel"]:
+		var drape := game.get_node_or_null(id) as MeshInstance3D
+		if drape == null or drape.mesh.get_surface_count() == 0 or drape.mesh.get_aabb().size.y < 1.5:
+			printerr("FAIL curtain drape mesh is incomplete: ", id)
+			failures += 1
+	for id in ["CurtainLeft/DrapeHem", "CurtainRight/DrapeHem"]:
+		if game.get_node_or_null(id) == null:
+			printerr("FAIL missing curtain hem: ", id)
 			failures += 1
 	for id in ["Desk/Leg_0", "Desk/Leg_3", "Desk/BackPanel", "Desk/FrontApron", "Desk/DrawerBodyLeft", "Desk/DrawerBodyRight", "Desk/DrawerFront"]:
 		var desk_mesh := game.get_node_or_null(id) as MeshInstance3D

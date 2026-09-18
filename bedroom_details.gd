@@ -198,8 +198,12 @@ static func apply(room: Node3D) -> void:
 		# panel instead of appearing as a standing pole through the window.
 		rod.rotation.z = PI / 2.0
 		_add_detail_box(curtain, "CurtainHeader", Vector3(0.46, 0.10, 0.08), Vector3(0, 0.77, 0), room._fabric_mat(Color(0.20, 0.27, 0.36)))
-		for i in range(10):
-			room._add_door_frame_piece(curtain, "Pleat", Vector3(0.052, 1.65, 0.06), Vector3(-0.22 + i * 0.048, 0, sin(i * 1.8) * 0.025), room._mat(Color(0.25, 0.32, 0.42)))
+		# Replace the old stack of vertical boxes with a single subdivided cloth
+		# panel. The sinusoidal depth gives the folds a continuous silhouette and
+		# the lower edge sags gently in the middle like a hanging fabric hem.
+		var drape_material: StandardMaterial3D = room._fabric_mat(Color(0.25, 0.32, 0.42))
+		_add_curtain_drape(curtain, "DrapePanel", 0.46, 1.65, drape_material)
+		_add_detail_box(curtain, "DrapeHem", Vector3(0.45, 0.032, 0.045), Vector3(0, -0.84, 0.02), drape_material)
 	# Complete the two panels with one continuous rail derived from the actual
 	# window glass. The original per-panel rods made the curtains read as two
 	# floating poles when the window was moved with the escape-window clue.
@@ -259,6 +263,65 @@ static func _add_detail_cylinder(parent: Node3D, node_name: String, radius: floa
 	mesh.position = local_pos
 	mesh.material_override = material
 	parent.add_child(mesh)
+	return mesh
+
+
+static func _add_curtain_drape(parent: Node3D, node_name: String, width: float, height: float, material: Material) -> MeshInstance3D:
+	var mesh := MeshInstance3D.new()
+	mesh.name = node_name
+	mesh.mesh = _curtain_drape_mesh(width, height, 7)
+	mesh.material_override = material
+	parent.add_child(mesh)
+	return mesh
+
+
+static func _curtain_drape_mesh(width: float, height: float, fold_count: int) -> ArrayMesh:
+	var columns := 15
+	var rows := 9
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	var x_step := width / float(columns - 1)
+	var y_step := height / float(rows - 1)
+	for row in range(rows):
+		var v := float(row) / float(rows - 1)
+		for column in range(columns):
+			var u := float(column) / float(columns - 1)
+			var x := -width * 0.5 + u * width
+			var y := height * 0.5 - v * height
+			if row == rows - 1:
+				# The center of the bottom edge hangs slightly lower than its sides.
+				y -= 0.045 * (1.0 - pow(absf(u * 2.0 - 1.0), 2.0))
+			var z := sin(u * TAU * float(fold_count)) * 0.026 + sin(v * PI) * 0.006
+			var z_right := sin(minf(1.0, u + 1.0 / float(columns - 1)) * TAU * float(fold_count)) * 0.026 + sin(v * PI) * 0.006
+			var z_up := sin(u * TAU * float(fold_count)) * 0.026 + sin(maxf(0.0, v - 1.0 / float(rows - 1)) * PI) * 0.006
+			var tangent_x := Vector3(x_step, 0.0, z_right - z)
+			var tangent_y := Vector3(0.0, y_step, z_up - z)
+			vertices.append(Vector3(x, y, z))
+			normals.append(tangent_x.cross(tangent_y).normalized())
+			uvs.append(Vector2(u, v))
+	for row in range(rows - 1):
+		for column in range(columns - 1):
+			var a := row * columns + column
+			var b := a + 1
+			var c := a + columns
+			var d := c + 1
+			# Winding faces the room (+Z), matching the bedroom inspection view.
+			indices.append(a)
+			indices.append(c)
+			indices.append(b)
+			indices.append(b)
+			indices.append(c)
+			indices.append(d)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
 
 
