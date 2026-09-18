@@ -968,6 +968,9 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	var warm_shampoo := _mat(Color(0.75, 0.38, 0.28))
 	var towel_material := _mat(Color(0.72, 0.48, 0.35))
 	var towel_fold_material := _mat(Color(0.54, 0.33, 0.25))
+	# Reuse the existing steel batch for tub fittings; the extra geometry should
+	# not create another bathroom material group.
+	var bath_fitting_material: Material = steel
 	# The drain cover is also brushed metal; reuse the bathroom steel material
 	# so it does not create a separate static-batch material group.
 	var drain_material := steel
@@ -1059,6 +1062,25 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	_add_cylinder("ImportedBath_FlushButton", 0.055, 0.025, toilet_anchor + Vector3(0, 1.39, -0.28), button_material, false, detail_root)
 	_add_cylinder("ImportedBath_FlushButtonRing", 0.085, 0.012, toilet_anchor + Vector3(0, 1.405, -0.28), steel, false, detail_root)
 	_add_box("ImportedBath_FlushLever", Vector3(0.035, 0.16, 0.035), toilet_anchor + Vector3(0.43, 1.18, -0.28), steel, false, detail_root)
+	# The imported tub has a convincing shell but no readable plumbing. Build a
+	# compact fitting set from the real tub bounds so the spout, handles, rim and
+	# overflow never drift if the bathroom asset is translated or rescaled.
+	var bathtub_bounds := _find_anchor_group_bounds(["843_Bathtube", "844_Bathtube"])
+	if bathtub_bounds.has_volume():
+		var tub_back_z := bathtub_bounds.end.z - bathtub_bounds.size.z * 0.16
+		var tub_fitting_y := bathtub_bounds.end.y + 0.13
+		var tub_fitting_x := bathtub_bounds.get_center().x + bathtub_bounds.size.x * 0.26
+		var tub_rim_size := Vector3(bathtub_bounds.size.x * 0.72, 0.035, 0.055)
+		var tub_rim := _add_box("ImportedBath_TubRim", tub_rim_size, Vector3(bathtub_bounds.get_center().x, bathtub_bounds.end.y + 0.018, tub_back_z), porcelain, false, detail_root)
+		var tub_rim_mesh := tub_rim.get_node("Mesh") as MeshInstance3D
+		if tub_rim_mesh != null:
+			tub_rim_mesh.mesh = bedroom_details_rounded(tub_rim_size, 0.014)
+		_add_cylinder("ImportedBath_TubFaucetStem", 0.042, 0.18, Vector3(tub_fitting_x, tub_fitting_y, tub_back_z), bath_fitting_material, false, detail_root)
+		var tub_spout := _add_cylinder("ImportedBath_TubSpout", 0.034, 0.24, Vector3(tub_fitting_x, tub_fitting_y + 0.055, tub_back_z - 0.09), bath_fitting_material, false, detail_root)
+		tub_spout.rotation.x = PI / 2.0
+		for handle_side in [-1, 1]:
+			_add_cylinder("ImportedBath_TubHandle_%s" % ("Left" if handle_side < 0 else "Right"), 0.045, 0.035, Vector3(tub_fitting_x + handle_side * 0.16, tub_fitting_y + 0.08, tub_back_z), bath_fitting_material, false, detail_root)
+		_add_cylinder("ImportedBath_TubOverflow", 0.07, 0.018, Vector3(bathtub_bounds.get_center().x, bathtub_bounds.position.y + bathtub_bounds.size.y * 0.78, bathtub_bounds.end.z - 0.035), bath_fitting_material, false, detail_root)
 
 	var shower_tray := _add_box("ImportedBath_ShowerTray", Vector3(2.8, 0.10, 2.2), Vector3(7.6, 0.08, -2.25), tray_material, true, detail_root)
 	# Keep the entire glass/frame assembly attached to the tray. The old glass

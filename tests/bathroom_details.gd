@@ -24,7 +24,9 @@ func _run() -> void:
 		"ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight",
 		"ImportedBath_VanityFaucetLeft", "ImportedBath_VanityFaucetRight",
 		"ImportedBath_VanityHandle_0", "ImportedBath_VanityHandle_3",
-		"ImportedBath_MirrorEdgeTop", "ImportedBath_MirrorEdgeLeft", "ImportedBath_MirrorEdgeRight"
+		"ImportedBath_MirrorEdgeTop", "ImportedBath_MirrorEdgeLeft", "ImportedBath_MirrorEdgeRight",
+		"ImportedBath_TubRim", "ImportedBath_TubFaucetStem", "ImportedBath_TubSpout",
+		"ImportedBath_TubHandle_Left", "ImportedBath_TubHandle_Right", "ImportedBath_TubOverflow"
 	]
 	var failures := 0
 	var detail_root: Node = game.get_node_or_null("BathroomDetailBatch")
@@ -87,6 +89,16 @@ func _run() -> void:
 		printerr("FAIL vanity counter is not attached to imported marble bounds")
 		failures += 1
 	var bathroom_reference_bounds: AABB = game._find_bathroom_mesh_bounds("849_Ceiling")
+	var bathtub_bounds: AABB = game._find_anchor_group_bounds(["843_Bathtube", "844_Bathtube"])
+	var tub_faucet := game.find_child("ImportedBath_TubFaucetStem", true, false) as Node3D
+	var tub_spout := game.find_child("ImportedBath_TubSpout", true, false) as Node3D
+	if not bathtub_bounds.has_volume() or tub_faucet == null or tub_spout == null or absf(tub_faucet.global_position.x - (bathtub_bounds.get_center().x + bathtub_bounds.size.x * 0.26)) > 0.10 or tub_faucet.global_position.z < bathtub_bounds.position.z or tub_faucet.global_position.z > bathtub_bounds.end.z:
+		printerr("FAIL bathtub plumbing is not attached to imported tub bounds")
+		failures += 1
+	var tub_spout_mesh := tub_spout.get_node_or_null("Mesh") as MeshInstance3D if tub_spout != null else null
+	if tub_spout_mesh == null or absf(tub_spout.rotation.x - PI / 2.0) > 0.01:
+		printerr("FAIL bathtub spout is not oriented as a horizontal fitting")
+		failures += 1
 	var toilet_base := game.find_child("ImportedBath_ToiletBase", true, false) as Node3D
 	var toilet_expected := Vector3(bathroom_reference_bounds.end.x - 0.20, 0.31, bathroom_reference_bounds.position.z + bathroom_reference_bounds.size.z * 0.58) if bathroom_reference_bounds.has_volume() else Vector3.ZERO
 	if not bathroom_reference_bounds.has_volume() or toilet_base == null or toilet_base.global_position.distance_to(toilet_expected) > 0.06:
