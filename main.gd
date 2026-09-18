@@ -806,7 +806,9 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	var warm_shampoo := _mat(Color(0.75, 0.38, 0.28))
 	var towel_material := _mat(Color(0.72, 0.48, 0.35))
 	var towel_fold_material := _mat(Color(0.54, 0.33, 0.25))
-	var drain_material := _mat(Color(0.30, 0.33, 0.34))
+	# The drain cover is also brushed metal; reuse the bathroom steel material
+	# so it does not create a separate static-batch material group.
+	var drain_material := steel
 	var bowl_shadow_material := _mat(Color(0.34, 0.43, 0.43))
 	var mirror_bounds := _find_bathroom_mesh_bounds("44_Mirror")
 	if mirror_bounds.has_volume():

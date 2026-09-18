@@ -31,7 +31,7 @@ func _run() -> void:
 	if detail_root == null or detail_batches.size() < 3:
 		printerr("FAIL bathroom details were not batched: ", detail_batches.size())
 		failures += 1
-	if detail_batches.size() > 13:
+	if detail_batches.size() > 12:
 		printerr("FAIL bathroom detail material batches regressed: ", detail_batches.size())
 		failures += 1
 	for node_name in required:
