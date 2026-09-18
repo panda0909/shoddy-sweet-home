@@ -19,7 +19,7 @@ func _run() -> void:
 		"ImportedBath_ShowerTray", "ImportedBath_ShowerGlass", "ImportedBath_ShowerPipe",
 		"ImportedBath_ShowerHead", "ImportedBath_ShowerFrame_Left", "ImportedBath_ShowerFrame_Top",
 		"ImportedBath_ShowerHeadRose", "ImportedBath_ShowerNozzle_0", "ImportedBath_ShowerNozzle_7",
-		"ImportedBath_ShowerShelf", "ImportedBath_ShowerControl", "ImportedBath_ShowerControlRing", "ImportedBath_ShowerDrainCrossA", "ImportedBath_ShowerDrainCrossB", "ImportedBath_ShowerThreshold", "ImportedBath_ShowerGlassSeal", "ImportedBath_ShowerGlassHandle", "ImportedBath_TowelBar",
+		"ImportedBath_ShowerShelf", "ImportedBath_ShowerControl", "ImportedBath_ShowerControlRing", "ImportedBath_ShowerDrainCover", "ImportedBath_ShowerDrainCrossA", "ImportedBath_ShowerDrainCrossB", "ImportedBath_ShowerDrainGrate_0", "ImportedBath_ShowerDrainGrate_2", "ImportedBath_ShowerThreshold", "ImportedBath_ShowerGlassSeal", "ImportedBath_ShowerGlassHandle", "ImportedBath_TowelBar",
 		"ImportedBath_DrainCover", "ImportedBath_VanityCounterEdge", "ImportedBath_VanityFrontLip", "ImportedBath_TowelFold_0", "ImportedBath_TowelFold_2",
 		"ImportedBath_VanityBasinLeft", "ImportedBath_VanityBasinRight",
 		"ImportedBath_VanityDrainLeft", "ImportedBath_VanityDrainRight",
@@ -201,6 +201,9 @@ func _run() -> void:
 	var glass_node: Node = game.find_child("ImportedBath_ShowerGlass", true, false)
 	var glass_mesh := glass_node.find_child("Mesh", true, false) as MeshInstance3D if glass_node != null else null
 	var glass_bounds: AABB = glass_mesh.global_transform * glass_mesh.get_aabb() if glass_mesh != null else AABB()
+	if glass_mesh == null or not glass_mesh.mesh is ArrayMesh:
+		printerr("FAIL shower glass still uses a sharp box silhouette")
+		failures += 1
 	if not tray_bounds.has_volume() or not glass_bounds.has_volume() or absf(glass_bounds.get_center().x - tray_bounds.get_center().x) > tray_bounds.size.x * 0.5 + 0.35 or absf(glass_bounds.get_center().z - tray_bounds.get_center().z) > 0.10:
 		printerr("FAIL shower glass is not attached to tray bounds")
 		failures += 1
@@ -208,6 +211,10 @@ func _run() -> void:
 	var glass_handle := game.find_child("ImportedBath_ShowerGlassHandle", true, false) as Node3D
 	if threshold == null or glass_handle == null or not tray_bounds.has_volume() or absf(threshold.global_position.x - glass_bounds.get_center().x) > 0.12 or absf(threshold.global_position.z - tray_bounds.get_center().z) > tray_bounds.size.z * 0.60 or absf(glass_handle.global_position.x - glass_bounds.get_center().x) > 0.18 or absf(glass_handle.global_position.z - glass_bounds.get_center().z) > 0.10:
 		printerr("FAIL shower threshold/handle is not attached to glass and tray bounds")
+		failures += 1
+	var shower_drain := game.find_child("ImportedBath_ShowerDrainCover", true, false) as Node3D
+	if shower_drain == null or shower_drain.find_child("CollisionShape3D", true, false) != null:
+		printerr("FAIL shower drain cover is missing or blocks movement")
 		failures += 1
 	var towel_left_bounds: AABB = game._find_bathroom_mesh_bounds("835_StainlessSmooth")
 	var towel_right_bounds: AABB = game._find_bathroom_mesh_bounds("834_StainlessSmooth")

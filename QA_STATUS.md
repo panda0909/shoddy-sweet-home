@@ -628,3 +628,10 @@
 - `tests/kitchen_details.gd` 驗證每張座墊都有完整下部結構；家具碰撞仍為 28 個 BoxShape3D，14 題互動與三角面預算均為 `0 failures`。
 - 圖形截圖回歸：廚房 median `5.645ms`、p95 `6.429ms`、`1415` draws；四房均成功渲染。
 - Web Release 回歸：PCK `103,722,892` bytes、WASM `39,514,754` bytes，合計 `143,237,646` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。
+
+### 追加：浴室淋浴玻璃與排水格柵（2026-09-19）
+
+- 淋浴玻璃由銳利 BoxMesh 改為微圓角 ArrayMesh，讓金屬框邊緣能產生連續高光；淋浴排水孔補上圓角蓋板、十字固定件與三條格柵，全部貼合同一個淋浴盤 bounds。
+- `tests/bathroom_details.gd` 驗證玻璃網格、排水蓋板與無碰撞通行；浴室細節 57 個、材質批次 12，驗收為 `0 failures`。
+- 圖形截圖回歸：浴室 median `3.698ms`、p95 `5.107ms`、`626` draws；家具碰撞、14 題互動與三角面預算均維持 `0 failures`。
+- Web Release 回歸：PCK `103,723,452` bytes、WASM `39,514,754` bytes，合計 `143,238,206` bytes，仍低於 `157,286,400` bytes 的 150 MB 門檻。

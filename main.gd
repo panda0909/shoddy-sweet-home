@@ -1193,7 +1193,13 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	var glass_x := shower_center.x + shower_size.x * 0.36
 	var glass_z_size := shower_size.z * 1.08
 	var frame_z_offset := shower_size.z * 0.55
-	_add_box("ImportedBath_ShowerGlass", Vector3(0.07, 2.25, glass_z_size), Vector3(glass_x, 1.15, shower_center.z), glass_material, false, detail_root)
+	var glass_panel_size := Vector3(0.07, 2.25, glass_z_size)
+	var shower_glass := _add_box("ImportedBath_ShowerGlass", glass_panel_size, Vector3(glass_x, 1.15, shower_center.z), glass_material, false, detail_root)
+	var shower_glass_mesh := shower_glass.get_node("Mesh") as MeshInstance3D
+	if shower_glass_mesh != null:
+		# A very small radius catches the light along the glass perimeter and
+		# prevents the partition from reading as a razor-thin debug plane.
+		shower_glass_mesh.mesh = bedroom_details_rounded(glass_panel_size, 0.018)
 	_add_box("ImportedBath_ShowerFrame_Left", Vector3(0.10, 2.35, 0.08), Vector3(glass_x - 0.05, 1.18, shower_center.z - frame_z_offset), steel, false, detail_root)
 	_add_box("ImportedBath_ShowerFrame_Right", Vector3(0.10, 2.35, 0.08), Vector3(glass_x - 0.05, 1.18, shower_center.z + frame_z_offset), steel, false, detail_root)
 	_add_box("ImportedBath_ShowerFrame_Top", Vector3(0.10, 0.08, glass_z_size + 0.08), Vector3(glass_x - 0.05, 2.34, shower_center.z), steel, false, detail_root)
@@ -1220,8 +1226,15 @@ func _add_bathroom_imported_details(detail_root: Node3D) -> void:
 	var control_position := Vector3(shower_wall_x, shower_center.y + 1.27, shower_back_z + 0.02)
 	_add_cylinder("ImportedBath_ShowerControl", 0.07, 0.035, control_position, steel, false, detail_root)
 	_add_cylinder("ImportedBath_ShowerControlRing", 0.105, 0.012, control_position + Vector3(0, 0.025, 0), button_material, false, detail_root)
-	_add_box("ImportedBath_ShowerDrainCrossA", Vector3(0.18, 0.024, 0.025), Vector3(shower_center.x, 0.16, shower_center.z), steel, false, detail_root)
-	_add_box("ImportedBath_ShowerDrainCrossB", Vector3(0.025, 0.024, 0.18), Vector3(shower_center.x, 0.16, shower_center.z), steel, false, detail_root)
+	var drain_center := Vector3(shower_center.x, 0.16, shower_center.z)
+	var drain_cover := _add_box("ImportedBath_ShowerDrainCover", Vector3(0.28, 0.018, 0.28), drain_center, drain_material, false, detail_root)
+	var drain_cover_mesh := drain_cover.get_node("Mesh") as MeshInstance3D
+	if drain_cover_mesh != null:
+		drain_cover_mesh.mesh = bedroom_details_rounded(Vector3(0.28, 0.018, 0.28), 0.014)
+	_add_box("ImportedBath_ShowerDrainCrossA", Vector3(0.18, 0.024, 0.025), drain_center + Vector3(0, 0.014, 0), steel, false, detail_root)
+	_add_box("ImportedBath_ShowerDrainCrossB", Vector3(0.025, 0.024, 0.18), drain_center + Vector3(0, 0.014, 0), steel, false, detail_root)
+	for grate_index in range(3):
+		_add_box("ImportedBath_ShowerDrainGrate_%d" % grate_index, Vector3(0.20, 0.012, 0.014), drain_center + Vector3(0, 0.022, -0.065 + grate_index * 0.065), steel, false, detail_root)
 
 	# The imported scene contains two stainless towel-rail mounts. Use their
 	# world bounds as the source of truth instead of the old fixed wall point;
